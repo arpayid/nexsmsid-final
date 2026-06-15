@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 export type WhatsAppPayload = {
@@ -13,7 +13,7 @@ export class WhatsAppService {
   private readonly apiUrl: string;
   private readonly enabled: boolean;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(@Inject(ConfigService) private readonly configService: ConfigService) {
     this.apiKey = this.configService.get<string>("WA_API_KEY") ?? null;
     this.apiUrl = this.configService.get<string>("WA_API_URL") ?? "https://api.fonnte.com/send";
     this.enabled = !!this.apiKey;
