@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 type TurnstileVerifyResponse = {
@@ -8,7 +8,7 @@ type TurnstileVerifyResponse = {
 
 @Injectable()
 export class CaptchaService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(@Inject(ConfigService) private readonly configService: ConfigService) {}
 
   isEnabled(): boolean {
     return Boolean(this.configService.get<string>("TURNSTILE_SECRET_KEY")?.trim());
