@@ -1,3 +1,7 @@
+# Production HTTPS — enable after certbot certificates exist.
+# Copy to conf.d/https.conf when deploying with a real domain:
+#   cp docker/nginx/conf.d/https.conf.example docker/nginx/conf.d/https.conf
+#
 upstream api_upstream {
     server api:4000;
 }
@@ -6,17 +10,17 @@ upstream web_upstream {
     server web:3000;
 }
 
-# HTTP → HTTPS Redirect
 server {
-    listen 80;
+    listen 443 ssl;
+    http2 on;
     server_name your-domain.com www.your-domain.com;
-    return 301 https://$host$request_uri;
-}
 
-# Local / staging HTTP (default server — works without TLS certs)
-server {
-    listen 80 default_server;
-    server_name localhost _;
+    ssl_certificate /etc/letsencrypt/live/your-domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
 
     client_max_body_size 10M;
 
@@ -44,7 +48,6 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # Socket.IO (authenticated WebSocket notifications)
     location /socket.io/ {
         proxy_pass http://api_upstream;
         proxy_http_version 1.1;
