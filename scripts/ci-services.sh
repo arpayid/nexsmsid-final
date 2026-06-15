@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Start/stop PostgreSQL + Redis for CI on a self-hosted runner.
+# Start/stop PostgreSQL + Redis for NexSMSID V4 CI on a self-hosted runner.
 # Service containers in workflow `services:` are GitHub-hosted only;
 # self-hosted jobs must bring up dependencies locally (Docker Compose here).
 set -euo pipefail

@@ -1,3 +1,5 @@
+name: nexsmsid-v4
+
 services:
   postgres:
     image: postgres:16-alpine

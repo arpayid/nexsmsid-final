@@ -132,7 +132,7 @@ pnpm restore         # scripts/restore-postgres.sh
 
 ## CI
 
-Workflow **NexSMSID V4 CI** (`.github/workflows/ci.yml`) berjalan di self-hosted runner dengan label `self-hosted`, `linux`, `nexsmsid`.
+Workflow **NexSMSID V4 CI** (`.github/workflows/ci.yml`) berjalan di self-hosted runner dengan label `self-hosted`, `linux`, `nexsmsid-v4`.
 
 Pipeline: format → lint → unit test → typecheck → build → integration test → dependency audit.
 
@@ -143,7 +143,7 @@ PostgreSQL dan Redis di CI dijalankan lewat `scripts/ci-services.sh` (Docker Com
 ```bash
 # Di VPS CI, unduh runner dari GitHub → Settings → Actions → Runners
 ./config.sh --url https://github.com/arpayid/nexsmsid-v4 --token <TOKEN> \
-  --labels self-hosted,linux,nexsmsid --name nexsmsid-ci-01
+  --labels self-hosted,linux,nexsmsid-v4 --name nexsmsid-v4-ci-01
 sudo ./svc.sh install && sudo ./svc.sh start
 ```
 
