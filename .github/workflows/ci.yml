@@ -15,6 +15,7 @@ jobs:
     runs-on: [self-hosted, linux, nexsmsid-v4]
 
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       NODE_ENV: test
       DATABASE_URL: postgresql://nexsmsid:nexsmsid@localhost:5432/nexsmsid_test
       REDIS_HOST: localhost
@@ -47,10 +48,10 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
 
-      - name: Set up Node.js 22
+      - name: Set up Node.js 24
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
 
       - name: Prepare cache directories
