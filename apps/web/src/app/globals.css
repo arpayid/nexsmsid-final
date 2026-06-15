@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --background: 220 14% 96%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --primary: 239 84% 67%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 239 84% 96%;
+    --secondary-foreground: 239 60% 40%;
+    --muted: 220 14% 93%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 199 89% 48%;
+    --accent-foreground: 0 0% 100%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 239 84% 67%;
+    --radius: 0.5rem;
+    --sidebar: 222 47% 11%;
+    --sidebar-foreground: 210 20% 96%;
+    --sidebar-muted: 215 16% 57%;
+    --sidebar-border: 217 20% 18%;
+    --sidebar-accent: 239 84% 67%;
+    --surface-muted: 220 14% 97%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+  }
+
+  .dark {
+    color-scheme: dark;
+    --background: 222 47% 6%;
+    --foreground: 210 20% 96%;
+    --card: 222 40% 9%;
+    --card-foreground: 210 20% 96%;
+    --primary: 239 84% 72%;
+    --primary-foreground: 222 47% 6%;
+    --secondary: 239 30% 16%;
+    --secondary-foreground: 239 70% 85%;
+    --muted: 217 20% 14%;
+    --muted-foreground: 215 14% 58%;
+    --accent: 199 80% 52%;
+    --accent-foreground: 222 47% 6%;
+    --border: 217 20% 18%;
+    --input: 217 20% 18%;
+    --ring: 239 84% 72%;
+    --sidebar: 222 47% 8%;
+    --sidebar-foreground: 210 20% 96%;
+    --sidebar-muted: 215 14% 58%;
+    --sidebar-border: 217 20% 16%;
+    --sidebar-accent: 239 84% 72%;
+    --surface-muted: 222 40% 10%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply min-h-screen bg-background font-sans text-foreground antialiased;
+  }
+}
+
+@layer utilities {
+  .bg-grid-soft {
+    background-image:
+      linear-gradient(hsl(var(--border) / 0.6) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.6) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .surface-panel {
+    @apply border border-border bg-card shadow-sm;
+  }
+
+  .nexadmin-sidebar {
+    @apply bg-[hsl(var(--sidebar))] text-[hsl(var(--sidebar-foreground))];
+  }
+
+  .nav-item-active {
+    @apply border-l-2 border-[hsl(var(--sidebar-accent))] bg-white/10 font-semibold text-[hsl(var(--sidebar-foreground))];
+  }
+
+  .text-gradient-brand {
+    @apply bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--accent))] bg-clip-text text-transparent;
+  }
+}

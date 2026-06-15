@@ -1,0 +1,59 @@
+{
+  "name": "nexsmsid-v4",
+  "version": "4.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.18.3",
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "typecheck": "pnpm --filter @nexsmsid/types build && pnpm --filter @nexsmsid/api exec tsc --noEmit && pnpm --filter @nexsmsid/web exec tsc --noEmit",
+    "lint": "eslint . --ext .ts",
+    "validate": "pnpm typecheck && pnpm format:check && pnpm --filter @nexsmsid/api test && pnpm lint && pnpm build",
+    "validate:integration": "pnpm --filter @nexsmsid/api build && NODE_ENV=test DATABASE_URL=\"postgresql://nexsmsid:nexsmsid@localhost:5432/nexsmsid_test?schema=public\" pnpm --filter @nexsmsid/api test:integration",
+    "format": "prettier --write .",
+    "format:check": "prettier --check \"apps/**/*.{ts,tsx}\" \"packages/**/*.{ts,tsx}\"",
+    "audit": "pnpm audit --audit-level high",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:prod:build": "docker compose -f docker-compose.prod.yml build",
+    "docker:prod:up": "docker compose -f docker-compose.prod.yml up -d",
+    "docker:prod:down": "docker compose -f docker-compose.prod.yml down",
+    "db:migrate:prod": "pnpm --filter @nexsmsid/api prisma migrate deploy",
+    "db:seed:prod": "pnpm --filter @nexsmsid/api prisma db seed",
+    "backup": "bash scripts/backup-postgres.sh",
+    "restore": "bash scripts/restore-postgres.sh",
+    "health": "bash scripts/staging-healthcheck.sh"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "@prisma/client",
+      "@prisma/engines",
+      "esbuild",
+      "msgpackr-extract",
+      "prisma",
+      "sharp"
+    ],
+    "overrides": {
+      "postcss": "^8.5.15",
+      "uuid": ">=11.1.1",
+      "esbuild": ">=0.28.1"
+    }
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.4.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "prettier": "^3.8.4",
+    "turbo": "^2.5.8",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.61.0"
+  },
+  "dependencies": {
+    "axios": "^1.17.0"
+  }
+}

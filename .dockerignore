@@ -1,0 +1,12 @@
+node_modules
+.git
+.turbo
+dist
+.next
+.env
+*.log
+docker-compose.yml
+docker-compose.prod.yml
+Dockerfile*
+backups
+storage

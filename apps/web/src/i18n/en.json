@@ -1,0 +1,184 @@
+{
+  "app": {
+    "name": "NexSMSID",
+    "tagline": "School Management System"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "fitur": "Features",
+    "jurusan": "Programs",
+    "ppdb": "Enrollment",
+    "agenda": "Agenda",
+    "login": "Login",
+    "logout": "Logout",
+    "admin": "Admin"
+  },
+  "home": {
+    "hero_title": "School website and operational dashboard in one modern system.",
+    "hero_desc": "NexSMSID provides public-facing school/SMK websites and SaaS-style admin dashboards.",
+    "stats_students": "Active Students",
+    "stats_teachers": "Teachers & Staff",
+    "stats_programs": "Programs",
+    "stats_partners": "Industry Partners",
+    "cta_dashboard": "View Dashboard",
+    "cta_explore": "Explore Features"
+  },
+  "login": {
+    "title": "Login to dashboard",
+    "subtitle": "Login using your registered email and password.",
+    "email_label": "Email",
+    "password_label": "Password",
+    "email_placeholder": "superadmin@nexsmsid.dev",
+    "password_placeholder": "Enter password",
+    "submit": "Login",
+    "loading": "Loading login page...",
+    "error": "Login failed",
+    "badge": "Restricted Access"
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "checking_session": "Checking admin session...",
+    "search_placeholder": "Search school data...",
+    "notifications": "Notifications",
+    "settings": "Settings",
+    "school_profile": "School Profile"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "refresh": "Refresh",
+    "no_data": "No data",
+    "back": "Back",
+    "next": "Next",
+    "prev": "Previous",
+    "filter": "Filter",
+    "export": "Export",
+    "print": "Print",
+    "download": "Download",
+    "upload": "Upload",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "success": "Success",
+    "failed": "Failed",
+    "required": "Required"
+  },
+  "auth": {
+    "change_password": "Change Password",
+    "current_password": "Current Password",
+    "new_password": "New Password",
+    "confirm_password": "Confirm Password",
+    "logout_all": "Logout from All Devices",
+    "login_history": "Login History"
+  },
+  "academic": {
+    "title": "Academic",
+    "schedules": "Schedules",
+    "attendance": "Attendance",
+    "grades": "Grades",
+    "teaching_assignments": "Teaching Assignments"
+  },
+  "finance": {
+    "title": "Finance",
+    "invoices": "Invoices",
+    "payments": "Payments",
+    "expenses": "Expenses",
+    "summary": "Finance Summary"
+  },
+  "ppdb": {
+    "title": "Enrollment",
+    "periods": "Periods",
+    "registrations": "Registrations",
+    "register": "Register Now",
+    "active": "In Progress"
+  },
+  "people": {
+    "students": "Students",
+    "teachers": "Teachers",
+    "staffs": "Staff",
+    "guardians": "Guardians"
+  },
+  "inventory": {
+    "title": "Inventory",
+    "items": "Items",
+    "categories": "Categories",
+    "loans": "Loans",
+    "reports": "Reports & Alerts"
+  },
+  "library": {
+    "title": "Library",
+    "books": "Books",
+    "members": "Members",
+    "loans": "Loans",
+    "fines": "Fines"
+  },
+  "exams": {
+    "title": "Exams / CBT",
+    "types": "Exam Types",
+    "rooms": "Rooms",
+    "schedules": "Schedules",
+    "results": "Results"
+  },
+  "discipline": {
+    "title": "Discipline",
+    "violations": "Violations",
+    "achievements": "Achievements",
+    "rules": "Rules"
+  },
+  "counseling": {
+    "title": "Counseling",
+    "cases": "Cases"
+  },
+  "letters": {
+    "title": "Letters",
+    "incoming": "Incoming Letters",
+    "outgoing": "Outgoing Letters",
+    "templates": "Templates"
+  },
+  "hr": {
+    "title": "HR",
+    "employees": "Employees",
+    "attendance": "Attendance",
+    "leaves": "Leaves",
+    "positions": "Positions"
+  },
+  "payroll": {
+    "title": "Payroll",
+    "periods": "Periods",
+    "runs": "Runs",
+    "payslips": "Payslips",
+    "components": "Components"
+  },
+  "bkk": {
+    "title": "BKK & Internship",
+    "jobs": "Job Vacancies",
+    "internships": "Internships",
+    "alumni": "Alumni",
+    "partners": "Industry Partners",
+    "tracer": "Tracer Study"
+  },
+  "communication": {
+    "title": "Communication",
+    "announcements": "Announcements",
+    "messages": "Messages",
+    "notifications": "Notifications",
+    "templates": "Templates"
+  },
+  "errors": {
+    "404_title": "404",
+    "404_desc": "Page not found.",
+    "500_title": "An Error Occurred",
+    "500_desc": "Sorry, an unexpected error occurred.",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Access denied",
+    "not_found": "Data not found",
+    "validation_error": "Invalid input data"
+  }
+}

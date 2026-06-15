@@ -1,0 +1,53 @@
+# Dependencies
+node_modules
+
+# Turbo
+.turbo
+
+# Build outputs
+dist
+build
+.next
+next-env.d.ts
+out
+coverage
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# API generated storage
+apps/api/storage/reports/*
+!apps/api/storage/reports/.gitkeep
+apps/api/storage/uploads/*
+!apps/api/storage/uploads/.gitkeep
+
+# Root storage
+storage/reports/*
+!storage/reports/.gitkeep
+storage/uploads/*
+!storage/uploads/.gitkeep
+
+# Backups
+backups/*
+!backups/.gitkeep
+
+# Generated docs / scratch
+prompt-cleanup-v2.md
+
+# Redis local artifacts
+dump.rdb
+appendonlydir/
+apps/web/tsconfig.tsbuildinfo

@@ -1,0 +1,60 @@
+# Stage 1: Build dependencies and app
+FROM node:20-alpine AS builder
+
+RUN apk add --no-cache libc6-compat
+RUN npm install -g pnpm@10.18.3
+
+WORKDIR /app
+
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json ./
+COPY packages/ ./packages/
+COPY apps/api/package.json ./apps/api/
+
+RUN pnpm install --frozen-lockfile
+
+COPY apps/api/ ./apps/api/
+
+RUN pnpm --filter @nexsmsid/types build
+RUN pnpm --filter @nexsmsid/api-client build
+RUN pnpm --filter @nexsmsid/api build
+
+# Stage 2: Runner
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+RUN apk add --no-cache libc6-compat openssl
+RUN npm install -g pnpm@10.18.3
+
+ENV NODE_ENV=production
+
+# Copy workspace configuration
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+# Copy shared packages (might be needed for prod)
+COPY packages/ ./packages/
+# Copy API package.json
+COPY apps/api/package.json ./apps/api/
+
+# Install ONLY production dependencies
+RUN pnpm install --prod --frozen-lockfile
+
+# Copy built files
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+COPY --from=builder /app/packages/types/dist ./packages/types/dist
+# Copy prisma schema
+COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
+
+# Generate Prisma Client in the runner to ensure correct paths
+RUN pnpm --filter @nexsmsid/api prisma generate
+
+# Run as non-root (storage dir must be writable for report generation)
+RUN addgroup --system --gid 1001 nodejs \
+    && adduser --system --uid 1001 nestjs \
+    && mkdir -p /app/storage/reports \
+    && chown -R nestjs:nodejs /app/storage
+
+USER nestjs
+
+EXPOSE 4000
+
+CMD ["node", "apps/api/dist/main.js"]

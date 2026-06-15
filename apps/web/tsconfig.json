@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "allowJs": false,
+    "incremental": true,
+    "jsx": "preserve",
+    "noEmit": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@nexsmsid/api-client": ["../../packages/api-client/src/index.ts"],
+      "@nexsmsid/ui": ["../../packages/ui/src/index.ts"],
+      "@nexsmsid/ui/*": ["../../packages/ui/src/*"]
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}

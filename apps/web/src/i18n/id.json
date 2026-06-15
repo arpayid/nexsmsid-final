@@ -1,0 +1,184 @@
+{
+  "app": {
+    "name": "NexSMSID",
+    "tagline": "School Management System"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "fitur": "Fitur",
+    "jurusan": "Jurusan",
+    "ppdb": "PPDB",
+    "agenda": "Agenda",
+    "login": "Masuk",
+    "logout": "Keluar",
+    "admin": "Admin"
+  },
+  "home": {
+    "hero_title": "Website sekolah dan dashboard operasional dalam satu sistem modern.",
+    "hero_desc": "NexSMSID menyiapkan tampilan publik untuk sekolah/SMK dan dashboard admin SaaS-style.",
+    "stats_students": "Siswa Aktif",
+    "stats_teachers": "Guru & Staf",
+    "stats_programs": "Program Keahlian",
+    "stats_partners": "Mitra Industri",
+    "cta_dashboard": "Lihat Dashboard",
+    "cta_explore": "Jelajahi Fitur"
+  },
+  "login": {
+    "title": "Masuk ke dashboard",
+    "subtitle": "Masuk menggunakan email dan password yang telah terdaftar.",
+    "email_label": "Email",
+    "password_label": "Password",
+    "email_placeholder": "superadmin@nexsmsid.dev",
+    "password_placeholder": "Masukkan password",
+    "submit": "Masuk",
+    "loading": "Memuat halaman login...",
+    "error": "Login gagal",
+    "badge": "Akses Terbatas"
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "checking_session": "Memeriksa sesi admin...",
+    "search_placeholder": "Cari data sekolah...",
+    "notifications": "Notifikasi",
+    "settings": "Pengaturan",
+    "school_profile": "Profil Sekolah"
+  },
+  "common": {
+    "loading": "Memuat...",
+    "error": "Terjadi kesalahan",
+    "retry": "Coba Lagi",
+    "save": "Simpan",
+    "cancel": "Batal",
+    "delete": "Hapus",
+    "edit": "Ubah",
+    "create": "Tambah",
+    "search": "Cari",
+    "refresh": "Refresh",
+    "no_data": "Tidak ada data",
+    "back": "Kembali",
+    "next": "Lanjut",
+    "prev": "Sebelumnya",
+    "filter": "Filter",
+    "export": "Ekspor",
+    "print": "Cetak",
+    "download": "Unduh",
+    "upload": "Unggah",
+    "confirm": "Konfirmasi",
+    "yes": "Ya",
+    "no": "Tidak",
+    "success": "Berhasil",
+    "failed": "Gagal",
+    "required": "Wajib diisi"
+  },
+  "auth": {
+    "change_password": "Ubah Password",
+    "current_password": "Password Saat Ini",
+    "new_password": "Password Baru",
+    "confirm_password": "Konfirmasi Password",
+    "logout_all": "Keluar dari Semua Perangkat",
+    "login_history": "Riwayat Login"
+  },
+  "academic": {
+    "title": "Akademik",
+    "schedules": "Jadwal",
+    "attendance": "Presensi",
+    "grades": "Nilai",
+    "teaching_assignments": "Pembagian Tugas"
+  },
+  "finance": {
+    "title": "Keuangan",
+    "invoices": "Tagihan",
+    "payments": "Pembayaran",
+    "expenses": "Pengeluaran",
+    "summary": "Ringkasan Keuangan"
+  },
+  "ppdb": {
+    "title": "PPDB",
+    "periods": "Periode",
+    "registrations": "Pendaftaran",
+    "register": "Daftar Sekarang",
+    "active": "Sedang Berjalan"
+  },
+  "people": {
+    "students": "Siswa",
+    "teachers": "Guru",
+    "staffs": "Staf",
+    "guardians": "Wali Murid"
+  },
+  "inventory": {
+    "title": "Inventaris",
+    "items": "Barang",
+    "categories": "Kategori",
+    "loans": "Peminjaman",
+    "reports": "Laporan & Peringatan"
+  },
+  "library": {
+    "title": "Perpustakaan",
+    "books": "Buku",
+    "members": "Anggota",
+    "loans": "Peminjaman",
+    "fines": "Denda"
+  },
+  "exams": {
+    "title": "Ujian / CBT",
+    "types": "Tipe Ujian",
+    "rooms": "Ruang",
+    "schedules": "Jadwal",
+    "results": "Hasil"
+  },
+  "discipline": {
+    "title": "Tata Tertib",
+    "violations": "Pelanggaran",
+    "achievements": "Prestasi",
+    "rules": "Peraturan"
+  },
+  "counseling": {
+    "title": "BK / Konseling",
+    "cases": "Kasus"
+  },
+  "letters": {
+    "title": "Surat",
+    "incoming": "Surat Masuk",
+    "outgoing": "Surat Keluar",
+    "templates": "Template"
+  },
+  "hr": {
+    "title": "Kepegawaian",
+    "employees": "Karyawan",
+    "attendance": "Presensi",
+    "leaves": "Cuti",
+    "positions": "Jabatan"
+  },
+  "payroll": {
+    "title": "Penggajian",
+    "periods": "Periode",
+    "runs": "Proses",
+    "payslips": "Slip Gaji",
+    "components": "Komponen"
+  },
+  "bkk": {
+    "title": "BKK & PKL",
+    "jobs": "Lowongan",
+    "internships": "PKL",
+    "alumni": "Alumni",
+    "partners": "Mitra Industri",
+    "tracer": "Tracer Study"
+  },
+  "communication": {
+    "title": "Komunikasi",
+    "announcements": "Pengumuman",
+    "messages": "Pesan",
+    "notifications": "Notifikasi",
+    "templates": "Template"
+  },
+  "errors": {
+    "404_title": "404",
+    "404_desc": "Halaman tidak ditemukan.",
+    "500_title": "Terjadi Kesalahan",
+    "500_desc": "Maaf, terjadi kesalahan yang tidak terduga.",
+    "unauthorized": "Tidak memiliki akses",
+    "forbidden": "Akses ditolak",
+    "not_found": "Data tidak ditemukan",
+    "validation_error": "Data yang dimasukkan tidak valid"
+  }
+}

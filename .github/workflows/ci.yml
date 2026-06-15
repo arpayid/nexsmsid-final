@@ -1,0 +1,94 @@
+name: NexSMSID V4 CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-validation:
+    runs-on: [self-hosted, linux, nexsmsid]
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://nexsmsid:nexsmsid@localhost:5432/nexsmsid_test
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      CI_KEEP_SERVICES: "1"
+      JWT_ACCESS_SECRET: CI_TEST_SECRET_KEY_FOR_NEXSMSID_ACCESS_TOKEN_MUST_BE_LONG_ENOUGH_64_CHARS_MIN
+      JWT_REFRESH_SECRET: CI_TEST_SECRET_KEY_FOR_NEXSMSID_REFRESH_TOKEN_MUST_BE_LONG_ENOUGH_64_CHARS_MIN
+      WEB_ORIGIN: http://localhost:3000
+      API_PORT: 4000
+      API_PREFIX: api/v1
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+      RATE_LIMIT_TTL: 60
+      RATE_LIMIT_LIMIT: 100
+      STORAGE_PATH: /tmp/nexsmsid-v4/storage
+      REPORT_STORAGE_PATH: /tmp/nexsmsid-v4/storage/reports
+      LOG_LEVEL: error
+      TURNSTILE_SECRET_KEY: 1x0000000000000000000000000000000AA
+      PPDB_LEGACY_PIN_GRACE_END: 2026-07-15T00:00:00.000Z
+      CI_COMPOSE_PROJECT: nexsmsid-v4-ci
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Ensure PostgreSQL and Redis
+        run: chmod +x ./scripts/ci-services.sh && ./scripts/ci-services.sh start
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Prepare cache directories
+        run: |
+          mkdir -p "$HOME/.cache/turbo"
+          echo "TURBO_CACHE_DIR=$HOME/.cache/turbo" >> "$GITHUB_ENV"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Generate Prisma client
+        run: pnpm --filter @nexsmsid/api prisma generate
+
+      - name: Static checks and API unit tests
+        run: |
+          set -e
+          pnpm format:check &
+          pid_format=$!
+          pnpm lint &
+          pid_lint=$!
+          pnpm --filter @nexsmsid/api test &
+          pid_test=$!
+          wait "$pid_format"
+          wait "$pid_lint"
+          wait "$pid_test"
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build workspace
+        run: pnpm build
+
+      - name: Integration Tests (real PostgreSQL + Redis)
+        run: pnpm --filter @nexsmsid/api test:integration
+
+      - name: Audit Dependencies (high severity only)
+        run: pnpm audit --audit-level high
+
+      - name: Stop PostgreSQL and Redis
+        if: always()
+        run: ./scripts/ci-services.sh stop
