@@ -3,6 +3,7 @@
 import {
   Activity,
   AlertCircle,
+  ArrowUpRight,
   BarChart3,
   Bell,
   BookOpenCheck,
@@ -13,7 +14,6 @@ import {
   GraduationCap,
   Landmark,
   Loader2,
-  Newspaper,
   RefreshCcw,
   Server,
   ShieldCheck,
@@ -21,7 +21,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, type ReactElement, type ReactNode } from "react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import {
@@ -31,8 +31,8 @@ import {
   DataTable,
   EmptyState,
   ErrorState,
-  LoadingState,
   ModuleCard,
+  PageHeader,
   SectionCard,
   SkeletonCard,
   StatCard,
@@ -125,45 +125,6 @@ type DashboardData = {
 
 const chartColors = ["#14997a", "#0ea5e9", "#10b981", "#f97316", "#ef4444", "#14b8a6", "#64748b"];
 
-const modules = [
-  {
-    title: "Siswa",
-    description: "Data peserta didik aktif dan relasi kelas.",
-    href: "/admin/students",
-    icon: UsersRound,
-    tone: "teal" as const,
-  },
-  {
-    title: "Guru",
-    description: "Profil guru dan teaching assignment.",
-    href: "/admin/teachers",
-    icon: GraduationCap,
-    tone: "blue" as const,
-  },
-  {
-    title: "Akademik",
-    description: "Jadwal, presensi, nilai, dan mapel.",
-    href: "/admin/academic/teaching-assignments",
-    icon: BookOpenCheck,
-    tone: "cyan" as const,
-  },
-  {
-    title: "Keuangan",
-    description: "Invoice, pembayaran, dan pengeluaran.",
-    href: "/admin/finance",
-    icon: Landmark,
-    tone: "emerald" as const,
-  },
-  {
-    title: "PPDB",
-    description: "Pendaftaran dan seleksi peserta didik baru.",
-    href: "/admin/ppdb",
-    icon: Building2,
-    tone: "amber" as const,
-  },
-  { title: "BKK", description: "Lowongan kerja, lamaran, dan alumni.", href: "/admin/bkk", icon: BriefcaseBusiness, tone: "blue" as const },
-];
-
 export default function AdminDashboardPage() {
   const api = useMemo(() => createBrowserApiClient(), []);
   const loadDashboard = useCallback(async () => {
@@ -184,20 +145,31 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <div className="space-y-8">
-        <div className="h-8 w-64 animate-pulse rounded-md bg-muted" />
+        <div className="space-y-3">
+          <div className="h-5 w-32 animate-pulse rounded-md bg-muted" />
+          <div className="h-9 w-72 animate-pulse rounded-md bg-muted" />
+          <div className="h-4 w-full max-w-xl animate-pulse rounded-md bg-muted" />
+        </div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, i) => (
+          {Array.from({ length: 4 }).map((_, i) => (
             <SkeletonCard key={i} lines={2} />
           ))}
         </div>
-        <div className="grid gap-4 xl:grid-cols-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <SkeletonCard key={i} lines={4} />
-          ))}
+        <div className="grid gap-6 xl:grid-cols-12">
+          <div className="grid gap-4 xl:col-span-8 lg:grid-cols-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <SkeletonCard key={i} lines={4} />
+            ))}
+          </div>
+          <div className="space-y-4 xl:col-span-4">
+            <SkeletonCard lines={5} />
+            <SkeletonCard lines={4} />
+          </div>
         </div>
       </div>
     );
   }
+
   if (error || !data) {
     return (
       <ErrorState
@@ -222,88 +194,68 @@ export default function AdminDashboardPage() {
   ];
   const financeMonthly = data.finance.monthly.length ? data.finance.monthly : [{ month: "Belum ada", income: 0, expense: 0 }];
 
+  const modules = buildModules(data.overview);
+
   return (
     <div className="space-y-8">
-      <div className="enterprise-hero">
-        <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <Badge className="mb-3" variant="soft">
-              Enterprise Dashboard
-            </Badge>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">Selamat datang di NexAdmin</h1>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-              Ringkasan operasional sekolah — akademik, keuangan, PPDB, SDM, dan aktivitas sistem dalam satu tampilan premium.
-            </p>
-          </div>
-          <Button onClick={() => void refetch()} variant="outline">
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />} Refresh Data
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        actions={
+          <>
+            <Button asChild variant="soft">
+              <Link href="/admin/reports">
+                <BarChart3 className="h-4 w-4" /> Laporan
+              </Link>
+            </Button>
+            <Button onClick={() => void refetch()} variant="outline">
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />} Refresh
+            </Button>
+          </>
+        }
+        breadcrumb={["NexAdmin", "Dashboard"]}
+        description="Ringkasan operasional sekolah — akademik, keuangan, PPDB, SDM, dan kesehatan sistem dalam satu tampilan modern."
+        eyebrow="Enterprise Dashboard"
+        title="Selamat datang di NexAdmin"
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
+          description={`${formatNumber(data.overview.people.guardians)} wali terdaftar`}
           icon={<UsersRound className="h-5 w-5" />}
           title="Siswa Aktif"
           tone="teal"
           value={formatNumber(data.overview.people.studentsActive)}
         />
         <StatCard
+          description={`${formatNumber(data.overview.academic.classrooms)} kelas aktif`}
           icon={<GraduationCap className="h-5 w-5" />}
           title="Guru Aktif"
           tone="blue"
           value={formatNumber(data.overview.people.teachersActive)}
         />
         <StatCard
-          description={`${formatNumber(data.overview.finance.outstandingInvoices)} invoice`}
+          description={`${formatNumber(data.overview.finance.outstandingInvoices)} invoice belum lunas`}
           icon={<WalletCards className="h-5 w-5" />}
-          title="Tagihan Belum Lunas"
+          title="Tagihan Outstanding"
           tone="amber"
           value={formatCurrency(data.overview.finance.outstandingAmount)}
         />
         <StatCard
+          description={`${formatNumber(data.overview.academic.assessmentsThisSemester)} penilaian semester ini`}
           icon={<CalendarCheck className="h-5 w-5" />}
-          title="Absensi Minggu Ini"
+          title="Sesi Presensi Minggu Ini"
           tone="emerald"
           value={formatNumber(data.overview.academic.attendanceSessionsThisWeek)}
         />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          icon={<UsersRound className="h-5 w-5" />}
-          title="Staff"
-          tone="emerald"
-          value={formatNumber(data.overview.people.staffsActive)}
-        />
-        <StatCard
-          icon={<Building2 className="h-5 w-5" />}
-          title="Kelas"
-          tone="teal"
-          value={formatNumber(data.overview.academic.classrooms)}
-        />
-        <StatCard
-          icon={<Building2 className="h-5 w-5" />}
-          title="PPDB Aktif"
-          tone="violet"
-          value={formatNumber(data.overview.ppdb.activeRegistrations)}
-        />
-        <StatCard
-          icon={<BriefcaseBusiness className="h-5 w-5" />}
-          title="Lowongan Aktif"
-          tone="blue"
-          value={formatNumber(data.overview.programs.publishedJobs)}
-        />
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-2">
-        <ChartCard
-          action={<Badge variant="info">Real API</Badge>}
-          description="Distribusi pendaftaran berdasarkan status."
-          title="PPDB Status Chart"
-        >
-          <div className="h-72">
-            <ResponsiveContainer height="100%" width="100%">
+      <div className="grid gap-6 xl:grid-cols-12">
+        <div className="grid gap-4 xl:col-span-8 lg:grid-cols-2">
+          <ChartCard
+            action={<Badge variant="info">PPDB</Badge>}
+            description="Distribusi pendaftaran berdasarkan status."
+            title="Status Pendaftaran PPDB"
+          >
+            <ChartFrame>
               <BarChart data={ppdbStatusData} margin={{ bottom: 0, left: -18, right: 8, top: 10 }}>
                 <CartesianGrid stroke="#e2e8f0" strokeDasharray="4 4" vertical={false} />
                 <XAxis axisLine={false} dataKey="status" tickLine={false} tickMargin={12} />
@@ -311,17 +263,15 @@ export default function AdminDashboardPage() {
                 <Tooltip contentStyle={tooltipStyle} />
                 <Bar dataKey="count" fill="#14997a" name="Pendaftar" radius={[10, 10, 0, 0]} />
               </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </ChartCard>
+            </ChartFrame>
+          </ChartCard>
 
-        <ChartCard
-          action={<Badge variant="success">Cashflow</Badge>}
-          description="Pembayaran terverifikasi dibanding pengeluaran."
-          title="Finance Monthly Cashflow"
-        >
-          <div className="h-72">
-            <ResponsiveContainer height="100%" width="100%">
+          <ChartCard
+            action={<Badge variant="success">Keuangan</Badge>}
+            description="Pembayaran terverifikasi vs pengeluaran bulanan."
+            title="Arus Kas Bulanan"
+          >
+            <ChartFrame>
               <AreaChart data={financeMonthly} margin={{ bottom: 0, left: -18, right: 8, top: 10 }}>
                 <CartesianGrid stroke="#e2e8f0" strokeDasharray="4 4" vertical={false} />
                 <XAxis axisLine={false} dataKey="month" tickLine={false} tickMargin={12} />
@@ -330,32 +280,38 @@ export default function AdminDashboardPage() {
                 <Area dataKey="income" fill="#10b98133" name="Masuk" stroke="#10b981" strokeWidth={3} type="monotone" />
                 <Area dataKey="expense" fill="#f59e0b33" name="Keluar" stroke="#f59e0b" strokeWidth={3} type="monotone" />
               </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </ChartCard>
+            </ChartFrame>
+          </ChartCard>
 
-        <ChartCard
-          action={<Badge variant="secondary">Minggu Ini</Badge>}
-          description="Rekap status presensi minggu berjalan."
-          title="Attendance Overview"
-        >
-          <div className="h-72">
-            <ResponsiveContainer height="100%" width="100%">
-              <PieChart>
-                <Pie data={attendanceData} dataKey="count" innerRadius={58} nameKey="status" outerRadius={96} paddingAngle={3}>
-                  {attendanceData.map((entry, index) => (
-                    <Cell fill={chartColors[index % chartColors.length]} key={entry.status} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={tooltipStyle} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </ChartCard>
+          <ChartCard
+            action={<Badge variant="secondary">Presensi</Badge>}
+            description="Rekap status presensi minggu berjalan."
+            title="Overview Presensi"
+          >
+            {attendanceData.length ? (
+              <ChartFrame>
+                <PieChart>
+                  <Pie data={attendanceData} dataKey="count" innerRadius={58} nameKey="status" outerRadius={96} paddingAngle={3}>
+                    {attendanceData.map((entry, index) => (
+                      <Cell fill={chartColors[index % chartColors.length]} key={entry.status} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={tooltipStyle} />
+                </PieChart>
+              </ChartFrame>
+            ) : (
+              <div className="flex h-72 items-center justify-center px-4">
+                <EmptyState description="Belum ada data presensi minggu ini." title="Data kosong" />
+              </div>
+            )}
+          </ChartCard>
 
-        <ChartCard action={<Badge variant="outline">People</Badge>} description="Komposisi data orang di sekolah." title="People Overview">
-          <div className="h-72">
-            <ResponsiveContainer height="100%" width="100%">
+          <ChartCard
+            action={<Badge variant="outline">SDM</Badge>}
+            description="Komposisi siswa, guru, staff, dan wali."
+            title="Komposisi People"
+          >
+            <ChartFrame>
               <BarChart data={peopleData} margin={{ bottom: 0, left: -18, right: 8, top: 10 }}>
                 <CartesianGrid stroke="#e2e8f0" strokeDasharray="4 4" vertical={false} />
                 <XAxis axisLine={false} dataKey="label" tickLine={false} tickMargin={12} />
@@ -363,27 +319,100 @@ export default function AdminDashboardPage() {
                 <Tooltip contentStyle={tooltipStyle} />
                 <Bar dataKey="total" fill="#0ea5e9" name="Total" radius={[10, 10, 0, 0]} />
               </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </ChartCard>
+            </ChartFrame>
+          </ChartCard>
+        </div>
+
+        <div className="space-y-4 xl:col-span-4">
+          <QuickAlertsCard alerts={data.alerts} />
+          <SecondaryMetricsCard overview={data.overview} />
+          <SystemStatusCard status={data.system} unread={data.overview.notifications.unread} />
+        </div>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
-        <QuickAlertsCard alerts={data.alerts} />
-        <RecentActivityCard activity={data.activity} />
-      </div>
+      <SectionCard
+        action={
+          <Button asChild size="sm" variant="ghost">
+            <Link href="/admin">
+              Semua modul <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
+          </Button>
+        }
+        description="Akses cepat ke modul inti operasional sekolah."
+        title="Pintasan Modul"
+      >
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {modules.map((module) => {
+            const Icon = module.icon;
+            return <ModuleCard key={module.href} {...module} icon={<Icon className="h-5 w-5" />} />;
+          })}
+        </div>
+      </SectionCard>
 
-      <div className="grid gap-4 xl:grid-cols-[1fr_0.8fr]">
-        <SectionCard description="Pintasan modul utama untuk operator sekolah." title="Module Shortcuts">
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {modules.map((module) => {
-              const Icon = module.icon;
-              return <ModuleCard key={module.href} {...module} icon={<Icon className="h-5 w-5" />} />;
-            })}
-          </div>
-        </SectionCard>
-        <SystemStatusCard status={data.system} unread={data.overview.notifications.unread} />
-      </div>
+      <RecentActivityCard activity={data.activity} />
+    </div>
+  );
+}
+
+function buildModules(overview: Overview) {
+  return [
+    {
+      title: "Siswa",
+      description: "Data peserta didik aktif dan relasi kelas.",
+      href: "/admin/students",
+      icon: UsersRound,
+      tone: "teal" as const,
+      meta: `${formatNumber(overview.people.studentsActive)} aktif`,
+    },
+    {
+      title: "Guru",
+      description: "Profil guru dan penugasan mengajar.",
+      href: "/admin/teachers",
+      icon: GraduationCap,
+      tone: "blue" as const,
+      meta: `${formatNumber(overview.people.teachersActive)} aktif`,
+    },
+    {
+      title: "Akademik",
+      description: "Jadwal, presensi, nilai, dan mapel.",
+      href: "/admin/academic/teaching-assignments",
+      icon: BookOpenCheck,
+      tone: "cyan" as const,
+      meta: `${formatNumber(overview.academic.subjects)} mapel`,
+    },
+    {
+      title: "Keuangan",
+      description: "Invoice, pembayaran, dan pengeluaran.",
+      href: "/admin/finance",
+      icon: Landmark,
+      tone: "emerald" as const,
+      meta: `${formatNumber(overview.finance.verifiedPayments)} bayar OK`,
+    },
+    {
+      title: "PPDB",
+      description: "Pendaftaran dan seleksi peserta didik baru.",
+      href: "/admin/ppdb",
+      icon: Building2,
+      tone: "amber" as const,
+      meta: `${formatNumber(overview.ppdb.activeRegistrations)} pendaftar`,
+    },
+    {
+      title: "BKK",
+      description: "Lowongan kerja, lamaran, dan alumni.",
+      href: "/admin/bkk",
+      icon: BriefcaseBusiness,
+      tone: "blue" as const,
+      meta: `${formatNumber(overview.programs.publishedJobs)} lowongan`,
+    },
+  ];
+}
+
+function ChartFrame({ children }: { children: ReactElement }) {
+  return (
+    <div className="h-72">
+      <ResponsiveContainer height="100%" width="100%">
+        {children}
+      </ResponsiveContainer>
     </div>
   );
 }
@@ -393,62 +422,139 @@ function QuickAlertsCard({ alerts }: { alerts: QuickAlerts }) {
     {
       id: "overdue",
       label: "Invoice overdue",
+      hint: "Tagihan melewati jatuh tempo",
       status: alerts.overdueInvoices.count > 0 ? "WARNING" : "OK",
       value: alerts.overdueInvoices.count,
     },
     {
       id: "attendance",
       label: "Presensi tanpa record",
+      hint: "Sesi belum tercatat",
       status: alerts.attendanceMissing > 0 ? "WARNING" : "OK",
       value: alerts.attendanceMissing,
     },
-    { id: "payments", label: "Pembayaran ditolak", status: alerts.rejectedPayments > 0 ? "WARNING" : "OK", value: alerts.rejectedPayments },
+    {
+      id: "payments",
+      label: "Pembayaran ditolak",
+      hint: "Perlu verifikasi ulang",
+      status: alerts.rejectedPayments > 0 ? "WARNING" : "OK",
+      value: alerts.rejectedPayments,
+    },
     {
       id: "notifications",
       label: "Notifikasi unread",
+      hint: "Antrian notifikasi pengguna",
       status: alerts.unreadNotifications > 0 ? "UNREAD" : "OK",
       value: alerts.unreadNotifications,
     },
   ];
 
   return (
-    <SectionCard description="Alert operasional yang perlu dipantau." title="Quick Alerts">
-      <div className="space-y-3">
-        {rows.map((row) => (
-          <div className="flex items-center justify-between gap-3 rounded-xl border border-border/80 bg-muted/20 p-3" key={row.id}>
-            <div className="flex items-center gap-3">
-              <AlertCircle className="h-4 w-4 text-amber-500" />
-              <div>
-                <p className="text-sm font-semibold text-foreground">{row.label}</p>
-                <p className="text-xs text-muted-foreground">Total {formatNumber(row.value)}</p>
-              </div>
+    <SectionCard
+      action={
+        <Badge variant={rows.some((row) => row.status !== "OK") ? "warning" : "success"}>
+          {rows.filter((row) => row.status !== "OK").length} perhatian
+        </Badge>
+      }
+      contentClassName="space-y-3"
+      description="Indikator operasional yang perlu ditindaklanjuti."
+      title="Quick Alerts"
+    >
+      {rows.map((row) => (
+        <div className="dashboard-insight-row" key={row.id}>
+          <div className="flex min-w-0 items-center gap-3">
+            <span
+              className={
+                row.status === "OK"
+                  ? "grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600 ring-1 ring-emerald-100"
+                  : "grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-600 ring-1 ring-amber-100"
+              }
+            >
+              <AlertCircle className="h-4 w-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-foreground">{row.label}</p>
+              <p className="truncate text-xs text-muted-foreground">{row.hint}</p>
             </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <span className="text-sm font-semibold tabular-nums text-foreground">{formatNumber(row.value)}</span>
             <StatusBadge value={row.status} />
           </div>
-        ))}
-        {alerts.ppdbActive ? (
-          <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm text-primary ring-1 ring-primary/10">
-            PPDB aktif: <span className="font-bold">{alerts.ppdbActive.name}</span>, berakhir{" "}
-            {new Date(alerts.ppdbActive.endDate).toLocaleDateString("id-ID")}.
+        </div>
+      ))}
+      {alerts.ppdbActive ? (
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-3.5 text-sm text-primary ring-1 ring-primary/10">
+          <div className="flex items-start gap-2">
+            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
+            <p>
+              PPDB aktif: <span className="font-semibold">{alerts.ppdbActive.name}</span>, berakhir{" "}
+              {new Date(alerts.ppdbActive.endDate).toLocaleDateString("id-ID")}.
+            </p>
           </div>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
+    </SectionCard>
+  );
+}
+
+function SecondaryMetricsCard({ overview }: { overview: Overview }) {
+  const metrics = [
+    { icon: UsersRound, label: "Staff Aktif", value: overview.people.staffsActive },
+    { icon: Building2, label: "Kelas", value: overview.academic.classrooms },
+    { icon: Building2, label: "PPDB Aktif", value: overview.ppdb.activeRegistrations },
+    { icon: BriefcaseBusiness, label: "Lowongan BKK", value: overview.programs.publishedJobs },
+  ];
+
+  return (
+    <SectionCard contentClassName="grid gap-3 sm:grid-cols-2" description="Metrik pendukung operasional harian." title="Metrik Tambahan">
+      {metrics.map((metric) => {
+        const Icon = metric.icon;
+        return (
+          <div className="dashboard-mini-metric" key={metric.label}>
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/15">
+              <Icon className="h-4 w-4" />
+            </span>
+            <div>
+              <p className="text-xs text-muted-foreground">{metric.label}</p>
+              <p className="text-lg font-semibold tabular-nums tracking-tight text-foreground">{formatNumber(metric.value)}</p>
+            </div>
+          </div>
+        );
+      })}
     </SectionCard>
   );
 }
 
 function RecentActivityCard({ activity }: { activity: ActivityFeedItem[] }) {
   return (
-    <SectionCard description="Audit log terbaru dari sistem." title="Recent Activity">
+    <SectionCard
+      action={activity.length > 0 ? <Badge variant="outline">{formatNumber(activity.length)} entri</Badge> : undefined}
+      contentClassName="p-0 sm:p-0"
+      description="Audit log terbaru dari aktivitas sistem."
+      title="Aktivitas Terbaru"
+    >
       {activity.length === 0 ? (
-        <EmptyState description="Belum ada aktivitas audit." title="Tidak ada aktivitas" />
+        <div className="p-6">
+          <EmptyState description="Belum ada aktivitas audit." title="Tidak ada aktivitas" />
+        </div>
       ) : (
         <DataTable
           columns={[
-            { header: "Action", key: "action", cell: (row) => <span className="font-bold text-foreground">{row.action}</span> },
-            { header: "Entity", key: "entity" },
+            {
+              header: "Aksi",
+              key: "action",
+              cell: (row) => (
+                <span className="inline-flex rounded-md bg-muted/60 px-2 py-1 text-xs font-semibold text-foreground">{row.action}</span>
+              ),
+            },
+            { header: "Entitas", key: "entity" },
             { header: "Actor", key: "actor", cell: (row) => row.actor?.name ?? row.actor?.email ?? "System" },
-            { header: "Waktu", key: "createdAt", cell: (row) => new Date(row.createdAt).toLocaleString("id-ID") },
+            {
+              header: "Waktu",
+              key: "createdAt",
+              cell: (row) => <span className="text-muted-foreground">{new Date(row.createdAt).toLocaleString("id-ID")}</span>,
+            },
           ]}
           data={activity.slice(0, 8)}
           getRowId={(row) => row.id}
@@ -461,34 +567,34 @@ function RecentActivityCard({ activity }: { activity: ActivityFeedItem[] }) {
 
 function SystemStatusCard({ status, unread }: { status: SystemStatus; unread: number }) {
   const rows = [
-    { icon: Server, label: "API", value: status.api.status, detail: `uptime ${formatNumber(status.api.uptime)}s` },
+    { icon: Server, label: "API", value: status.api.status, detail: `uptime ${formatNumber(status.api.uptime)}s · v${status.api.version}` },
     { icon: Database, label: "Database", value: status.database.status, detail: status.database.provider },
     { icon: Activity, label: "Redis", value: status.redis.status, detail: status.redis.available ? "available" : "check config" },
-    { icon: Bell, label: "Unread Notifications", value: `${unread}`, detail: "across users" },
+    { icon: Bell, label: "Notifikasi Unread", value: `${unread}`, detail: "across users" },
   ];
 
   return (
-    <SectionCard description="Status layanan runtime dan indikator sistem." title="System Status">
-      <ul className="space-y-3">
-        {rows.map((row) => {
-          const Icon = row.icon;
-          return (
-            <li className="flex items-center justify-between rounded-xl border border-border/80 bg-muted/20 p-3" key={row.label}>
-              <div className="flex items-center gap-3">
-                <Icon className="h-4 w-4 text-primary" />
-                <div>
-                  <p className="text-sm font-semibold text-foreground">{row.label}</p>
-                  <p className="text-xs text-muted-foreground">{row.detail}</p>
-                </div>
+    <SectionCard contentClassName="space-y-3" description="Kesehatan layanan runtime." title="Status Sistem">
+      {rows.map((row) => {
+        const Icon = row.icon;
+        return (
+          <div className="dashboard-insight-row" key={row.label}>
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+                <Icon className="h-4 w-4" />
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-foreground">{row.label}</p>
+                <p className="truncate text-xs text-muted-foreground">{row.detail}</p>
               </div>
-              <StatusBadge value={row.value} />
-            </li>
-          );
-        })}
-      </ul>
-      <Button asChild className="mt-4 w-full" variant="soft">
+            </div>
+            <StatusBadge value={row.value} />
+          </div>
+        );
+      })}
+      <Button asChild className="w-full" variant="soft">
         <Link href="/admin/reports">
-          <BarChart3 className="h-4 w-4" /> Lihat Laporan
+          <BarChart3 className="h-4 w-4" /> Buka Report Center
         </Link>
       </Button>
     </SectionCard>
