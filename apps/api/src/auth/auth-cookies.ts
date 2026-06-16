@@ -16,10 +16,7 @@ function cookieSecureFlag(nodeEnv: string, webOrigin?: string): boolean {
   return nodeEnv === "production";
 }
 
-function baseCookieOptions(
-  nodeEnv: string,
-  webOrigin?: string,
-): Pick<CookieOptions, "httpOnly" | "secure" | "sameSite" | "path"> {
+function baseCookieOptions(nodeEnv: string, webOrigin?: string): Pick<CookieOptions, "httpOnly" | "secure" | "sameSite" | "path"> {
   return {
     httpOnly: true,
     secure: cookieSecureFlag(nodeEnv, webOrigin),
@@ -28,13 +25,7 @@ function baseCookieOptions(
   };
 }
 
-export function setAuthCookies(
-  res: Response,
-  tokens: AuthTokenPair,
-  refreshMaxAgeSeconds: number,
-  nodeEnv: string,
-  webOrigin?: string,
-) {
+export function setAuthCookies(res: Response, tokens: AuthTokenPair, refreshMaxAgeSeconds: number, nodeEnv: string, webOrigin?: string) {
   const base = baseCookieOptions(nodeEnv, webOrigin);
   res.cookie(AUTH_ACCESS_COOKIE, tokens.accessToken, { ...base, maxAge: tokens.expiresIn * 1000 });
   res.cookie(AUTH_REFRESH_COOKIE, tokens.refreshToken, { ...base, maxAge: refreshMaxAgeSeconds * 1000 });

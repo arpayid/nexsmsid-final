@@ -50,24 +50,12 @@ describe("auth-cookies", () => {
       },
     };
 
-    setAuthCookies(
-      res as never,
-      { accessToken: "a", refreshToken: "r", expiresIn: 900 },
-      3600,
-      "production",
-      "http://156.67.216.146",
-    );
+    setAuthCookies(res as never, { accessToken: "a", refreshToken: "r", expiresIn: 900 }, 3600, "production", "http://156.67.216.146");
 
     expect(res.cookies[0]?.options.secure).toBe(false);
 
     res.cookies = [];
-    setAuthCookies(
-      res as never,
-      { accessToken: "a", refreshToken: "r", expiresIn: 900 },
-      3600,
-      "production",
-      "https://nexsmsid.dev",
-    );
+    setAuthCookies(res as never, { accessToken: "a", refreshToken: "r", expiresIn: 900 }, 3600, "production", "https://nexsmsid.dev");
 
     expect(res.cookies[0]?.options.secure).toBe(true);
   });
