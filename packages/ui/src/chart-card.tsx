@@ -13,15 +13,15 @@ export type ChartCardProps = {
 
 export function ChartCard({ action, children, className, description, title }: ChartCardProps) {
   return (
-    <Card className={cn("overflow-hidden", className)}>
-      <CardHeader className="flex flex-row items-start justify-between gap-4">
+    <Card className={cn("overflow-hidden transition-shadow duration-200 hover:shadow-elevated", className)}>
+      <CardHeader className="flex flex-row items-start justify-between gap-4 border-b border-border/60 bg-muted/20 pb-4">
         <div>
           <CardTitle>{title}</CardTitle>
           {description ? <CardDescription>{description}</CardDescription> : null}
         </div>
         {action ? <div className="shrink-0">{action}</div> : null}
       </CardHeader>
-      <CardContent>{children}</CardContent>
+      <CardContent className="pt-5">{children}</CardContent>
     </Card>
   );
 }

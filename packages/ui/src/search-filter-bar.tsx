@@ -36,11 +36,17 @@ export function SearchFilterBar({
   submitLabel = "Cari",
 }: SearchFilterBarProps) {
   return (
-    <form className={cn("flex w-full flex-col gap-3 lg:w-auto lg:flex-row lg:items-center lg:justify-end", className)} onSubmit={onSubmit}>
+    <form
+      className={cn(
+        "flex w-full flex-col gap-3 rounded-xl border border-border/80 bg-card p-3 shadow-card ring-1 ring-black/[0.03] lg:w-auto lg:flex-row lg:items-center lg:justify-end lg:p-2",
+        className,
+      )}
+      onSubmit={onSubmit}
+    >
       <div className="relative w-full lg:max-w-sm">
-        <span className="pointer-events-none absolute left-4 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-primary/60" />
+        <span className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 border-primary/30 bg-primary/10" />
         <Input
-          className="pl-9"
+          className="border-transparent bg-muted/40 pl-10 shadow-none focus:bg-card"
           onChange={(event) => onSearchChange(event.target.value)}
           placeholder={searchPlaceholder}
           value={searchValue}
@@ -54,7 +60,7 @@ export function SearchFilterBar({
       {(filters ?? []).map((filter, index) => (
         <select
           aria-label={filter.label ?? filter.placeholder ?? "Filter data"}
-          className="h-10 rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+          className="h-10 rounded-lg border border-border/80 bg-muted/40 px-3 text-sm font-medium text-foreground outline-none transition focus:border-primary/50 focus:bg-card focus:ring-2 focus:ring-primary/15"
           key={`${filter.label ?? "filter"}-${index}-select`}
           onChange={(event) => filter.onChange(event.target.value)}
           value={filter.value}

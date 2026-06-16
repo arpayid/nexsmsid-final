@@ -12,7 +12,7 @@ export function Avatar({ alt, className, fallback, src, ...props }: AvatarProps)
   return (
     <div
       className={cn(
-        "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10 text-sm font-medium text-primary",
+        "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full border-2 border-card bg-gradient-to-br from-primary/20 to-primary/5 text-sm font-semibold text-primary shadow-sm ring-1 ring-primary/20",
         className,
       )}
       {...props}

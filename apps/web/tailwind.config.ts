@@ -50,22 +50,30 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
         xl: "calc(var(--radius) + 4px)",
         "2xl": "calc(var(--radius) + 8px)",
+        "3xl": "calc(var(--radius) + 12px)",
       },
       boxShadow: {
-        soft: "0 1px 3px hsl(222 47% 11% / 0.08), 0 4px 12px hsl(222 47% 11% / 0.04)",
-        card: "0 1px 2px hsl(222 47% 11% / 0.06), 0 2px 8px hsl(222 47% 11% / 0.04)",
-        elevated: "0 4px 6px hsl(222 47% 11% / 0.07), 0 12px 24px hsl(222 47% 11% / 0.08)",
+        soft: "0 1px 2px hsl(222 47% 11% / 0.04), 0 4px 16px hsl(222 47% 11% / 0.05)",
+        card: "0 0 0 1px hsl(var(--border) / 0.6), 0 1px 2px hsl(222 47% 11% / 0.04), 0 4px 12px hsl(222 47% 11% / 0.03)",
+        elevated: "0 0 0 1px hsl(var(--border) / 0.5), 0 8px 24px hsl(222 47% 11% / 0.08), 0 2px 6px hsl(222 47% 11% / 0.04)",
+        premium: "0 0 0 1px hsl(var(--border) / 0.5), 0 12px 40px hsl(222 47% 11% / 0.1), 0 4px 12px hsl(222 47% 11% / 0.05)",
+        glow: "0 0 0 1px hsl(var(--primary) / 0.15), 0 8px 32px hsl(var(--primary) / 0.12)",
       },
       fontFamily: {
         sans: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
       },
       animation: {
-        "fade-up": "fade-up 0.4s ease-out",
+        "fade-up": "fade-up 0.45s ease-out",
+        "fade-in": "fade-in 0.3s ease-out",
       },
       keyframes: {
         "fade-up": {
-          "0%": { opacity: "0", transform: "translateY(8px)" },
+          "0%": { opacity: "0", transform: "translateY(10px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "fade-in": {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
         },
       },
     },

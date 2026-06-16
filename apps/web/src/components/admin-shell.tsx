@@ -31,6 +31,7 @@ import {
   PlusCircle,
   PanelLeftOpen,
   School,
+  Search,
   Settings,
   UserCog,
   WalletCards,
@@ -49,7 +50,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { startTransition, type ReactNode, useEffect, useState } from "react";
 
 import type { AuthUser, NotificationRecord } from "@nexsmsid/api-client";
-import { Avatar, Badge, Button, cn } from "@nexsmsid/ui";
+import { Avatar, Button, cn, Input } from "@nexsmsid/ui";
 
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -248,14 +249,20 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
   const [authUser, setAuthUser] = useState<AuthUser | null>(() => getStoredUser());
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [notifications, setNotifications] = useState<NotificationRecord[]>([]);
+  const [navSearch, setNavSearch] = useState("");
 
-  const sidebarWidth = collapsed ? "lg:w-24" : "lg:w-72";
+  const sidebarWidth = collapsed ? "lg:w-[4.5rem]" : "lg:w-64";
   const labelVisibility = collapsed ? "lg:hidden" : "lg:block";
   const currentPage = getCurrentPageLabel(pathname);
   const visibleNavigationGroups = navigationGroups
     .map((group) => ({
       ...group,
-      items: group.items.filter((item) => !item.permission || authUser?.permissions.includes(item.permission)),
+      items: group.items.filter((item) => {
+        const matchesPermission = !item.permission || authUser?.permissions.includes(item.permission);
+        const query = navSearch.trim().toLowerCase();
+        const matchesSearch = !query || item.label.toLowerCase().includes(query) || group.label.toLowerCase().includes(query);
+        return matchesPermission && matchesSearch;
+      }),
     }))
     .filter((group) => group.items.length > 0);
 
@@ -367,8 +374,8 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
   if (checkingAuth) {
     return (
       <div className="grid min-h-screen place-items-center bg-background px-4 text-center">
-        <div>
-          <div className="mx-auto grid h-10 w-10 place-items-center rounded-lg bg-primary text-primary-foreground">
+        <div className="animate-fade-in">
+          <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-glow">
             <Loader2 className="h-5 w-5 animate-spin" />
           </div>
           <p className="mt-4 text-sm font-medium text-muted-foreground">Memeriksa sesi NexAdmin...</p>
@@ -378,7 +385,7 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-white text-foreground">
       {mobileOpen ? (
         <button
           aria-label="Tutup menu"
@@ -391,19 +398,19 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
       <div className="lg:flex">
         <aside
           className={cn(
-            "nexadmin-sidebar fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col border-r border-sidebar-border transition-all duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0",
-            mobileOpen && "translate-x-0 shadow-elevated",
+            "nexadmin-sidebar fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col border-r border-border bg-white transition-all duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0",
+            mobileOpen && "translate-x-0 shadow-premium",
             sidebarWidth,
           )}
         >
-          <div className="flex h-16 items-center justify-between gap-3 border-b border-sidebar-border px-4">
+          <div className="flex h-16 items-center justify-between gap-3 border-b border-border px-4">
             <Link className="flex min-w-0 items-center gap-3" href="/">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-sidebar-accent text-white">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground shadow-sm">
                 <GraduationCap className="h-4 w-4" />
               </span>
               <span className={cn("min-w-0", labelVisibility)}>
-                <span className="block truncate text-base font-semibold tracking-tight">NexAdmin</span>
-                <span className="block truncate text-xs text-sidebar-muted">NexSMSID Panel</span>
+                <span className="block truncate text-base font-semibold tracking-tight text-foreground">NexAdmin</span>
+                <span className="block truncate text-xs text-muted-foreground">Enterprise Panel</span>
               </span>
             </Link>
             <div className="flex items-center gap-1">
@@ -422,7 +429,19 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
             </div>
           </div>
 
-          <nav className="flex-1 space-y-3 overflow-y-auto px-3 py-4">
+          <div className={cn("border-b border-border px-3 py-3", collapsed && "lg:px-2")}>
+            <div className={cn("relative", collapsed && "lg:hidden")}>
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                className="h-9 border-border bg-muted/40 pl-9 shadow-none focus:bg-white"
+                onChange={(event) => setNavSearch(event.target.value)}
+                placeholder="Cari menu..."
+                value={navSearch}
+              />
+            </div>
+          </div>
+
+          <nav className="flex-1 space-y-2 overflow-y-auto px-3 py-3">
             {visibleNavigationGroups.map((group) => {
               const isOpen = openGroups.has(group.label);
 
@@ -430,7 +449,7 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
                 <div key={group.label}>
                   <button
                     className={cn(
-                      "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs font-semibold uppercase tracking-wide text-sidebar-muted transition hover:text-sidebar-foreground",
+                      "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground transition hover:bg-muted/60 hover:text-foreground",
                       labelVisibility,
                     )}
                     onClick={() => toggleGroup(group.label)}
@@ -455,7 +474,7 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
                         return (
                           <Link
                             className={cn(
-                              "flex items-center gap-3 rounded-lg border-l-2 border-transparent px-3 py-2 text-sm font-medium text-sidebar-muted transition hover:bg-white/5 hover:text-sidebar-foreground",
+                              "nav-item-pill flex items-center gap-3 text-sm font-medium text-muted-foreground transition hover:bg-muted/60 hover:text-foreground",
                               active && "nav-item-active",
                               collapsed && "lg:justify-center lg:px-2",
                             )}
@@ -475,15 +494,15 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
             })}
           </nav>
 
-          <div className="border-t border-sidebar-border p-3">
-            <div className={cn("rounded-lg border border-sidebar-border bg-card/5 p-3", collapsed && "lg:p-2")}>
+          <div className="border-t border-border p-3">
+            <div className={cn("rounded-xl border border-border bg-muted/30 p-3", collapsed && "lg:p-2")}>
               <div className="flex items-center gap-3">
-                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-sidebar-accent/20 text-sidebar-accent">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/15">
                   <Settings className="h-4 w-4" />
                 </span>
                 <div className={cn("min-w-0", labelVisibility)}>
-                  <p className="truncate text-sm font-medium">{authUser?.name ?? "Operator"}</p>
-                  <p className="truncate text-xs text-sidebar-muted">{authUser?.email ?? "NexAdmin"}</p>
+                  <p className="truncate text-sm font-medium text-foreground">{authUser?.name ?? "Operator"}</p>
+                  <p className="truncate text-xs text-muted-foreground">{authUser?.email ?? "NexAdmin"}</p>
                 </div>
               </div>
             </div>
@@ -491,12 +510,12 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
         </aside>
 
         <div className="min-w-0 flex-1">
-          <header className="sticky top-0 z-30 border-b border-border bg-card">
+          <header className="glass-header sticky top-0 z-30">
             <div className="flex min-h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
               <Button className="lg:hidden" onClick={() => setMobileOpen(true)} size="icon" variant="outline">
                 <Menu className="h-5 w-5" />
               </Button>
-              <div className="hidden items-center gap-2 text-sm text-muted-foreground sm:flex">
+              <div className="hidden items-center gap-2 text-sm text-muted-foreground lg:flex">
                 <Link className="font-medium hover:text-primary" href="/admin">
                   NexAdmin
                 </Link>
@@ -532,13 +551,8 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
             </div>
           </header>
 
-          <main className="bg-background px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-            <div className="mx-auto max-w-7xl">
-              <div className="mb-4 flex sm:hidden">
-                <Badge variant="secondary">NexAdmin / {currentPage}</Badge>
-              </div>
-              {children}
-            </div>
+          <main className="bg-white px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+            <div className="mx-auto max-w-7xl animate-fade-up">{children}</div>
           </main>
         </div>
       </div>

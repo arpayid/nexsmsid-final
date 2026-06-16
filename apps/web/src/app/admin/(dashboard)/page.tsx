@@ -33,7 +33,6 @@ import {
   ErrorState,
   LoadingState,
   ModuleCard,
-  PageHeader,
   SectionCard,
   SkeletonCard,
   StatCard,
@@ -132,7 +131,7 @@ const modules = [
     description: "Data peserta didik aktif dan relasi kelas.",
     href: "/admin/students",
     icon: UsersRound,
-    tone: "violet" as const,
+    tone: "teal" as const,
   },
   {
     title: "Guru",
@@ -225,23 +224,28 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        actions={
+      <div className="enterprise-hero">
+        <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <Badge className="mb-3" variant="soft">
+              Enterprise Dashboard
+            </Badge>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">Selamat datang di NexAdmin</h1>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+              Ringkasan operasional sekolah — akademik, keuangan, PPDB, SDM, dan aktivitas sistem dalam satu tampilan premium.
+            </p>
+          </div>
           <Button onClick={() => void refetch()} variant="outline">
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />} Refresh
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />} Refresh Data
           </Button>
-        }
-        breadcrumb={["Admin", "Dashboard"]}
-        description="Ringkasan operasional sekolah dari data akademik, keuangan, PPDB, SDM, dan aktivitas sistem."
-        eyebrow="Dashboard"
-        title="Dashboard Admin"
-      />
+        </div>
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           icon={<UsersRound className="h-5 w-5" />}
           title="Siswa Aktif"
-          tone="violet"
+          tone="teal"
           value={formatNumber(data.overview.people.studentsActive)}
         />
         <StatCard
@@ -251,6 +255,22 @@ export default function AdminDashboardPage() {
           value={formatNumber(data.overview.people.teachersActive)}
         />
         <StatCard
+          description={`${formatNumber(data.overview.finance.outstandingInvoices)} invoice`}
+          icon={<WalletCards className="h-5 w-5" />}
+          title="Tagihan Belum Lunas"
+          tone="amber"
+          value={formatCurrency(data.overview.finance.outstandingAmount)}
+        />
+        <StatCard
+          icon={<CalendarCheck className="h-5 w-5" />}
+          title="Absensi Minggu Ini"
+          tone="emerald"
+          value={formatNumber(data.overview.academic.attendanceSessionsThisWeek)}
+        />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard
           icon={<UsersRound className="h-5 w-5" />}
           title="Staff"
           tone="emerald"
@@ -259,27 +279,14 @@ export default function AdminDashboardPage() {
         <StatCard
           icon={<Building2 className="h-5 w-5" />}
           title="Kelas"
-          tone="amber"
+          tone="teal"
           value={formatNumber(data.overview.academic.classrooms)}
-        />
-        <StatCard
-          description={`${formatNumber(data.overview.finance.outstandingInvoices)} invoice`}
-          icon={<WalletCards className="h-5 w-5" />}
-          title="Tagihan Belum Lunas"
-          tone="amber"
-          value={formatCurrency(data.overview.finance.outstandingAmount)}
         />
         <StatCard
           icon={<Building2 className="h-5 w-5" />}
           title="PPDB Aktif"
           tone="violet"
           value={formatNumber(data.overview.ppdb.activeRegistrations)}
-        />
-        <StatCard
-          icon={<CalendarCheck className="h-5 w-5" />}
-          title="Absensi Minggu Ini"
-          tone="emerald"
-          value={formatNumber(data.overview.academic.attendanceSessionsThisWeek)}
         />
         <StatCard
           icon={<BriefcaseBusiness className="h-5 w-5" />}
@@ -408,7 +415,7 @@ function QuickAlertsCard({ alerts }: { alerts: QuickAlerts }) {
     <SectionCard description="Alert operasional yang perlu dipantau." title="Quick Alerts">
       <div className="space-y-3">
         {rows.map((row) => (
-          <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-3" key={row.id}>
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-border/80 bg-muted/20 p-3" key={row.id}>
             <div className="flex items-center gap-3">
               <AlertCircle className="h-4 w-4 text-amber-500" />
               <div>
@@ -420,7 +427,7 @@ function QuickAlertsCard({ alerts }: { alerts: QuickAlerts }) {
           </div>
         ))}
         {alerts.ppdbActive ? (
-          <div className="rounded-lg border border-primary/20 bg-primary/10 p-3 text-sm text-primary">
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm text-primary ring-1 ring-primary/10">
             PPDB aktif: <span className="font-bold">{alerts.ppdbActive.name}</span>, berakhir{" "}
             {new Date(alerts.ppdbActive.endDate).toLocaleDateString("id-ID")}.
           </div>
@@ -466,7 +473,7 @@ function SystemStatusCard({ status, unread }: { status: SystemStatus; unread: nu
         {rows.map((row) => {
           const Icon = row.icon;
           return (
-            <li className="flex items-center justify-between rounded-lg border border-border p-3" key={row.label}>
+            <li className="flex items-center justify-between rounded-xl border border-border/80 bg-muted/20 p-3" key={row.label}>
               <div className="flex items-center gap-3">
                 <Icon className="h-4 w-4 text-primary" />
                 <div>

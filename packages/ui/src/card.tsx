@@ -3,12 +3,19 @@ import { forwardRef, type HTMLAttributes } from "react";
 import { cn } from "./utils";
 
 export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
-  <div className={cn("rounded-xl border border-border bg-card text-card-foreground shadow-card", className)} ref={ref} {...props} />
+  <div
+    className={cn(
+      "rounded-xl border border-border/80 bg-card text-card-foreground shadow-card ring-1 ring-black/[0.03] dark:ring-white/[0.04]",
+      className,
+    )}
+    ref={ref}
+    {...props}
+  />
 ));
 Card.displayName = "Card";
 
 export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
-  <div className={cn("space-y-1.5 p-5", className)} ref={ref} {...props} />
+  <div className={cn("space-y-1.5 p-5 pb-4", className)} ref={ref} {...props} />
 ));
 CardHeader.displayName = "CardHeader";
 
