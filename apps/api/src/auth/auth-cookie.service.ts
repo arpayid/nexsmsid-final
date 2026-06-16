@@ -10,12 +10,15 @@ export class AuthCookieService {
 
   attachAuthCookies(res: Response, tokens: AuthTokenPair) {
     const nodeEnv = this.configService.getOrThrow<string>("NODE_ENV");
+    const webOrigin = this.configService.getOrThrow<string>("WEB_ORIGIN");
     const refreshTtl = this.parseExpiresIn(this.configService.getOrThrow<string>("JWT_REFRESH_EXPIRES_IN"));
-    setAuthCookies(res, tokens, refreshTtl, nodeEnv);
+    setAuthCookies(res, tokens, refreshTtl, nodeEnv, webOrigin);
   }
 
   clearAuthCookies(res: Response) {
-    clearAuthCookies(res, this.configService.getOrThrow<string>("NODE_ENV"));
+    const nodeEnv = this.configService.getOrThrow<string>("NODE_ENV");
+    const webOrigin = this.configService.getOrThrow<string>("WEB_ORIGIN");
+    clearAuthCookies(res, nodeEnv, webOrigin);
   }
 
   sanitizeAuthResponse<T extends AuthTokenPair & { user: unknown; tokenType?: string }>(payload: T) {

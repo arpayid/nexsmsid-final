@@ -9,23 +9,30 @@ export type AuthTokenPair = {
   expiresIn: number;
 };
 
-function baseCookieOptions(nodeEnv: string): Pick<CookieOptions, "httpOnly" | "secure" | "sameSite" | "path"> {
+function cookieSecureFlag(nodeEnv: string, webOrigin?: string): boolean {
+  if (webOrigin) {
+    return webOrigin.startsWith("https://");
+  }
+  return nodeEnv === "production";
+}
+
+function baseCookieOptions(nodeEnv: string, webOrigin?: string): Pick<CookieOptions, "httpOnly" | "secure" | "sameSite" | "path"> {
   return {
     httpOnly: true,
-    secure: nodeEnv === "production",
+    secure: cookieSecureFlag(nodeEnv, webOrigin),
     sameSite: "lax",
     path: "/",
   };
 }
 
-export function setAuthCookies(res: Response, tokens: AuthTokenPair, refreshMaxAgeSeconds: number, nodeEnv: string) {
-  const base = baseCookieOptions(nodeEnv);
+export function setAuthCookies(res: Response, tokens: AuthTokenPair, refreshMaxAgeSeconds: number, nodeEnv: string, webOrigin?: string) {
+  const base = baseCookieOptions(nodeEnv, webOrigin);
   res.cookie(AUTH_ACCESS_COOKIE, tokens.accessToken, { ...base, maxAge: tokens.expiresIn * 1000 });
   res.cookie(AUTH_REFRESH_COOKIE, tokens.refreshToken, { ...base, maxAge: refreshMaxAgeSeconds * 1000 });
 }
 
-export function clearAuthCookies(res: Response, nodeEnv: string) {
-  const base = baseCookieOptions(nodeEnv);
+export function clearAuthCookies(res: Response, nodeEnv: string, webOrigin?: string) {
+  const base = baseCookieOptions(nodeEnv, webOrigin);
   res.clearCookie(AUTH_ACCESS_COOKIE, base);
   res.clearCookie(AUTH_REFRESH_COOKIE, base);
 }
