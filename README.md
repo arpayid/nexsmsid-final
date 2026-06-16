@@ -10,7 +10,7 @@ Enterprise School Management System — modular monolith, production-ready.
 | Package Manager | pnpm@10.18.3                                       |
 | Node            | >= 20.11.0 (CI: Node.js 24)                        |
 | Repo            | [github.com/arpayid/nexsmsid-v4](https://github.com/arpayid/nexsmsid-v4) |
-| Status          | Fase 4 — Production pilot (stack Docker + nginx)   |
+| Status          | Fase 4 — Production pilot ✅ stack Docker + nginx; HTTPS domain opsional |
 
 ## Tech Stack
 
