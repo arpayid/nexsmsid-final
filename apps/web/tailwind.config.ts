@@ -43,6 +43,14 @@ const config: Config = {
           DEFAULT: "hsl(var(--destructive) / <alpha-value>)",
           foreground: "hsl(var(--destructive-foreground) / <alpha-value>)",
         },
+        brand: {
+          emerald: "hsl(var(--brand-emerald) / <alpha-value>)",
+          teal: "hsl(var(--brand-teal) / <alpha-value>)",
+          indigo: "hsl(var(--brand-indigo) / <alpha-value>)",
+          amber: "hsl(var(--brand-amber) / <alpha-value>)",
+          coral: "hsl(var(--brand-coral) / <alpha-value>)",
+          slate: "hsl(var(--brand-slate) / <alpha-value>)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
