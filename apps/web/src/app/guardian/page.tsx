@@ -2,11 +2,12 @@
 
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { Bell, CalendarDays, ClipboardCheck, GraduationCap, Megaphone, RefreshCcw, UserRound, Users, Wallet } from "lucide-react";
+import { Bell, CalendarDays, ClipboardCheck, GraduationCap, Megaphone, UserRound, Users, Wallet } from "lucide-react";
 
-import { Badge, Button, EmptyState, ErrorState, LoadingState, PageHeader, SectionCard, StatCard } from "@nexsmsid/ui";
+import { Badge, Button, EmptyState, ErrorState, LoadingState, SectionCard, StatCard } from "@nexsmsid/ui";
 
 import { ChildSelector } from "@/components/child-selector";
+import { PortalDashboardHero } from "@/components/portal/portal-dashboard-hero";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
 
@@ -70,15 +71,10 @@ export default function GuardianDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        actions={
-          <Button onClick={() => void refetch()} variant="outline">
-            <RefreshCcw className="h-4 w-4" /> Refresh
-          </Button>
-        }
-        breadcrumb={["Portal Wali", "Dashboard"]}
+      <PortalDashboardHero
         description={`Halo ${dashboard.guardian.name}. Pantau data anak yang terhubung dengan akun wali Anda.`}
         eyebrow="Portal Wali"
+        onRefresh={() => void refetch()}
         title="Dashboard Wali"
       />
 
@@ -169,7 +165,7 @@ export default function GuardianDashboardPage() {
               ) : (
                 <ul className="space-y-3">
                   {child.todaySchedules.map((item) => (
-                    <li className="rounded-lg border border-border p-4" key={item.id}>
+                    <li className="dashboard-insight-row" key={item.id}>
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                           <p className="text-sm font-bold text-foreground">{item.teachingAssignment?.subject?.name ?? "Mata pelajaran"}</p>
@@ -210,7 +206,7 @@ export default function GuardianDashboardPage() {
 
 function ChildInfo({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-border p-4">
+    <div className="dashboard-mini-metric">
       <p className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
         {icon} {label}
       </p>
@@ -231,7 +227,7 @@ function InfoList({
   return (
     <ul className="space-y-2">
       {items.slice(0, 3).map((item) => (
-        <li className="rounded-lg border border-border p-3" key={item.id}>
+        <li className="dashboard-insight-row p-3" key={item.id}>
           <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <Icon className="h-4 w-4 text-primary" /> {item.title}
           </p>

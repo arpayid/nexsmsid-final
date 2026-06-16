@@ -2,10 +2,11 @@
 
 import { useCallback, useMemo } from "react";
 import Link from "next/link";
-import { Bell, BookOpenCheck, CalendarDays, ClipboardCheck, GraduationCap, Megaphone, RefreshCcw, Users } from "lucide-react";
+import { Bell, BookOpenCheck, CalendarDays, ClipboardCheck, GraduationCap, Megaphone, Users } from "lucide-react";
 
-import { Badge, Button, EmptyState, ErrorState, LoadingState, PageHeader, SectionCard, StatCard } from "@nexsmsid/ui";
+import { Badge, Button, EmptyState, ErrorState, LoadingState, SectionCard, StatCard } from "@nexsmsid/ui";
 
+import { PortalDashboardHero } from "@/components/portal/portal-dashboard-hero";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
 
@@ -75,15 +76,10 @@ export default function TeacherDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        actions={
-          <Button onClick={() => void refetch()} variant="outline">
-            <RefreshCcw className="h-4 w-4" /> Refresh
-          </Button>
-        }
-        breadcrumb={["Portal Guru", "Dashboard"]}
+      <PortalDashboardHero
         description={`Selamat datang, ${dashboard.teacher.name}. Dashboard ini hanya menampilkan data mengajar Anda.`}
         eyebrow="Portal Guru"
+        onRefresh={() => void refetch()}
         title="Dashboard Guru"
       />
 
@@ -131,7 +127,7 @@ export default function TeacherDashboardPage() {
           ) : (
             <ul className="space-y-3">
               {dashboard.todaySchedules.map((item) => (
-                <li className="rounded-lg border border-border p-4" key={item.id}>
+                <li className="dashboard-insight-row" key={item.id}>
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="text-sm font-bold text-foreground">{item.teachingAssignment?.subject?.name ?? "Mata pelajaran"}</p>
@@ -225,7 +221,7 @@ function InfoList({
   return (
     <ul className="space-y-2">
       {items.slice(0, 3).map((item) => (
-        <li className="rounded-lg border border-border p-3" key={item.id}>
+        <li className="dashboard-insight-row p-3" key={item.id}>
           <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <Icon className="h-4 w-4 text-primary" /> {item.title}
           </p>

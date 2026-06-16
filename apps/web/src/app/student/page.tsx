@@ -2,10 +2,11 @@
 
 import { useCallback, useMemo } from "react";
 import Link from "next/link";
-import { Bell, CalendarDays, ClipboardCheck, GraduationCap, Megaphone, RefreshCcw, School, Wallet } from "lucide-react";
+import { Bell, CalendarDays, ClipboardCheck, GraduationCap, Megaphone, School, Wallet } from "lucide-react";
 
-import { Badge, Button, EmptyState, ErrorState, LoadingState, PageHeader, SectionCard, StatCard } from "@nexsmsid/ui";
+import { Badge, Button, EmptyState, ErrorState, LoadingState, SectionCard, StatCard } from "@nexsmsid/ui";
 
+import { PortalDashboardHero } from "@/components/portal/portal-dashboard-hero";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
 
@@ -67,15 +68,10 @@ export default function StudentDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        actions={
-          <Button onClick={() => void refetch()} variant="outline">
-            <RefreshCcw className="h-4 w-4" /> Refresh
-          </Button>
-        }
-        breadcrumb={["Portal Siswa", "Dashboard"]}
+      <PortalDashboardHero
         description={`Halo ${dashboard.student.name}. Pantau jadwal, kehadiran, nilai, dan tagihan Anda di sini.`}
         eyebrow="Portal Siswa"
+        onRefresh={() => void refetch()}
         title="Dashboard Siswa"
       />
 
@@ -145,7 +141,7 @@ export default function StudentDashboardPage() {
           ) : (
             <ul className="space-y-3">
               {dashboard.todaySchedules.map((item) => (
-                <li className="rounded-lg border border-border p-4" key={item.id}>
+                <li className="dashboard-insight-row" key={item.id}>
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="flex items-center gap-2 text-sm font-bold text-foreground">
@@ -203,7 +199,7 @@ function InfoList({
   return (
     <ul className="space-y-2">
       {items.slice(0, 3).map((item) => (
-        <li className="rounded-lg border border-border p-3" key={item.id}>
+        <li className="dashboard-insight-row p-3" key={item.id}>
           <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <Icon className="h-4 w-4 text-primary" /> {item.title}
           </p>
