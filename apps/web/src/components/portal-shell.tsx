@@ -28,6 +28,8 @@ import { startTransition, type ReactNode, useCallback, useEffect, useState } fro
 import type { AuthUser } from "@nexsmsid/api-client";
 import { Avatar, Badge, Button, cn } from "@nexsmsid/ui";
 
+import { LocaleSwitcher } from "@/components/locale-switcher";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
 import { clearAuthSession, getStoredUser, storeAuthSession, storeUser } from "@/lib/auth-storage";
@@ -86,11 +88,11 @@ const portalNavigation: Record<PortalKind, { title: string; items: NavItem[] }> 
 };
 
 const portalAccent: Record<PortalKind, string> = {
-  teacher: "from-primary to-emerald-600",
-  student: "from-sky-500 to-primary",
-  guardian: "from-primary/90 to-sky-600",
-  admin: "from-muted-foreground to-foreground",
-  unassigned: "from-muted-foreground to-foreground",
+  teacher: "from-emerald-600 to-teal-500",
+  student: "from-emerald-600 to-teal-500",
+  guardian: "from-emerald-600 to-teal-500",
+  admin: "from-emerald-600 to-teal-500",
+  unassigned: "from-slate-500 to-slate-600",
 };
 
 export type PortalShellProps = {
@@ -202,9 +204,15 @@ export function PortalShell({ children, expectedPortal }: PortalShellProps) {
 
   const config = portalNavigation[expectedPortal];
   const items = config.items;
+  const mobileQuickItems = items.slice(0, 4);
+  const homePath = portalHomePath(expectedPortal);
+
+  function isNavActive(href: string) {
+    return pathname === href || (href !== homePath && pathname?.startsWith(href));
+  }
 
   return (
-    <div className="min-h-screen bg-white text-foreground">
+    <div className="min-h-screen bg-background text-foreground">
       <header className="glass-header sticky top-0 z-30">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
@@ -213,7 +221,7 @@ export function PortalShell({ children, expectedPortal }: PortalShellProps) {
             </Button>
             <div
               className={cn(
-                "flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br text-white shadow-sm",
+                "flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-sm",
                 portalAccent[expectedPortal],
               )}
             >
@@ -224,7 +232,7 @@ export function PortalShell({ children, expectedPortal }: PortalShellProps) {
               <p className="text-sm font-semibold leading-tight text-foreground">{config.title}</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {canViewNotifications ? (
               <Button asChild className="relative" size="icon" variant="outline">
                 <Link href={notificationPath}>
@@ -237,6 +245,8 @@ export function PortalShell({ children, expectedPortal }: PortalShellProps) {
                 </Link>
               </Button>
             ) : null}
+            <LocaleSwitcher />
+            <ThemeToggle />
             <div className="hidden text-right sm:block">
               <p className="text-sm font-semibold leading-tight text-foreground">{user.name}</p>
               <p className="text-xs text-muted-foreground">{user.roles.join(", ") || "Tanpa role"}</p>
@@ -258,21 +268,16 @@ export function PortalShell({ children, expectedPortal }: PortalShellProps) {
             </Button>
             <nav className="space-y-1">
               {items.map((item) => {
-                const active = pathname === item.href || (item.href !== portalHomePath(expectedPortal) && pathname?.startsWith(item.href));
+                const active = isNavActive(item.href);
                 const Icon = item.icon;
                 const notificationItem = item.href === notificationPath;
                 return (
                   <Link
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                      active
-                        ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/15"
-                        : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
-                    )}
+                    className={cn("nav-item-primary", active && "nav-item-active", collapsed && "justify-center px-2")}
                     href={item.href}
                     key={item.href}
                   >
-                    <Icon className="h-4 w-4" />
+                    <Icon className={cn("h-4 w-4", active && "text-white")} />
                     {!collapsed ? <span>{item.label}</span> : null}
                     {notificationItem && unreadNotifications > 0 ? (
                       <span className="ml-auto rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-semibold text-white">
@@ -300,7 +305,7 @@ export function PortalShell({ children, expectedPortal }: PortalShellProps) {
         {mobileOpen ? (
           <div className="fixed inset-0 z-40 lg:hidden">
             <div className="absolute inset-0 bg-foreground/30" onClick={() => setMobileOpen(false)} />
-            <aside className="absolute left-0 top-0 h-full w-72 border-r border-border bg-white p-4 shadow-premium">
+            <aside className="absolute left-0 top-0 h-full w-72 border-r border-border bg-card p-4 shadow-premium">
               <div className="mb-4 flex items-center justify-between">
                 <p className="text-sm font-semibold text-foreground">{config.title}</p>
                 <Button onClick={() => setMobileOpen(false)} size="icon" variant="ghost">
@@ -309,21 +314,17 @@ export function PortalShell({ children, expectedPortal }: PortalShellProps) {
               </div>
               <nav className="space-y-1">
                 {items.map((item) => {
-                  const active =
-                    pathname === item.href || (item.href !== portalHomePath(expectedPortal) && pathname?.startsWith(item.href));
+                  const active = isNavActive(item.href);
                   const Icon = item.icon;
                   const notificationItem = item.href === notificationPath;
                   return (
                     <Link
-                      className={cn(
-                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                        active ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/15" : "text-muted-foreground hover:bg-muted/80",
-                      )}
+                      className={cn("nav-item-primary", active && "nav-item-active")}
                       href={item.href}
                       key={item.href}
                       onClick={() => setMobileOpen(false)}
                     >
-                      <Icon className="h-4 w-4" />
+                      <Icon className={cn("h-4 w-4", active && "text-white")} />
                       <span>{item.label}</span>
                       {notificationItem && unreadNotifications > 0 ? (
                         <span className="ml-auto rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-semibold text-white">
@@ -338,10 +339,36 @@ export function PortalShell({ children, expectedPortal }: PortalShellProps) {
           </div>
         ) : null}
 
-        <main className="min-w-0 flex-1 space-y-6">{children}</main>
+        <main className="min-w-0 flex-1 space-y-6 pb-24 lg:pb-6">{children}</main>
       </div>
 
-      <footer className="mx-auto max-w-7xl px-4 pb-8 pt-2 text-center text-xs text-muted-foreground sm:px-6">
+      {items.length > 0 ? (
+        <nav aria-label="Navigasi mobile portal" className="nexadmin-mobile-nav">
+          <div className="mx-auto flex max-w-lg items-stretch justify-around px-2 pb-[env(safe-area-inset-bottom)]">
+            {mobileQuickItems.map((item) => {
+              const active = isNavActive(item.href);
+              const Icon = item.icon;
+
+              return (
+                <Link
+                  className={cn("nexadmin-mobile-nav-item", active && "nexadmin-mobile-nav-item-active")}
+                  href={item.href}
+                  key={item.href}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span>{item.label.split(" ")[0]}</span>
+                </Link>
+              );
+            })}
+            <button className="nexadmin-mobile-nav-item" onClick={() => setMobileOpen(true)} type="button">
+              <Menu className="h-5 w-5" />
+              <span>Lainnya</span>
+            </button>
+          </div>
+        </nav>
+      ) : null}
+
+      <footer className="mx-auto max-w-7xl px-4 pb-8 pt-2 text-center text-xs text-muted-foreground sm:px-6 lg:pb-8">
         NexAdmin Portal — Hak akses otomatis disesuaikan dengan peran {user.roles.join(", ") || "pengguna"}.
       </footer>
     </div>
