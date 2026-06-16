@@ -76,6 +76,21 @@
     scroll-behavior: smooth;
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
   body {
     @apply min-h-screen bg-background font-sans text-foreground antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
@@ -108,7 +123,7 @@
   }
 
   .nav-item-primary {
-    @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-muted/60 hover:text-foreground dark:text-muted-foreground;
+    @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-muted/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:text-muted-foreground;
   }
 
   .nav-item-pill {
@@ -120,7 +135,7 @@
   }
 
   .nexadmin-mobile-nav-item {
-    @apply flex flex-1 flex-col items-center gap-1 px-1 py-2 text-[10px] font-medium text-slate-500 transition dark:text-muted-foreground;
+    @apply flex flex-1 flex-col items-center gap-1 rounded-lg px-1 py-2 text-[10px] font-medium text-slate-500 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:text-muted-foreground;
   }
 
   .nexadmin-mobile-nav-item-active {
@@ -144,11 +159,11 @@
   }
 
   .dashboard-alert-card-warning {
-    @apply border-amber-200/80 bg-amber-50/40 hover:border-amber-300/80 dark:bg-amber-950/20;
+    @apply border-amber-200/80 bg-amber-50/40 hover:border-amber-300/80 dark:border-amber-900/50 dark:bg-amber-950/25 dark:hover:border-amber-800/70;
   }
 
   .dashboard-alert-card-ok {
-    @apply border-border/70 hover:border-emerald-200/80;
+    @apply border-border/70 hover:border-emerald-200/80 dark:hover:border-emerald-800/50;
   }
 
   .dashboard-mini-metric {
@@ -156,7 +171,11 @@
   }
 
   .ui-focus-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  .skip-to-content {
+    @apply sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-xl focus:border focus:border-border focus:bg-card focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-foreground focus:shadow-premium focus:outline-none focus:ring-2 focus:ring-ring;
   }
 }
 
@@ -173,7 +192,7 @@
   }
 
   .surface-panel {
-    @apply border border-border/80 bg-card shadow-card ring-1 ring-black/[0.03];
+    @apply border border-border/80 bg-card shadow-card ring-1 ring-black/[0.03] dark:ring-white/[0.04];
   }
 
   .text-gradient-brand {
@@ -185,5 +204,12 @@
       0 0 0 1px hsl(var(--border) / 0.5),
       0 1px 2px hsl(222 47% 11% / 0.04),
       0 8px 24px hsl(222 47% 11% / 0.06);
+  }
+
+  .dark .shadow-premium {
+    box-shadow:
+      0 0 0 1px hsl(var(--border) / 0.65),
+      0 1px 2px hsl(222 47% 4% / 0.35),
+      0 8px 24px hsl(222 47% 4% / 0.45);
   }
 }

@@ -29,6 +29,7 @@ import type { AuthUser } from "@nexsmsid/api-client";
 import { Avatar, Badge, Button, cn } from "@nexsmsid/ui";
 
 import { LocaleSwitcher } from "@/components/locale-switcher";
+import { SkipToContent } from "@/components/skip-to-content";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
@@ -213,6 +214,7 @@ export function PortalShell({ children, expectedPortal }: PortalShellProps) {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <SkipToContent />
       <header className="glass-header sticky top-0 z-30">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
@@ -339,7 +341,9 @@ export function PortalShell({ children, expectedPortal }: PortalShellProps) {
           </div>
         ) : null}
 
-        <main className="min-w-0 flex-1 space-y-6 pb-24 lg:pb-6">{children}</main>
+        <main className="min-w-0 flex-1 space-y-6 pb-24 lg:pb-6" id="main-content" tabIndex={-1}>
+          {children}
+        </main>
       </div>
 
       {items.length > 0 ? (
