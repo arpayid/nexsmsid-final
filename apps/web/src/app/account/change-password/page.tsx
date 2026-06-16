@@ -70,12 +70,12 @@ export default function ChangePasswordPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md shadow-premium">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-lg bg-primary/10 text-primary">
+          <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-xl bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200/80">
             <KeyRound className="h-6 w-6" />
           </div>
-          <CardTitle className="text-2xl font-semibold">Ganti Password</CardTitle>
+          <CardTitle className="text-2xl font-bold">Ganti Password</CardTitle>
           <p className="mt-2 text-sm text-muted-foreground">
             {forced
               ? "Anda diwajibkan mengganti password untuk alasan keamanan sebelum melanjutkan."
