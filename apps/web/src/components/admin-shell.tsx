@@ -52,6 +52,7 @@ import type { AuthUser, NotificationRecord } from "@nexsmsid/api-client";
 import { Avatar, Button, cn, Input } from "@nexsmsid/ui";
 
 import { LocaleSwitcher } from "@/components/locale-switcher";
+import { SkipToContent } from "@/components/skip-to-content";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { createBrowserApiClient } from "@/lib/api-client";
 import { clearAuthSession, getStoredUser, storeAuthSession, storeUser } from "@/lib/auth-storage";
@@ -451,7 +452,8 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
   }
 
   return (
-    <div className="min-h-screen bg-white text-foreground">
+    <div className="min-h-screen bg-background text-foreground">
+      <SkipToContent />
       {mobileOpen ? (
         <button
           aria-label="Tutup menu"
@@ -464,7 +466,7 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
       <div className="lg:flex">
         <aside
           className={cn(
-            "nexadmin-sidebar fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col border-r border-border bg-white transition-all duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0",
+            "nexadmin-sidebar fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col border-r border-border bg-sidebar transition-all duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0",
             mobileOpen && "translate-x-0 shadow-premium",
             sidebarWidth,
           )}
@@ -638,7 +640,7 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
             </div>
           </header>
 
-          <main className="bg-background px-4 py-6 pb-24 sm:px-6 lg:px-8 lg:py-8 lg:pb-8">
+          <main className="bg-background px-4 py-6 pb-24 sm:px-6 lg:px-8 lg:py-8 lg:pb-8" id="main-content" tabIndex={-1}>
             <div className="mx-auto max-w-7xl animate-fade-up">{children}</div>
           </main>
         </div>
