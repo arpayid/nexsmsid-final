@@ -135,6 +135,22 @@
     @apply flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-card p-3.5 transition-colors hover:border-primary/20 hover:bg-muted/20;
   }
 
+  .dashboard-hero-banner {
+    background: linear-gradient(135deg, #14b8a6 0%, #10b981 42%, #059669 100%);
+  }
+
+  .dashboard-alert-card {
+    @apply flex items-center gap-3 rounded-xl border bg-card p-4 transition-all hover:shadow-soft;
+  }
+
+  .dashboard-alert-card-warning {
+    @apply border-amber-200/80 bg-amber-50/40 hover:border-amber-300/80 dark:bg-amber-950/20;
+  }
+
+  .dashboard-alert-card-ok {
+    @apply border-border/70 hover:border-emerald-200/80;
+  }
+
   .dashboard-mini-metric {
     @apply flex items-center gap-3 rounded-xl border border-border/70 bg-muted/10 p-3.5;
   }
