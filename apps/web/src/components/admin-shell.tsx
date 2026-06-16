@@ -14,7 +14,6 @@ import {
   Building2,
   CalendarDays,
   ChevronDown,
-  ChevronRight,
   ClipboardCheck,
   ClipboardList,
   FileText,
@@ -239,7 +238,74 @@ const navigationGroups: NavigationGroup[] = [
   },
 ];
 
-const navigation = navigationGroups.flatMap((group) => group.items);
+type PrimaryNavItem = {
+  href: string;
+  icon: LucideIcon;
+  isActive: (pathname: string) => boolean;
+  label: string;
+  permission?: string;
+};
+
+const primaryNavigation: PrimaryNavItem[] = [
+  {
+    href: "/admin",
+    icon: LayoutDashboard,
+    isActive: (pathname) => pathname === "/admin",
+    label: "Dashboard",
+    permission: "dashboard.view",
+  },
+  {
+    href: "/admin/academic/teaching-assignments",
+    icon: BookOpenCheck,
+    isActive: (pathname) => pathname.startsWith("/admin/academic/") && !pathname.startsWith("/admin/academic/attendance"),
+    label: "Akademik",
+    permission: "teaching-assignments.view",
+  },
+  {
+    href: "/admin/finance",
+    icon: Landmark,
+    isActive: (pathname) => pathname.startsWith("/admin/finance"),
+    label: "Keuangan",
+    permission: "finance.view",
+  },
+  {
+    href: "/admin/ppdb",
+    icon: Building2,
+    isActive: (pathname) => pathname.startsWith("/admin/ppdb"),
+    label: "PPDB",
+    permission: "ppdb.view",
+  },
+  {
+    href: "/admin/academic/attendance",
+    icon: ClipboardCheck,
+    isActive: (pathname) => pathname.startsWith("/admin/academic/attendance"),
+    label: "Presensi",
+    permission: "attendance.view",
+  },
+  {
+    href: "/admin/reports",
+    icon: BarChart3,
+    isActive: (pathname) => pathname.startsWith("/admin/reports"),
+    label: "Laporan",
+    permission: "reports.view",
+  },
+  {
+    href: "/admin/communication/notifications",
+    icon: Bell,
+    isActive: (pathname) => pathname.startsWith("/admin/communication/"),
+    label: "Pengingat",
+    permission: "notifications.view",
+  },
+  {
+    href: "/account/security",
+    icon: Settings,
+    isActive: (pathname) => pathname.startsWith("/account/"),
+    label: "Pengaturan",
+    permission: "auth.change-password",
+  },
+];
+
+const mobileQuickNavigation = primaryNavigation.filter((item) => ["Dashboard", "Akademik", "Keuangan", "PPDB"].includes(item.label));
 
 export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
   const pathname = usePathname();
@@ -253,7 +319,7 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
 
   const sidebarWidth = collapsed ? "lg:w-[4.5rem]" : "lg:w-64";
   const labelVisibility = collapsed ? "lg:hidden" : "lg:block";
-  const currentPage = getCurrentPageLabel(pathname);
+  const visiblePrimaryNavigation = primaryNavigation.filter((item) => !item.permission || authUser?.permissions.includes(item.permission));
   const visibleNavigationGroups = navigationGroups
     .map((group) => ({
       ...group,
@@ -404,9 +470,9 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
           )}
         >
           <div className="flex h-16 items-center justify-between gap-3 border-b border-border px-4">
-            <Link className="flex min-w-0 items-center gap-3" href="/">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-                <GraduationCap className="h-4 w-4" />
+            <Link className="flex min-w-0 items-center gap-3" href="/admin">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-emerald-600 text-white shadow-sm">
+                <BookOpen className="h-4 w-4" />
               </span>
               <span className={cn("min-w-0", labelVisibility)}>
                 <span className="block truncate text-base font-semibold tracking-tight text-foreground">NexAdmin</span>
@@ -429,19 +495,31 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
             </div>
           </div>
 
-          <div className={cn("border-b border-border px-3 py-3", collapsed && "lg:px-2")}>
-            <div className={cn("relative", collapsed && "lg:hidden")}>
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                className="h-9 border-border bg-muted/40 pl-9 shadow-none focus:bg-white"
-                onChange={(event) => setNavSearch(event.target.value)}
-                placeholder="Cari menu..."
-                value={navSearch}
-              />
-            </div>
-          </div>
+          <nav className="flex-1 space-y-4 overflow-y-auto px-3 py-4">
+            <div className="space-y-1">
+              {visiblePrimaryNavigation.map((item) => {
+                const active = item.isActive(pathname);
+                const Icon = item.icon;
 
-          <nav className="flex-1 space-y-2 overflow-y-auto px-3 py-3">
+                return (
+                  <Link
+                    className={cn("nav-item-primary", active && "nav-item-active", collapsed && "lg:justify-center lg:px-2")}
+                    href={item.href}
+                    key={item.label}
+                    onClick={() => setMobileOpen(false)}
+                    title={item.label}
+                  >
+                    <Icon className={cn("h-4 w-4 shrink-0", active && "text-white")} />
+                    <span className={cn("truncate", labelVisibility)}>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div className={cn(labelVisibility)}>
+              <p className="px-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Menu lengkap</p>
+            </div>
+
             {visibleNavigationGroups.map((group) => {
               const isOpen = openGroups.has(group.label);
 
@@ -475,7 +553,7 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
                           <Link
                             className={cn(
                               "nav-item-pill flex items-center gap-3 text-sm font-medium text-muted-foreground transition hover:bg-muted/60 hover:text-foreground",
-                              active && "nav-item-active",
+                              active && "nav-item-secondary-active",
                               collapsed && "lg:justify-center lg:px-2",
                             )}
                             href={item.href}
@@ -495,69 +573,113 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
           </nav>
 
           <div className="border-t border-border p-3">
-            <div className={cn("rounded-xl border border-border bg-muted/30 p-3", collapsed && "lg:p-2")}>
-              <div className="flex items-center gap-3">
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/15">
-                  <Settings className="h-4 w-4" />
-                </span>
-                <div className={cn("min-w-0", labelVisibility)}>
-                  <p className="truncate text-sm font-medium text-foreground">{authUser?.name ?? "Operator"}</p>
-                  <p className="truncate text-xs text-muted-foreground">{authUser?.email ?? "NexAdmin"}</p>
-                </div>
+            <button
+              className={cn(
+                "flex w-full items-center gap-3 rounded-xl border border-border/80 bg-muted/20 p-3 text-left transition hover:bg-muted/40",
+                collapsed && "lg:justify-center lg:p-2",
+              )}
+              onClick={() => router.push("/account/security")}
+              type="button"
+            >
+              <Avatar fallback={getInitials(authUser?.name ?? "Admin")} />
+              <div className={cn("min-w-0 flex-1", labelVisibility)}>
+                <p className="truncate text-sm font-semibold text-foreground">{authUser?.name ?? "Operator"}</p>
+                <p className="truncate text-xs text-muted-foreground">{formatRoleLabel(authUser?.roles?.[0])}</p>
               </div>
-            </div>
+              <ChevronDown className={cn("h-4 w-4 shrink-0 text-muted-foreground", labelVisibility)} />
+            </button>
           </div>
         </aside>
 
         <div className="min-w-0 flex-1">
           <header className="glass-header sticky top-0 z-30">
-            <div className="flex min-h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
+            <div className="flex min-h-16 flex-wrap items-center gap-3 px-4 sm:px-6 lg:px-8">
               <Button className="lg:hidden" onClick={() => setMobileOpen(true)} size="icon" variant="outline">
                 <Menu className="h-5 w-5" />
               </Button>
-              <div className="hidden items-center gap-2 text-sm text-muted-foreground lg:flex">
-                <Link className="font-medium hover:text-primary" href="/admin">
-                  NexAdmin
-                </Link>
-                <ChevronRight className="h-4 w-4" />
-                <span className="font-medium text-foreground">{currentPage}</span>
+
+              <div className="relative min-w-0 flex-1 lg:max-w-xl">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  className="h-10 border-border/80 bg-muted/30 pl-9 shadow-none focus:bg-card"
+                  onChange={(event) => setNavSearch(event.target.value)}
+                  placeholder="Cari menu, data, laporan..."
+                  value={navSearch}
+                />
               </div>
-              <div className="ml-auto flex items-center gap-3">
+
+              <div className="ml-auto flex items-center gap-2 sm:gap-3">
                 {authUser?.permissions.includes("notifications.view") ? (
                   <Button asChild className="relative" size="icon" variant="outline">
                     <Link href="/admin/communication/notifications" title="Notifikasi">
                       <Bell className="h-4 w-4" />
                       {notifications.length > 0 ? (
-                        <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
+                        <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
                           {formatCount(notifications.length)}
                         </span>
                       ) : null}
                     </Link>
                   </Button>
                 ) : null}
-                <div className="hidden items-center gap-3 sm:flex">
-                  <Avatar fallback={getInitials(authUser?.name ?? "Admin")} />
-                  <div className="hidden lg:block">
-                    <p className="text-sm font-medium">{authUser?.name ?? "Admin Sekolah"}</p>
-                    <p className="text-xs text-muted-foreground">{authUser?.email ?? "Operator"}</p>
-                  </div>
-                </div>
                 <LocaleSwitcher />
                 <ThemeToggle />
-                <Button aria-label="Logout" onClick={handleLogout} size="icon" variant="outline">
+                <button
+                  className="hidden items-center gap-2 rounded-xl border border-border/80 bg-card px-2 py-1.5 sm:flex"
+                  onClick={() => router.push("/account/security")}
+                  type="button"
+                >
+                  <Avatar fallback={getInitials(authUser?.name ?? "Admin")} />
+                  <span className="hidden max-w-[8rem] truncate text-sm font-medium lg:inline">{authUser?.name ?? "Admin"}</span>
+                </button>
+                <Button aria-label="Logout" className="hidden sm:inline-flex" onClick={handleLogout} size="icon" variant="outline">
                   <LogOut className="h-4 w-4" />
                 </Button>
               </div>
             </div>
           </header>
 
-          <main className="bg-white px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <main className="bg-background px-4 py-6 pb-24 sm:px-6 lg:px-8 lg:py-8 lg:pb-8">
             <div className="mx-auto max-w-7xl animate-fade-up">{children}</div>
           </main>
         </div>
       </div>
+
+      <nav aria-label="Navigasi mobile" className="nexadmin-mobile-nav">
+        <div className="mx-auto flex max-w-lg items-stretch justify-around px-2 pb-[env(safe-area-inset-bottom)]">
+          {mobileQuickNavigation
+            .filter((item) => !item.permission || authUser?.permissions.includes(item.permission))
+            .map((item) => {
+              const active = item.isActive(pathname);
+              const Icon = item.icon;
+
+              return (
+                <Link
+                  className={cn("nexadmin-mobile-nav-item", active && "nexadmin-mobile-nav-item-active")}
+                  href={item.href}
+                  key={item.label}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          <button className="nexadmin-mobile-nav-item" onClick={() => setMobileOpen(true)} type="button">
+            <Menu className="h-5 w-5" />
+            <span>Lainnya</span>
+          </button>
+        </div>
+      </nav>
     </div>
   );
+}
+
+function formatRoleLabel(role?: string) {
+  if (!role) return "Administrator";
+  return role
+    .split(/[-_]/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 function getInitials(name: string) {
@@ -573,34 +695,4 @@ function getInitials(name: string) {
 
 function formatCount(value: number) {
   return value > 99 ? "99+" : String(value);
-}
-
-function getCurrentPageLabel(pathname: string) {
-  const match = navigation.find((item) => item.href === pathname);
-
-  if (match) {
-    return match.label;
-  }
-
-  if (pathname.startsWith("/admin/master-data/")) {
-    return "Master Data";
-  }
-
-  if (pathname.startsWith("/admin/academic/")) {
-    return "Akademik";
-  }
-
-  if (pathname.startsWith("/admin/finance/")) {
-    return "Keuangan";
-  }
-
-  if (pathname.startsWith("/admin/ppdb/")) {
-    return "PPDB";
-  }
-
-  if (pathname.startsWith("/admin/")) {
-    return "Admin";
-  }
-
-  return "Dashboard";
 }
