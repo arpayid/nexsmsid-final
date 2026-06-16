@@ -26,7 +26,7 @@ export default function PpdbDashboardPage() {
   const { data: summary, error, loading } = useApiQuery<Record<string, unknown>>(loadSummary, [api]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <PageHeader
         actions={
           <div className="flex flex-wrap gap-2">
@@ -66,14 +66,14 @@ export default function PpdbDashboardPage() {
             description="Total seluruh pendaftar"
             icon={<Users className="h-5 w-5" />}
             title="Total Pendaftaran"
-            tone="violet"
+            tone="teal"
             value={String(summary.total ?? summary.totalRegistrations ?? 0)}
           />
           <StatCard
             description="Pendaftar menunggu verifikasi"
             icon={<FileText className="h-5 w-5" />}
             title={STATUS_LABEL.submitted ?? "Terkirim"}
-            tone="blue"
+            tone="indigo"
             value={String(summary.submitted ?? 0)}
           />
           <StatCard
@@ -101,14 +101,14 @@ export default function PpdbDashboardPage() {
             description="Pendaftar dikonversi ke siswa"
             icon={<UserX className="h-5 w-5" />}
             title={STATUS_LABEL.converted ?? "Dikonversi"}
-            tone="blue"
+            tone="indigo"
             value={String(summary.converted ?? 0)}
           />
           <StatCard
             description="Periode PPDB yang sedang aktif"
             icon={<Users className="h-5 w-5" />}
             title="Periode Aktif"
-            tone="violet"
+            tone="teal"
             value={String(summary.activePeriods ?? summary.activePeriod ?? 0)}
           />
         </div>

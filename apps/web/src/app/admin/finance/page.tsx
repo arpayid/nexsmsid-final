@@ -22,7 +22,7 @@ export default function FinancePage() {
   const { data: summary, error, loading } = useApiQuery(loadSummary, [api]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <PageHeader
         breadcrumb={["Admin", "Keuangan"]}
         description="Ringkasan dan statistik keuangan sekolah."
@@ -52,7 +52,7 @@ export default function FinancePage() {
             description="Total seluruh invoice yang diterbitkan"
             icon={<DollarSign className="h-5 w-5" />}
             title="Total Invoice"
-            tone="violet"
+            tone="teal"
             value={`Rp ${Number(summary.totalInvoice ?? 0).toLocaleString("id-ID")}`}
           />
           <StatCard
@@ -80,7 +80,7 @@ export default function FinancePage() {
             description="Total pengeluaran sekolah"
             icon={<TrendingDown className="h-5 w-5" />}
             title="Total Pengeluaran"
-            tone="blue"
+            tone="indigo"
             value={`Rp ${Number(summary.totalExpenses ?? 0).toLocaleString("id-ID")}`}
           />
           <StatCard

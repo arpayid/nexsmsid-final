@@ -237,7 +237,7 @@ export function PeoplePage({ description, eyebrow, excel, extraRowActions, field
   }));
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <PageHeader
         actions={
           <>
@@ -432,7 +432,7 @@ function FieldInput({ field, item }: { field: PeopleField; item: MasterDataRecor
       <label className="space-y-2">
         <span className="text-sm font-bold text-muted-foreground">{field.label}</span>
         <select
-          className="w-full rounded-lg border border-input bg-card px-4 py-2 text-sm shadow-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
+          className="w-full rounded-xl border border-input bg-card px-4 py-2 text-sm shadow-sm outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15"
           defaultValue={typeof value === "string" ? value : ""}
           name={field.name}
           required={field.required}
