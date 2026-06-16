@@ -60,7 +60,7 @@ export function SearchFilterBar({
       {(filters ?? []).map((filter, index) => (
         <select
           aria-label={filter.label ?? filter.placeholder ?? "Filter data"}
-          className="h-10 rounded-lg border border-border/80 bg-muted/40 px-3 text-sm font-medium text-foreground outline-none transition focus:border-primary/50 focus:bg-card focus:ring-2 focus:ring-primary/15"
+          className="h-10 rounded-xl border border-border/80 bg-muted/40 px-3 text-sm font-medium text-foreground outline-none transition focus:border-primary/40 focus:bg-card focus:ring-2 focus:ring-primary/15"
           key={`${filter.label ?? "filter"}-${index}-select`}
           onChange={(event) => filter.onChange(event.target.value)}
           value={filter.value}

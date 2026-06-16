@@ -51,7 +51,7 @@ export function DataTable<TRow>({
       <div className="overflow-x-auto">
         <table className={cn("w-full text-left text-sm", minWidth)}>
           <thead>
-            <tr className="border-b border-border bg-muted/50 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <tr className="border-b border-border bg-muted/30 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               {columns.map((column) => (
                 <th className={cn("px-4 py-3.5", column.headerClassName)} key={column.key}>
                   {column.header}
