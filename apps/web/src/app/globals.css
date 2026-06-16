@@ -2,59 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * NexSMSID Enterprise 2026 — design tokens (UI-S1)
+ * Emerald #10B981 · Teal #14B8A6 · Indigo #6366F1 · Amber #F59E0B · Coral #EF4444 · Slate #64748B · Gray #E2E8F0
+ */
 @layer base {
   :root {
     color-scheme: light;
-    --background: 0 0% 100%;
+    --background: 210 20% 98%;
     --foreground: 222 47% 11%;
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
-    --primary: 168 77% 34%;
+    --primary: 160 84% 39%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 168 40% 94%;
-    --secondary-foreground: 168 60% 24%;
+    --secondary: 160 40% 94%;
+    --secondary-foreground: 160 60% 24%;
     --muted: 210 20% 96%;
-    --muted-foreground: 215 16% 46%;
-    --accent: 199 89% 48%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 173 58% 39%;
     --accent-foreground: 0 0% 100%;
-    --border: 214 20% 90%;
-    --input: 214 20% 90%;
-    --ring: 168 77% 34%;
-    --radius: 0.625rem;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 160 84% 39%;
+    --radius: 0.75rem;
     --sidebar: 0 0% 100%;
     --sidebar-foreground: 222 47% 11%;
-    --sidebar-muted: 215 16% 46%;
-    --sidebar-border: 214 20% 90%;
-    --sidebar-accent: 168 77% 34%;
-    --surface-muted: 0 0% 100%;
-    --destructive: 0 72% 51%;
+    --sidebar-muted: 215 16% 47%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-accent: 160 84% 39%;
+    --surface-muted: 210 20% 98%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
+    --brand-emerald: 160 84% 39%;
+    --brand-teal: 173 58% 39%;
+    --brand-indigo: 239 84% 67%;
+    --brand-amber: 38 92% 50%;
+    --brand-coral: 0 84% 60%;
+    --brand-slate: 215 16% 47%;
   }
 
   .dark {
     color-scheme: dark;
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --primary: 168 77% 34%;
+    --background: 222 47% 7%;
+    --foreground: 210 20% 98%;
+    --card: 222 47% 10%;
+    --card-foreground: 210 20% 98%;
+    --primary: 160 70% 45%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 168 40% 94%;
-    --secondary-foreground: 168 60% 24%;
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 16% 46%;
-    --accent: 199 89% 48%;
+    --secondary: 160 30% 16%;
+    --secondary-foreground: 160 40% 85%;
+    --muted: 217 25% 14%;
+    --muted-foreground: 215 16% 65%;
+    --accent: 173 50% 40%;
     --accent-foreground: 0 0% 100%;
-    --border: 214 20% 90%;
-    --input: 214 20% 90%;
-    --ring: 168 77% 34%;
-    --sidebar: 0 0% 100%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-muted: 215 16% 46%;
-    --sidebar-border: 214 20% 90%;
-    --sidebar-accent: 168 77% 34%;
-    --surface-muted: 0 0% 100%;
-    --destructive: 0 72% 51%;
+    --border: 217 25% 18%;
+    --input: 217 25% 18%;
+    --ring: 160 70% 45%;
+    --sidebar: 222 47% 9%;
+    --sidebar-foreground: 210 20% 98%;
+    --sidebar-muted: 215 16% 65%;
+    --sidebar-border: 217 25% 18%;
+    --sidebar-accent: 160 70% 45%;
+    --surface-muted: 222 47% 8%;
+    --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
   }
 
@@ -67,26 +77,26 @@
   }
 
   body {
-    @apply min-h-screen bg-white font-sans text-foreground antialiased;
+    @apply min-h-screen bg-background font-sans text-foreground antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
 
 @layer components {
   .premium-surface {
-    @apply rounded-xl border border-border/80 bg-white shadow-card ring-1 ring-black/[0.03];
+    @apply rounded-xl border border-border/80 bg-card shadow-card ring-1 ring-black/[0.03];
   }
 
   .premium-surface-muted {
-    @apply rounded-xl border border-border/60 bg-white;
+    @apply rounded-xl border border-border/60 bg-card;
   }
 
   .glass-header {
-    @apply border-b border-border/70 bg-white/95 backdrop-blur-xl backdrop-saturate-150;
+    @apply border-b border-border/70 bg-card/95 backdrop-blur-xl backdrop-saturate-150;
   }
 
   .nexadmin-sidebar {
-    @apply bg-white text-foreground;
+    @apply bg-sidebar text-sidebar-foreground;
   }
 
   .nav-item-active {
@@ -98,15 +108,19 @@
   }
 
   .enterprise-hero {
-    @apply relative overflow-hidden rounded-2xl border border-border/80 bg-white p-6 shadow-soft sm:p-8;
+    @apply relative overflow-hidden rounded-2xl border border-border/80 bg-card p-6 shadow-soft sm:p-8;
   }
 
   .dashboard-insight-row {
-    @apply flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-white p-3.5 transition-colors hover:border-primary/20 hover:bg-muted/20;
+    @apply flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-card p-3.5 transition-colors hover:border-primary/20 hover:bg-muted/20;
   }
 
   .dashboard-mini-metric {
     @apply flex items-center gap-3 rounded-xl border border-border/70 bg-muted/10 p-3.5;
+  }
+
+  .ui-focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
   }
 }
 
@@ -119,15 +133,15 @@
   }
 
   .bg-mesh-premium {
-    @apply bg-white;
+    @apply bg-card;
   }
 
   .surface-panel {
-    @apply border border-border/80 bg-white shadow-card ring-1 ring-black/[0.03];
+    @apply border border-border/80 bg-card shadow-card ring-1 ring-black/[0.03];
   }
 
   .text-gradient-brand {
-    @apply bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--accent))] bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent;
   }
 
   .shadow-premium {

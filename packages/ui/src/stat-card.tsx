@@ -2,12 +2,16 @@ import { type ReactNode } from "react";
 
 import { cn } from "./utils";
 
-type StatTone = "violet" | "blue" | "emerald" | "amber" | "teal";
+type StatTone = "violet" | "blue" | "emerald" | "amber" | "teal" | "indigo";
 
 const toneClassName: Record<StatTone, { icon: string; accent: string }> = {
   teal: {
-    icon: "bg-primary/10 text-primary ring-primary/20 dark:bg-primary/15 dark:ring-primary/25",
-    accent: "from-primary/80 to-primary",
+    icon: "bg-emerald-50 text-emerald-700 ring-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 dark:ring-emerald-900",
+    accent: "from-emerald-500 to-teal-500",
+  },
+  indigo: {
+    icon: "bg-indigo-50 text-indigo-700 ring-indigo-100 dark:bg-indigo-950 dark:text-indigo-300 dark:ring-indigo-900",
+    accent: "from-indigo-500 to-indigo-600",
   },
   violet: {
     icon: "bg-violet-50 text-violet-700 ring-violet-100 dark:bg-violet-950 dark:text-violet-300 dark:ring-violet-900",
