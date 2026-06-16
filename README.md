@@ -85,7 +85,16 @@ Stack production: **PostgreSQL + Redis + API + Web + Nginx** via `docker-compose
 
 ### 1. Siapkan environment
 
-Salin `.env.example` ke `.env` di server production dan isi minimal:
+Salin `.env.production.example` ke `.env.production` di server production dan isi minimal:
+
+```bash
+cp .env.production.example .env.production
+# edit JWT, POSTGRES_PASSWORD, WEB_ORIGIN/CORS_ORIGIN
+pnpm docker:prod:build
+pnpm docker:prod:up
+```
+
+Contoh isi `.env.production` (staging IP):
 
 ```bash
 NODE_ENV=production
