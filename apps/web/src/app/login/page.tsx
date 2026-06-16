@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Loader2, LockKeyhole, LayoutDashboard, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, BookOpen, Loader2, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useEffect, useState, startTransition } from "react";
@@ -72,48 +72,45 @@ function LoginForm() {
   }
 
   return (
-    <main className="grid min-h-screen bg-white lg:grid-cols-2" role="main" aria-label="Login page">
-      <div className="relative hidden flex-col justify-between overflow-hidden border-r border-border bg-white p-10 lg:flex">
+    <main className="grid min-h-screen bg-background lg:grid-cols-2" role="main" aria-label="Login page">
+      <div className="dashboard-hero-banner relative hidden flex-col justify-between overflow-hidden p-10 text-white lg:flex">
         <div className="relative z-10">
           <div className="flex items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-xl bg-primary text-primary-foreground shadow-sm" aria-hidden="true">
-              <LayoutDashboard className="h-5 w-5" />
+            <span className="grid h-11 w-11 place-items-center rounded-xl bg-white/20 text-white ring-1 ring-white/30" aria-hidden="true">
+              <BookOpen className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-lg font-semibold text-foreground">NexAdmin</p>
-              <p className="text-sm text-muted-foreground">Enterprise School Platform</p>
+              <p className="text-lg font-semibold">NexAdmin</p>
+              <p className="text-sm text-white/80">Enterprise School Platform</p>
             </div>
           </div>
-          <Badge className="mt-8" variant="soft">
-            <Sparkles className="mr-1.5 h-3 w-3" /> Premium SaaS UI
+          <Badge className="mt-8 border-white/30 bg-white/15 text-white" variant="outline">
+            <Sparkles className="mr-1.5 h-3 w-3" /> Enterprise SaaS 2026
           </Badge>
-          <h1 className="mt-6 max-w-md text-3xl font-semibold leading-tight tracking-tight text-foreground">
+          <h1 className="mt-6 max-w-md text-3xl font-bold leading-tight tracking-tight">
             Kelola operasional sekolah dari satu dashboard terpadu.
           </h1>
-          <p className="mt-4 max-w-sm text-sm leading-7 text-muted-foreground">
+          <p className="mt-4 max-w-sm text-sm leading-7 text-white/85">
             Akademik, keuangan, PPDB, HR, dan laporan — antarmuka enterprise yang cepat, rapi, dan mudah dipakai staff sekolah.
           </p>
-          <ul className="mt-8 space-y-3 text-sm text-muted-foreground">
+          <ul className="mt-8 space-y-3 text-sm text-white/85">
             <li className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-primary" /> Keamanan sesi & role-based access
+              <ShieldCheck className="h-4 w-4 text-white" /> Keamanan sesi & role-based access
             </li>
             <li className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-primary" /> Branding sekolah & multi-modul terintegrasi
+              <ShieldCheck className="h-4 w-4 text-white" /> Branding sekolah & multi-modul terintegrasi
             </li>
           </ul>
         </div>
-        <p className="relative z-10 text-xs text-muted-foreground">NexAdmin &copy; NexSMSID</p>
+        <p className="relative z-10 text-xs text-white/70">NexAdmin © NexSMSID</p>
       </div>
 
-      <div className="relative grid place-items-center bg-white px-4 py-10 sm:px-6 lg:px-8">
+      <div className="relative grid place-items-center px-4 py-10 sm:px-6 lg:px-8">
         <div className="absolute inset-0 -z-10 bg-grid-soft opacity-20 lg:left-1/2" aria-hidden="true" />
         <div className="w-full max-w-md animate-fade-up">
           <Link className="mx-auto mb-8 flex w-max items-center gap-3 lg:hidden" href="/" aria-label="NexAdmin Home">
-            <span
-              className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-primary-foreground shadow-glow"
-              aria-hidden="true"
-            >
-              <LayoutDashboard className="h-5 w-5" />
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-600 text-white shadow-glow" aria-hidden="true">
+              <BookOpen className="h-5 w-5" />
             </span>
             <span>
               <span className="block text-lg font-semibold tracking-tight text-foreground">NexAdmin</span>
