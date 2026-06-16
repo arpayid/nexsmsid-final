@@ -14,17 +14,17 @@ export type SectionCardProps = {
 
 export function SectionCard({ action, children, className, contentClassName, description, title }: SectionCardProps) {
   return (
-    <Card className={className}>
-      <CardHeader>
+    <Card className={cn("overflow-hidden", className)}>
+      <CardHeader className="border-b border-border/60 bg-muted/15">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <CardTitle>{title}</CardTitle>
-            {description ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p> : null}
+            <CardTitle className="text-[15px]">{title}</CardTitle>
+            {description ? <p className="mt-1.5 text-sm leading-6 text-muted-foreground">{description}</p> : null}
           </div>
           {action ? <div className="flex shrink-0 flex-wrap gap-2">{action}</div> : null}
         </div>
       </CardHeader>
-      <CardContent className={cn(contentClassName)}>{children}</CardContent>
+      <CardContent className={cn("pt-5", contentClassName)}>{children}</CardContent>
     </Card>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Loader2, LockKeyhole, LayoutDashboard } from "lucide-react";
+import { ArrowRight, Loader2, LockKeyhole, LayoutDashboard, ShieldCheck, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useEffect, useState, startTransition } from "react";
@@ -72,42 +72,58 @@ function LoginForm() {
   }
 
   return (
-    <main className="grid min-h-screen lg:grid-cols-2" role="main" aria-label="Login page">
-      <div className="nexadmin-sidebar hidden flex-col justify-between p-10 lg:flex">
-        <div>
+    <main className="grid min-h-screen bg-white lg:grid-cols-2" role="main" aria-label="Login page">
+      <div className="relative hidden flex-col justify-between overflow-hidden border-r border-border bg-white p-10 lg:flex">
+        <div className="relative z-10">
           <div className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-lg bg-sidebar-accent text-white" aria-hidden="true">
+            <span className="grid h-11 w-11 place-items-center rounded-xl bg-primary text-primary-foreground shadow-sm" aria-hidden="true">
               <LayoutDashboard className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-lg font-semibold">NexAdmin</p>
-              <p className="text-sm text-sidebar-muted">Panel Administrasi Sekolah</p>
+              <p className="text-lg font-semibold text-foreground">NexAdmin</p>
+              <p className="text-sm text-muted-foreground">Enterprise School Platform</p>
             </div>
           </div>
-          <h1 className="mt-12 max-w-md text-3xl font-semibold leading-tight">Kelola operasional sekolah dari satu dashboard terpadu.</h1>
-          <p className="mt-4 max-w-sm text-sm leading-7 text-sidebar-muted">
-            Akademik, keuangan, PPDB, HR, dan laporan — semuanya dalam antarmuka NexAdmin yang modern dan responsif.
+          <Badge className="mt-8" variant="soft">
+            <Sparkles className="mr-1.5 h-3 w-3" /> Premium SaaS UI
+          </Badge>
+          <h1 className="mt-6 max-w-md text-3xl font-semibold leading-tight tracking-tight text-foreground">
+            Kelola operasional sekolah dari satu dashboard terpadu.
+          </h1>
+          <p className="mt-4 max-w-sm text-sm leading-7 text-muted-foreground">
+            Akademik, keuangan, PPDB, HR, dan laporan — antarmuka enterprise yang cepat, rapi, dan mudah dipakai staff sekolah.
           </p>
+          <ul className="mt-8 space-y-3 text-sm text-muted-foreground">
+            <li className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-primary" /> Keamanan sesi & role-based access
+            </li>
+            <li className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-primary" /> Branding sekolah & multi-modul terintegrasi
+            </li>
+          </ul>
         </div>
-        <p className="text-xs text-sidebar-muted">NexAdmin &copy; NexSMSID</p>
+        <p className="relative z-10 text-xs text-muted-foreground">NexAdmin &copy; NexSMSID</p>
       </div>
 
-      <div className="grid place-items-center px-4 py-10 sm:px-6 lg:px-8">
-        <div className="absolute inset-0 -z-10 bg-grid-soft opacity-40 lg:left-1/2" aria-hidden="true" />
-        <div className="w-full max-w-md">
+      <div className="relative grid place-items-center bg-white px-4 py-10 sm:px-6 lg:px-8">
+        <div className="absolute inset-0 -z-10 bg-grid-soft opacity-20 lg:left-1/2" aria-hidden="true" />
+        <div className="w-full max-w-md animate-fade-up">
           <Link className="mx-auto mb-8 flex w-max items-center gap-3 lg:hidden" href="/" aria-label="NexAdmin Home">
-            <span className="grid h-10 w-10 place-items-center rounded-lg bg-primary text-primary-foreground" aria-hidden="true">
+            <span
+              className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-primary-foreground shadow-glow"
+              aria-hidden="true"
+            >
               <LayoutDashboard className="h-5 w-5" />
             </span>
             <span>
               <span className="block text-lg font-semibold tracking-tight text-foreground">NexAdmin</span>
-              <span className="block text-xs text-muted-foreground">NexSMSID Panel</span>
+              <span className="block text-xs text-muted-foreground">Enterprise Panel</span>
             </span>
           </Link>
 
-          <Card className="shadow-elevated">
-            <CardHeader>
-              <Badge className="mb-3 w-max" variant="secondary" role="status">
+          <Card className="shadow-premium">
+            <CardHeader className="pb-4">
+              <Badge className="mb-3 w-max" variant="soft">
                 <LockKeyhole className="mr-2 h-3.5 w-3.5" aria-hidden="true" /> Akses Terbatas
               </Badge>
               <CardTitle className="text-xl">Masuk ke NexAdmin</CardTitle>
@@ -148,7 +164,7 @@ function LoginForm() {
                 </div>
                 {error ? (
                   <div
-                    className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700"
+                    className="rounded-lg border border-rose-200/80 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-300"
                     role="alert"
                     aria-live="assertive"
                   >

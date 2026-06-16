@@ -86,9 +86,9 @@ const portalNavigation: Record<PortalKind, { title: string; items: NavItem[] }> 
 };
 
 const portalAccent: Record<PortalKind, string> = {
-  teacher: "from-indigo-500 to-violet-600",
-  student: "from-sky-500 to-indigo-600",
-  guardian: "from-violet-500 to-indigo-600",
+  teacher: "from-primary to-emerald-600",
+  student: "from-sky-500 to-primary",
+  guardian: "from-primary/90 to-sky-600",
   admin: "from-muted-foreground to-foreground",
   unassigned: "from-muted-foreground to-foreground",
 };
@@ -204,8 +204,8 @@ export function PortalShell({ children, expectedPortal }: PortalShellProps) {
   const items = config.items;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-30 border-b border-border bg-card">
+    <div className="min-h-screen bg-white text-foreground">
+      <header className="glass-header sticky top-0 z-30">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
             <Button onClick={() => setMobileOpen((v) => !v)} size="icon" variant="ghost" className="lg:hidden">
@@ -264,10 +264,10 @@ export function PortalShell({ children, expectedPortal }: PortalShellProps) {
                 return (
                   <Link
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
                       active
-                        ? "border-l-2 border-primary bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                        ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/15"
+                        : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
                     )}
                     href={item.href}
                     key={item.href}
@@ -300,7 +300,7 @@ export function PortalShell({ children, expectedPortal }: PortalShellProps) {
         {mobileOpen ? (
           <div className="fixed inset-0 z-40 lg:hidden">
             <div className="absolute inset-0 bg-foreground/30" onClick={() => setMobileOpen(false)} />
-            <aside className="absolute left-0 top-0 h-full w-72 bg-card p-4 shadow-elevated">
+            <aside className="absolute left-0 top-0 h-full w-72 border-r border-border bg-white p-4 shadow-premium">
               <div className="mb-4 flex items-center justify-between">
                 <p className="text-sm font-semibold text-foreground">{config.title}</p>
                 <Button onClick={() => setMobileOpen(false)} size="icon" variant="ghost">
@@ -317,7 +317,7 @@ export function PortalShell({ children, expectedPortal }: PortalShellProps) {
                     <Link
                       className={cn(
                         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                        active ? "border-l-2 border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted",
+                        active ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/15" : "text-muted-foreground hover:bg-muted/80",
                       )}
                       href={item.href}
                       key={item.href}

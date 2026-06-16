@@ -42,38 +42,49 @@ export function DataTable<TRow>({
   }
 
   return (
-    <div className={cn("overflow-x-auto", className)}>
-      <table className={cn("w-full text-left text-sm", minWidth)}>
-        <thead>
-          <tr className="border-b border-border bg-muted/60 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            {columns.map((column) => (
-              <th className={cn("px-4 py-3", column.headerClassName)} key={column.key}>
-                {column.header}
-              </th>
-            ))}
-            {actions ? <th className="px-4 py-3 text-right">Aksi</th> : null}
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((row, index) => (
-            <tr
-              className={cn("border-b border-border/80 transition last:border-0 hover:bg-primary/5", rowClassName?.(row, index))}
-              key={getRowId(row, index)}
-            >
+    <div
+      className={cn(
+        "overflow-hidden rounded-xl border border-border/80 bg-card ring-1 ring-black/[0.03] dark:ring-white/[0.04]",
+        className,
+      )}
+    >
+      <div className="overflow-x-auto">
+        <table className={cn("w-full text-left text-sm", minWidth)}>
+          <thead>
+            <tr className="border-b border-border bg-muted/50 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               {columns.map((column) => (
-                <td className={cn("px-4 py-3 align-middle text-foreground/90", column.className)} key={column.key}>
-                  {column.cell ? column.cell(row) : String((row as Record<string, unknown>)[column.key] ?? "-")}
-                </td>
+                <th className={cn("px-4 py-3.5", column.headerClassName)} key={column.key}>
+                  {column.header}
+                </th>
               ))}
-              {actions ? (
-                <td className="px-4 py-4 align-middle">
-                  <div className="flex flex-wrap justify-end gap-2">{actions(row)}</div>
-                </td>
-              ) : null}
+              {actions ? <th className="px-4 py-3.5 text-right">Aksi</th> : null}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {data.map((row, index) => (
+              <tr
+                className={cn(
+                  "border-b border-border/60 transition-colors last:border-0 hover:bg-primary/[0.03]",
+                  index % 2 === 1 && "bg-muted/20",
+                  rowClassName?.(row, index),
+                )}
+                key={getRowId(row, index)}
+              >
+                {columns.map((column) => (
+                  <td className={cn("px-4 py-3.5 align-middle text-foreground/90", column.className)} key={column.key}>
+                    {column.cell ? column.cell(row) : String((row as Record<string, unknown>)[column.key] ?? "-")}
+                  </td>
+                ))}
+                {actions ? (
+                  <td className="px-4 py-3.5 align-middle">
+                    <div className="flex flex-wrap justify-end gap-2">{actions(row)}</div>
+                  </td>
+                ) : null}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
