@@ -100,11 +100,31 @@
   }
 
   .nav-item-active {
-    @apply bg-primary/10 font-semibold text-primary shadow-sm ring-1 ring-primary/15;
+    @apply bg-emerald-600 font-semibold text-white shadow-sm;
+  }
+
+  .nav-item-secondary-active {
+    @apply bg-emerald-50 font-semibold text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-900;
+  }
+
+  .nav-item-primary {
+    @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-muted/60 hover:text-foreground dark:text-muted-foreground;
   }
 
   .nav-item-pill {
     @apply rounded-lg border-l-0 px-3 py-2;
+  }
+
+  .nexadmin-mobile-nav {
+    @apply fixed inset-x-0 bottom-0 z-40 border-t border-border/80 bg-card/95 backdrop-blur-xl lg:hidden;
+  }
+
+  .nexadmin-mobile-nav-item {
+    @apply flex flex-1 flex-col items-center gap-1 px-1 py-2 text-[10px] font-medium text-slate-500 transition dark:text-muted-foreground;
+  }
+
+  .nexadmin-mobile-nav-item-active {
+    @apply text-emerald-600 dark:text-emerald-400;
   }
 
   .enterprise-hero {
