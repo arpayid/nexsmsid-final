@@ -2,13 +2,15 @@
 
 Enterprise School Management System — modular monolith, production-ready.
 
-| Atribut         | Nilai          |
-| --------------- | -------------- |
-| Nama            | NexSMSID V4    |
-| Version         | 4.0.0          |
-| Package         | `nexsmsid-v4`  |
-| Package Manager | pnpm@10.18.3   |
-| Node            | >= 20.11.0     |
+| Atribut         | Nilai                                              |
+| --------------- | -------------------------------------------------- |
+| Nama            | NexSMSID V4                                        |
+| Version         | 4.0.0                                              |
+| Package         | `nexsmsid-v4`                                      |
+| Package Manager | pnpm@10.18.3                                       |
+| Node            | >= 20.11.0 (CI: Node.js 24)                        |
+| Repo            | [github.com/arpayid/nexsmsid-v4](https://github.com/arpayid/nexsmsid-v4) |
+| Status          | Fase 4 — Production pilot ✅ stack Docker + nginx; HTTPS domain opsional |
 
 ## Tech Stack
 
@@ -79,7 +81,7 @@ User seed memakai `forceChangePassword=true` — login pertama akan diminta gant
 
 ## Deploy Production
 
-Stack production: **PostgreSQL + Redis + API + Web + Nginx** via `docker-compose.prod.yml`.
+Stack production: **PostgreSQL + Redis + API + Web + Nginx** via `docker-compose.prod.yml` (project Docker: `nexsmsid-v4-prod`).
 
 ### 1. Siapkan environment
 
@@ -93,19 +95,33 @@ REDIS_URL=redis://redis:6379
 JWT_ACCESS_SECRET=<openssl rand -base64 64>
 JWT_REFRESH_SECRET=<openssl rand -base64 64>
 CORS_ORIGIN=https://your-domain.com
-NEXT_PUBLIC_API_URL=https://your-domain.com/api/v1
+WEB_ORIGIN=https://your-domain.com
+NEXT_PUBLIC_API_URL=/api/v1
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=<cloudflare-turnstile-site-key>
 TURNSTILE_SECRET_KEY=<cloudflare-turnstile-secret-key>
 ```
 
 Turnstile **wajib** di production (divalidasi API saat `NODE_ENV=production`).
 
+**Staging pilot tanpa HTTPS (IP publik / localhost):** set `CORS_ORIGIN` dan `WEB_ORIGIN` ke URL akses yang sama, misalnya `http://156.67.216.146` atau `http://127.0.0.1`. Cookie auth otomatis **tanpa** flag `Secure` bila origin HTTP — login tetap berfungsi di browser. Untuk pilot, Turnstile test key dari `.env.example` boleh dipakai.
+
+| Variabel | Peran |
+| -------- | ----- |
+| `CORS_ORIGIN` / `WEB_ORIGIN` | Harus sama dengan URL yang dibuka user (termasuk skema `http`/`https`) |
+| `NEXT_PUBLIC_API_URL` | Path relatif `/api/v1` (nginx proxy) atau URL absolut penuh |
+| `API_INTERNAL_URL` | Sudah diset di `docker-compose.prod.yml` (`http://api:4000`) untuk refresh session web |
+
 ### 2. Konfigurasi Nginx
 
-Edit `docker/nginx/conf.d/default.conf`:
+File `docker/nginx/conf.d/default.conf` mendukung dua mode:
+
+- **Staging / pilot HTTP** — blok `default_server` di port 80 (localhost, IP publik, tanpa sertifikat TLS)
+- **Production HTTPS** — blok `your-domain.com` dengan redirect HTTP→HTTPS dan sertifikat Let's Encrypt
+
+Untuk domain production:
 
 - Ganti `your-domain.com` dengan domain production
-- Sesuaikan path sertifikat Let's Encrypt jika memakai HTTPS
+- Sesuaikan path sertifikat Let's Encrypt di volume `certbot_etc`
 
 ### 3. Build & jalankan
 
@@ -119,24 +135,29 @@ pnpm db:seed:prod    # opsional — hanya first deploy / staging
 Health check:
 
 ```bash
-pnpm health          # scripts/staging-healthcheck.sh
+pnpm health                              # default: http://127.0.0.1
+pnpm health http://<host-atau-ip>        # staging via IP publik
 curl -f http://localhost/api/v1/health
 ```
+
+Semua 5 service (postgres, redis, api, web, nginx) harus **healthy** sebelum smoke test login.
 
 ### 4. Backup database
 
 ```bash
-pnpm backup          # scripts/backup-postgres.sh
+pnpm backup          # scripts/backup-postgres.sh → backups/
 pnpm restore         # scripts/restore-postgres.sh
 ```
 
 ## CI
 
-Workflow **NexSMSID V4 CI** (`.github/workflows/ci.yml`) berjalan di self-hosted runner dengan label `self-hosted`, `linux`, `nexsmsid-v4`.
+Workflow **NexSMSID V4 CI** (`.github/workflows/ci.yml`) berjalan di self-hosted runner `nexsmsid-v4-ci-01` dengan label `self-hosted`, `linux`, `nexsmsid-v4`.
 
-Pipeline: format → lint → unit test → typecheck → build → integration test → dependency audit.
+Pipeline: format → lint → unit test → typecheck → build → integration test → dependency audit (Node.js 24).
 
 PostgreSQL dan Redis di CI dijalankan lewat `scripts/ci-services.sh` (Docker Compose, project `nexsmsid-v4-ci`).
+
+Status terakhir: **main hijau** — PR #2–#6 merged (dev bootstrap, CI Node 24, Dockerfile HEALTHCHECK, nginx staging, auth cookies HTTP).
 
 ### Registrasi runner (sekali)
 
