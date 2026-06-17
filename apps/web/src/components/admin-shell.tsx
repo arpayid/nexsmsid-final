@@ -46,9 +46,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { startTransition, type ReactNode, useEffect, useState } from "react";
+import { startTransition, type ReactNode, useEffect, useMemo, useState } from "react";
 
-import type { AuthUser, NotificationRecord } from "@nexsmsid/api-client";
+import type { AuthUser } from "@nexsmsid/api-client";
 import { Avatar, Button, cn, Input } from "@nexsmsid/ui";
 
 import { LocaleSwitcher } from "@/components/locale-switcher";
@@ -315,8 +315,12 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [authUser, setAuthUser] = useState<AuthUser | null>(() => getStoredUser());
   const [checkingAuth, setCheckingAuth] = useState(true);
-  const [notifications, setNotifications] = useState<NotificationRecord[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [navSearch, setNavSearch] = useState("");
+  const headerDateLabel = useMemo(
+    () => new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "long", year: "numeric" }).format(new Date()),
+    [],
+  );
 
   const sidebarWidth = collapsed ? "lg:w-[4.5rem]" : "lg:w-64";
   const labelVisibility = collapsed ? "lg:hidden" : "lg:block";
@@ -410,21 +414,28 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
     if (user?.id) {
       const socket = connectSocket();
 
-      function handleNotification(data: unknown) {
-        if (typeof data !== "object" || data === null || !("title" in data)) return;
-        setNotifications((prev) => [data as NotificationRecord, ...prev].slice(0, 20));
+      function handleNotification(_data: unknown) {
+        setUnreadCount((prev) => prev + 1);
       }
 
       socket?.on("notification", handleNotification);
       loadSchoolTheme().then((theme) => {
         if (theme) applySchoolTheme(theme);
       });
+
+      if (user.permissions.includes("notifications.view")) {
+        void createBrowserApiClient()
+          .unreadNotificationCount()
+          .then((result) => setUnreadCount(result.total))
+          .catch(() => undefined);
+      }
+
       return () => {
         socket?.off("notification", handleNotification);
         disconnectSocket();
       };
     }
-  }, [authUser?.id]);
+  }, [authUser?.id, authUser?.permissions]);
 
   async function handleLogout() {
     try {
@@ -466,34 +477,49 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
       <div className="lg:flex">
         <aside
           className={cn(
-            "nexadmin-sidebar fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col border-r border-border bg-sidebar transition-all duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0",
+            "nexadmin-sidebar fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col border-r transition-all duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0",
             mobileOpen && "translate-x-0 shadow-premium",
             sidebarWidth,
           )}
         >
-          <div className="flex h-16 items-center justify-between gap-3 border-b border-border px-4">
+          <div className="flex h-16 items-center justify-between gap-3 border-b border-sidebar-border px-4">
             <Link className="flex min-w-0 items-center gap-3" href="/admin">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-emerald-600 text-white shadow-sm">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-emerald-500 text-white shadow-sm ring-1 ring-white/20">
                 <BookOpen className="h-4 w-4" />
               </span>
               <span className={cn("min-w-0", labelVisibility)}>
-                <span className="block truncate text-base font-semibold tracking-tight text-foreground">NexAdmin</span>
-                <span className="block truncate text-xs text-muted-foreground">Enterprise Panel</span>
+                <span className="block truncate text-base font-semibold tracking-tight text-sidebar-foreground">NexAdmin</span>
+                <span className="block truncate text-xs text-sidebar-muted">School Management</span>
               </span>
             </Link>
-            <div className="flex items-center gap-1">
-              <Button
-                aria-label={collapsed ? "Perluas sidebar" : "Ciutkan sidebar"}
-                className="hidden lg:inline-flex"
-                onClick={() => setCollapsed((value) => !value)}
-                size="icon"
-                variant="ghost"
-              >
-                {collapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
-              </Button>
-              <Button aria-label="Tutup sidebar" className="lg:hidden" onClick={() => setMobileOpen(false)} size="icon" variant="ghost">
-                <X className="h-5 w-5" />
-              </Button>
+            <Button
+              aria-label="Tutup sidebar"
+              className="text-sidebar-foreground hover:bg-white/10 lg:hidden"
+              onClick={() => setMobileOpen(false)}
+              size="icon"
+              variant="ghost"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+
+          <div className={cn("border-b border-sidebar-border px-3 py-3", collapsed && "lg:px-2")}>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-sidebar-muted" />
+              <Input
+                className={cn(
+                  "h-9 border-sidebar-border/80 bg-white/10 pl-9 text-sidebar-foreground placeholder:text-sidebar-muted focus:bg-white/15",
+                  collapsed && "lg:px-2 lg:pl-9",
+                )}
+                onChange={(event) => setNavSearch(event.target.value)}
+                placeholder={collapsed ? "..." : "Cari menu..."}
+                value={navSearch}
+              />
+              {!collapsed ? (
+                <kbd className="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 rounded border border-white/15 bg-white/10 px-1.5 py-0.5 text-[10px] text-sidebar-muted lg:inline">
+                  ⌘K
+                </kbd>
+              ) : null}
             </div>
           </div>
 
@@ -519,7 +545,7 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
             </div>
 
             <div className={cn(labelVisibility)}>
-              <p className="px-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Menu lengkap</p>
+              <p className="px-2 text-[11px] font-semibold uppercase tracking-wider text-sidebar-muted">Menu lengkap</p>
             </div>
 
             {visibleNavigationGroups.map((group) => {
@@ -529,7 +555,7 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
                 <div key={group.label}>
                   <button
                     className={cn(
-                      "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground transition hover:bg-muted/60 hover:text-foreground",
+                      "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-sidebar-muted transition hover:bg-white/10 hover:text-sidebar-foreground",
                       labelVisibility,
                     )}
                     onClick={() => toggleGroup(group.label)}
@@ -554,7 +580,7 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
                         return (
                           <Link
                             className={cn(
-                              "nav-item-pill flex items-center gap-3 text-sm font-medium text-muted-foreground transition hover:bg-muted/60 hover:text-foreground",
+                              "nav-item-pill flex items-center gap-3 text-sm font-medium transition",
                               active && "nav-item-secondary-active",
                               collapsed && "lg:justify-center lg:px-2",
                             )}
@@ -574,10 +600,21 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
             })}
           </nav>
 
-          <div className="border-t border-border p-3">
+          <div className="space-y-2 border-t border-sidebar-border p-3">
             <button
               className={cn(
-                "flex w-full items-center gap-3 rounded-xl border border-border/80 bg-muted/20 p-3 text-left transition hover:bg-muted/40",
+                "flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm font-medium text-sidebar-muted transition hover:bg-white/10 hover:text-sidebar-foreground",
+                collapsed && "lg:justify-center",
+              )}
+              onClick={() => setCollapsed((value) => !value)}
+              type="button"
+            >
+              {collapsed ? <PanelLeftOpen className="h-4 w-4 shrink-0" /> : <PanelLeftClose className="h-4 w-4 shrink-0" />}
+              <span className={cn(labelVisibility)}>{collapsed ? "Tampilkan Menu" : "Sembunyikan Menu"}</span>
+            </button>
+            <button
+              className={cn(
+                "flex w-full items-center gap-3 rounded-xl border border-sidebar-border bg-white/5 p-3 text-left transition hover:bg-white/10",
                 collapsed && "lg:justify-center lg:p-2",
               )}
               onClick={() => router.push("/account/security")}
@@ -585,10 +622,10 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
             >
               <Avatar fallback={getInitials(authUser?.name ?? "Admin")} />
               <div className={cn("min-w-0 flex-1", labelVisibility)}>
-                <p className="truncate text-sm font-semibold text-foreground">{authUser?.name ?? "Operator"}</p>
-                <p className="truncate text-xs text-muted-foreground">{formatRoleLabel(authUser?.roles?.[0])}</p>
+                <p className="truncate text-sm font-semibold text-sidebar-foreground">{authUser?.name ?? "Operator"}</p>
+                <p className="truncate text-xs text-sidebar-muted">{formatRoleLabel(authUser?.roles?.[0])}</p>
               </div>
-              <ChevronDown className={cn("h-4 w-4 shrink-0 text-muted-foreground", labelVisibility)} />
+              <ChevronDown className={cn("h-4 w-4 shrink-0 text-sidebar-muted", labelVisibility)} />
             </button>
           </div>
         </aside>
@@ -600,14 +637,21 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
                 <Menu className="h-5 w-5" />
               </Button>
 
-              <div className="relative min-w-0 flex-1 lg:max-w-xl">
+              <div className="relative min-w-0 flex-1 lg:max-w-2xl">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   className="h-10 border-border/80 bg-muted/30 pl-9 shadow-none focus:bg-card"
                   onChange={(event) => setNavSearch(event.target.value)}
-                  placeholder="Cari menu, data, laporan..."
+                  placeholder="Cari apapun..."
                   value={navSearch}
                 />
+              </div>
+
+              <div className="hidden items-center gap-2 sm:flex">
+                <span className="inline-flex items-center gap-2 rounded-xl border border-border/80 bg-card px-3 py-2 text-sm text-muted-foreground">
+                  <CalendarDays className="h-4 w-4 shrink-0 text-emerald-600" />
+                  <span className="hidden md:inline">{headerDateLabel}</span>
+                </span>
               </div>
 
               <div className="ml-auto flex items-center gap-2 sm:gap-3">
@@ -615,9 +659,9 @@ export function AdminShell({ children }: Readonly<{ children: ReactNode }>) {
                   <Button asChild className="relative" size="icon" variant="outline">
                     <Link href="/admin/communication/notifications" title="Notifikasi">
                       <Bell className="h-4 w-4" />
-                      {notifications.length > 0 ? (
+                      {unreadCount > 0 ? (
                         <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
-                          {formatCount(notifications.length)}
+                          {formatCount(unreadCount)}
                         </span>
                       ) : null}
                     </Link>

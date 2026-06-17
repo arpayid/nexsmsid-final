@@ -25,11 +25,11 @@
     --input: 214 32% 91%;
     --ring: 160 84% 39%;
     --radius: 0.75rem;
-    --sidebar: 0 0% 100%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-muted: 215 16% 47%;
-    --sidebar-border: 214 32% 91%;
-    --sidebar-accent: 160 84% 39%;
+    --sidebar: 168 56% 18%;
+    --sidebar-foreground: 210 20% 98%;
+    --sidebar-muted: 168 24% 72%;
+    --sidebar-border: 168 42% 24%;
+    --sidebar-accent: 160 84% 45%;
     --surface-muted: 210 20% 98%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -111,7 +111,19 @@
   }
 
   .nexadmin-sidebar {
-    @apply bg-sidebar text-sidebar-foreground;
+    @apply border-sidebar-border bg-sidebar text-sidebar-foreground;
+  }
+
+  .nexadmin-sidebar .nav-item-primary {
+    @apply text-sidebar-muted hover:bg-white/10 hover:text-sidebar-foreground;
+  }
+
+  .nexadmin-sidebar .nav-item-secondary-active {
+    @apply bg-white/10 font-semibold text-white ring-1 ring-white/15;
+  }
+
+  .nexadmin-sidebar .nav-item-pill {
+    @apply text-sidebar-muted hover:bg-white/10 hover:text-sidebar-foreground;
   }
 
   .nav-item-active {
