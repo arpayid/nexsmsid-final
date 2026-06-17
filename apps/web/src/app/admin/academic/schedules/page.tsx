@@ -1,10 +1,11 @@
 "use client";
 
 import { FormEvent, useCallback, useMemo, useState } from "react";
-import { AlertCircle, Edit3, Loader2, Plus, RefreshCcw, Search, Trash2 } from "lucide-react";
+import { Edit3, Loader2, Plus, RefreshCcw, Trash2 } from "lucide-react";
 
 import type { ScheduleRecord } from "@nexsmsid/api-client";
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle, EmptyState, FormModal, Input, PageHeader } from "@nexsmsid/ui";
+import { Badge, Button, ConfirmDialog, DataTable, ErrorState, FormModal, PageHeader, SearchFilterBar, SectionCard } from "@nexsmsid/ui";
+import type { DataTableColumn } from "@nexsmsid/ui";
 
 import { EntityPicker } from "@/components/entity-picker";
 import { useApiQuery } from "@/hooks/use-api-query";
@@ -23,6 +24,7 @@ const DAYS = [
 export default function SchedulesPage() {
   const api = useMemo(() => createBrowserApiClient(), []);
   const [editing, setEditing] = useState<ScheduleRecord | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<ScheduleRecord | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -34,6 +36,8 @@ export default function SchedulesPage() {
   const items = data?.data ?? [];
   const total = (data?.meta as { total?: number } | undefined)?.total ?? items.length;
   const error = actionError ?? fetchError;
+
+  const dayLabel = useCallback((day: string) => DAYS.find((d) => d.value === day)?.label ?? day, []);
 
   async function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -54,12 +58,12 @@ export default function SchedulesPage() {
     setFormOpen(true);
   }
 
-  async function handleDelete(item: ScheduleRecord) {
-    const confirmed = window.confirm(`Hapus jadwal ${item.dayOfWeek} - ${item.teachingAssignment?.subject?.name ?? ""}?`);
-    if (!confirmed) return;
+  async function confirmDelete() {
+    if (!pendingDelete) return;
     setActionError(null);
     try {
-      await api.deleteSchedule(item.id);
+      await api.deleteSchedule(pendingDelete.id);
+      setPendingDelete(null);
       await refetch();
     } catch (deleteError) {
       setActionError(deleteError instanceof Error ? deleteError.message : "Gagal menghapus data");
@@ -93,10 +97,41 @@ export default function SchedulesPage() {
     }
   }
 
-  const dayLabel = (day: string) => DAYS.find((d) => d.value === day)?.label ?? day;
+  const columns: DataTableColumn<ScheduleRecord>[] = [
+    {
+      cell: (item) => <Badge variant="info">{dayLabel(item.dayOfWeek)}</Badge>,
+      header: "Hari",
+      key: "dayOfWeek",
+    },
+    {
+      cell: (item) => item.lessonHour?.name ?? "-",
+      header: "Jam",
+      key: "lessonHour",
+    },
+    {
+      cell: (item) => item.teachingAssignment?.teacher?.name ?? "-",
+      header: "Guru",
+      key: "teacher",
+    },
+    {
+      cell: (item) => item.teachingAssignment?.subject?.name ?? "-",
+      header: "Mapel",
+      key: "subject",
+    },
+    {
+      cell: (item) => item.teachingAssignment?.classroom?.name ?? "-",
+      header: "Kelas",
+      key: "classroom",
+    },
+    {
+      cell: (item) => item.room?.name ?? "-",
+      header: "Ruangan",
+      key: "room",
+    },
+  ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <PageHeader
         actions={
           <>
@@ -114,100 +149,61 @@ export default function SchedulesPage() {
         title="Jadwal Pelajaran"
       />
 
-      {error ? (
-        <div className="flex items-center gap-3 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
-          <AlertCircle className="h-5 w-5" /> {error}
-        </div>
-      ) : null}
+      {error ? <ErrorState message={error} onRetry={() => void refetch()} title="Gagal memproses jadwal" /> : null}
 
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <CardTitle>Data Jadwal</CardTitle>
-              <p className="mt-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">Total: {total} data</p>
-            </div>
-            <form className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row lg:items-center" onSubmit={handleSearch}>
-              <div className="relative w-full lg:max-w-sm">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  className="pl-11"
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Cari mapel, guru, kelas..."
-                  value={search}
-                />
-              </div>
-              <Button type="submit" variant="soft">
-                Cari
+      <SectionCard
+        action={
+          <SearchFilterBar
+            onSearchChange={setSearch}
+            onSubmit={handleSearch}
+            searchPlaceholder="Cari mapel, guru, kelas..."
+            searchValue={search}
+          />
+        }
+        description={
+          <>
+            Kelola jadwal pelajaran harian. Total: <strong>{total}</strong> data.
+          </>
+        }
+        title="Data Jadwal"
+      >
+        <DataTable
+          actions={(item) => (
+            <>
+              <Button onClick={() => openEdit(item)} size="sm" variant="outline">
+                <Edit3 className="h-4 w-4" /> Edit
               </Button>
-            </form>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="grid min-h-48 place-items-center rounded-xl border border-dashed bg-surface-muted text-sm font-bold text-muted-foreground">
-              <span className="inline-flex items-center gap-2">
-                <Loader2 className="h-5 w-5 animate-spin text-primary" /> Memuat data...
-              </span>
-            </div>
-          ) : items.length ? (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[750px] text-left text-sm">
-                <thead>
-                  <tr className="border-b text-xs uppercase tracking-[0.14em] text-muted-foreground">
-                    <th className="px-4 py-3 font-semibold">Hari</th>
-                    <th className="px-4 py-3 font-semibold">Jam</th>
-                    <th className="px-4 py-3 font-semibold">Guru</th>
-                    <th className="px-4 py-3 font-semibold">Mapel</th>
-                    <th className="px-4 py-3 font-semibold">Kelas</th>
-                    <th className="px-4 py-3 font-semibold">Ruangan</th>
-                    <th className="px-4 py-3 text-right font-semibold">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((item) => (
-                    <tr className="border-b last:border-0" key={item.id}>
-                      <td className="px-4 py-4">
-                        <Badge variant="info">{dayLabel(item.dayOfWeek)}</Badge>
-                      </td>
-                      <td className="px-4 py-4 font-semibold text-muted-foreground">{item.lessonHour?.name ?? "-"}</td>
-                      <td className="px-4 py-4 font-semibold text-muted-foreground">{item.teachingAssignment?.teacher?.name ?? "-"}</td>
-                      <td className="px-4 py-4 font-semibold text-muted-foreground">{item.teachingAssignment?.subject?.name ?? "-"}</td>
-                      <td className="px-4 py-4 font-semibold text-muted-foreground">{item.teachingAssignment?.classroom?.name ?? "-"}</td>
-                      <td className="px-4 py-4 font-semibold text-muted-foreground">{item.room?.name ?? "-"}</td>
-                      <td className="px-4 py-4">
-                        <div className="flex justify-end gap-2">
-                          <Button onClick={() => openEdit(item)} size="sm" variant="outline">
-                            <Edit3 className="h-4 w-4" /> Edit
-                          </Button>
-                          <Button onClick={() => handleDelete(item)} size="sm" variant="ghost">
-                            <Trash2 className="h-4 w-4" /> Hapus
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <EmptyState
-              action={
-                <Button onClick={openCreate} variant="soft">
-                  Tambah jadwal pertama
-                </Button>
-              }
-              description="Belum ada jadwal."
-              title="Data masih kosong"
-            />
+              <Button onClick={() => setPendingDelete(item)} size="sm" variant="ghost">
+                <Trash2 className="h-4 w-4" /> Hapus
+              </Button>
+            </>
           )}
-        </CardContent>
-      </Card>
+          columns={columns}
+          data={items}
+          emptyState={{
+            action: (
+              <Button onClick={openCreate} variant="soft">
+                Tambah jadwal pertama
+              </Button>
+            ),
+            description: "Belum ada jadwal atau hasil pencarian kosong.",
+            title: "Data jadwal kosong",
+          }}
+          getRowId={(item) => item.id}
+          loading={loading}
+          minWidth="min-w-[820px]"
+        />
+      </SectionCard>
 
-      <FormModal hideOverlay onClose={() => setFormOpen(false)} open={formOpen} title={`${editing ? "Edit" : "Tambah"} Jadwal`}>
+      <FormModal
+        description="Lengkapi penugasan mengajar, hari, jam, dan ruangan."
+        onClose={() => setFormOpen(false)}
+        open={formOpen}
+        title={`${editing ? "Edit" : "Tambah"} Jadwal`}
+      >
         <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
           <label className="space-y-2">
-            <span className="text-sm font-bold text-muted-foreground">Penugasan Mengajar</span>
+            <span className="text-sm font-semibold text-foreground">Penugasan Mengajar</span>
             <EntityPicker
               defaultValue={editing?.teachingAssignmentId ?? ""}
               entityType="teaching-assignment"
@@ -217,9 +213,9 @@ export default function SchedulesPage() {
             />
           </label>
           <label className="space-y-2">
-            <span className="text-sm font-bold text-muted-foreground">Hari</span>
+            <span className="text-sm font-semibold text-foreground">Hari</span>
             <select
-              className="w-full rounded-lg border border-input bg-card px-4 py-2 text-sm shadow-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
+              className="w-full rounded-xl border border-input bg-card px-4 py-2 text-sm shadow-sm outline-none transition-all focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               defaultValue={editing?.dayOfWeek ?? ""}
               name="dayOfWeek"
               required
@@ -235,7 +231,7 @@ export default function SchedulesPage() {
             </select>
           </label>
           <label className="space-y-2">
-            <span className="text-sm font-bold text-muted-foreground">Jam Pelajaran</span>
+            <span className="text-sm font-semibold text-foreground">Jam Pelajaran</span>
             <EntityPicker
               defaultValue={editing?.lessonHourId ?? ""}
               entityType="lesson-hour"
@@ -245,19 +241,27 @@ export default function SchedulesPage() {
             />
           </label>
           <label className="space-y-2">
-            <span className="text-sm font-bold text-muted-foreground">Ruangan</span>
+            <span className="text-sm font-semibold text-foreground">Ruangan</span>
             <EntityPicker defaultValue={editing?.roomId ?? ""} entityType="room" name="roomId" placeholder="Cari ruangan..." required />
           </label>
-          <div className="flex gap-3 md:col-span-2">
-            <Button disabled={submitting} type="submit">
-              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Simpan
-            </Button>
+          <div className="flex flex-col-reverse gap-3 md:col-span-2 sm:flex-row sm:justify-end">
             <Button onClick={() => setFormOpen(false)} type="button" variant="outline">
               Batal
+            </Button>
+            <Button disabled={submitting} type="submit">
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Simpan
             </Button>
           </div>
         </form>
       </FormModal>
+
+      <ConfirmDialog
+        description={`Hapus jadwal ${pendingDelete ? dayLabel(pendingDelete.dayOfWeek) : ""} — ${pendingDelete?.teachingAssignment?.subject?.name ?? ""}?`}
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => void confirmDelete()}
+        open={Boolean(pendingDelete)}
+        title="Konfirmasi hapus jadwal"
+      />
     </div>
   );
 }

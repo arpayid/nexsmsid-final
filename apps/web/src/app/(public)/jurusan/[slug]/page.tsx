@@ -61,5 +61,9 @@ export default async function JurusanDetailPage({ params }: PageProps) {
 
 export async function generateStaticParams() {
   const competencies = (await fetchPublicApi<PublicCompetency[]>("/public/competencies")) ?? [];
+  if (competencies.length === 0) {
+    // API unavailable during `next build` (e.g. Docker) — keep seed slug so build stays quiet.
+    return [{ slug: "pmkr" }];
+  }
   return competencies.map((item) => ({ slug: competencySlug(item.code) }));
 }

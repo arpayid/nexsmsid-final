@@ -25,7 +25,8 @@
     "db:seed:prod": "pnpm --filter @nexsmsid/api prisma db seed",
     "backup": "bash scripts/backup-postgres.sh",
     "restore": "bash scripts/restore-postgres.sh",
-    "health": "bash scripts/staging-healthcheck.sh"
+    "health": "bash scripts/staging-healthcheck.sh",
+    "validate:prod-env": "bash scripts/validate-prod-env.sh"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
