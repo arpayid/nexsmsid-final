@@ -1,9 +1,22 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { Plus, Search, Edit2, Trash2, Loader2, AlertCircle } from "lucide-react";
+import { FormEvent, useCallback, useMemo, useState } from "react";
+import { Edit3, Loader2, Plus, RefreshCcw, Trash2 } from "lucide-react";
 
-import { Button, Card, CardContent, Input, PageHeader, FormModal } from "@nexsmsid/ui";
+import {
+  Badge,
+  Button,
+  ConfirmDialog,
+  DataTable,
+  ErrorState,
+  FormModal,
+  Input,
+  PageHeader,
+  SearchFilterBar,
+  SectionCard,
+} from "@nexsmsid/ui";
+import type { DataTableColumn } from "@nexsmsid/ui";
+
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
 
@@ -16,71 +29,83 @@ type LibraryShelfRow = {
   isActive?: boolean;
 };
 
+const emptyFormData = () => ({ id: "", code: "", name: "", location: "", description: "", isActive: true });
+
 export default function LibraryShelvesPage() {
   const api = useMemo(() => createBrowserApiClient(), []);
 
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const [formData, setFormData] = useState({ id: "", code: "", name: "", location: "", description: "", isActive: true });
+  const [appliedSearch, setAppliedSearch] = useState("");
+  const [formOpen, setFormOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<LibraryShelfRow | null>(null);
+  const [formData, setFormData] = useState(emptyFormData);
 
   const loadShelves = useCallback(async () => {
-    const res = await api.listLibraryShelves({ page, limit: 50, search });
+    const res = await api.listLibraryShelves({ page: 1, limit: 50, search: appliedSearch || undefined });
     return res.data;
-  }, [api, page, search]);
-  const { data: shelvesData, error, loading, refetch } = useApiQuery<LibraryShelfRow[]>(loadShelves, [page, search]);
+  }, [api, appliedSearch]);
+  const { data: shelvesData, error: fetchError, loading, refetch } = useApiQuery<LibraryShelfRow[]>(loadShelves, [appliedSearch]);
   const shelves = shelvesData ?? [];
+  const total = shelves.length;
+  const error = actionError ?? fetchError;
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (appliedSearch === search) {
+      await refetch();
+      return;
+    }
+    setAppliedSearch(search);
+  }
+
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!formData.code || !formData.name) return;
+    if (!formData.code || !formData.name) {
+      setActionError("Mohon isi kode dan nama rak");
+      return;
+    }
 
-    setSaving(true);
+    setSubmitting(true);
+    setActionError(null);
     try {
+      const payload = {
+        code: formData.code,
+        name: formData.name,
+        location: formData.location,
+        description: formData.description,
+        isActive: formData.isActive,
+      };
       if (formData.id) {
-        await api.updateLibraryShelf(formData.id, {
-          code: formData.code,
-          name: formData.name,
-          location: formData.location,
-          description: formData.description,
-          isActive: formData.isActive,
-        });
-        alert("Rak berhasil diperbarui.");
+        await api.updateLibraryShelf(formData.id, payload);
       } else {
-        await api.createLibraryShelf({
-          code: formData.code,
-          name: formData.name,
-          location: formData.location,
-          description: formData.description,
-          isActive: formData.isActive,
-        });
-        alert("Rak berhasil ditambahkan.");
+        await api.createLibraryShelf(payload);
       }
-      setIsModalOpen(false);
-      void refetch();
+      setFormOpen(false);
+      await refetch();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Gagal menyimpan rak");
+      setActionError(err instanceof Error ? err.message : "Gagal menyimpan rak");
     } finally {
-      setSaving(false);
+      setSubmitting(false);
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm("Apakah Anda yakin ingin menghapus rak ini?")) return;
+  async function confirmDelete() {
+    if (!pendingDelete) return;
+    setActionError(null);
     try {
-      await api.deleteLibraryShelf(id);
-      alert("Rak berhasil dihapus.");
-      void refetch();
+      await api.deleteLibraryShelf(pendingDelete.id);
+      setPendingDelete(null);
+      await refetch();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Gagal menghapus rak");
+      setActionError(err instanceof Error ? err.message : "Gagal menghapus rak");
     }
   }
 
   function openCreate() {
-    setFormData({ id: "", code: "", name: "", location: "", description: "", isActive: true });
-    setIsModalOpen(true);
+    setFormData(emptyFormData());
+    setFormOpen(true);
   }
 
   function openEdit(item: LibraryShelfRow) {
@@ -92,147 +117,170 @@ export default function LibraryShelvesPage() {
       description: item.description || "",
       isActive: item.isActive ?? true,
     });
-    setIsModalOpen(true);
+    setFormOpen(true);
   }
+
+  const columns: DataTableColumn<LibraryShelfRow>[] = [
+    {
+      cell: (item) => item.code,
+      header: "Kode",
+      key: "code",
+    },
+    {
+      cell: (item) => <span className="font-semibold">{item.name}</span>,
+      header: "Nama Rak",
+      key: "name",
+    },
+    {
+      cell: (item) => item.location || "-",
+      header: "Lokasi",
+      key: "location",
+    },
+    {
+      cell: (item) => item.description || "-",
+      header: "Deskripsi",
+      key: "description",
+    },
+    {
+      cell: (item) => (
+        <Badge variant={item.isActive === false ? "secondary" : "success"}>{item.isActive === false ? "Nonaktif" : "Aktif"}</Badge>
+      ),
+      header: "Status",
+      key: "isActive",
+    },
+  ];
 
   return (
     <div className="space-y-6">
-      <PageHeader breadcrumb={["Admin", "Perpustakaan", "Rak"]} description="Kelola rak klasifikasi buku perpustakaan." title="Rak Buku" />
-
-      <Card>
-        <CardContent className="p-4 sm:p-6">
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input className="pl-9" placeholder="Cari rak..." value={search} onChange={(e) => setSearch(e.target.value)} />
-            </div>
-            <Button onClick={openCreate} className="w-full sm:w-auto">
-              <Plus className="mr-2 h-4 w-4" /> Tambah Rak
+      <PageHeader
+        actions={
+          <>
+            <Button onClick={() => void refetch()} variant="outline">
+              <RefreshCcw className="h-4 w-4" /> Refresh
             </Button>
-          </div>
+            <Button onClick={openCreate}>
+              <Plus className="h-4 w-4" /> Tambah Rak
+            </Button>
+          </>
+        }
+        breadcrumb={["Admin", "Perpustakaan", "Rak"]}
+        description="Kelola rak klasifikasi buku perpustakaan."
+        eyebrow="Perpustakaan"
+        title="Rak Buku"
+      />
 
-          {error ? (
-            <div className="flex items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">
-              <AlertCircle className="h-5 w-5" /> {error}
-            </div>
-          ) : loading ? (
-            <div className="flex h-32 items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-surface-muted text-muted-foreground">
-                    <tr>
-                      <th className="px-4 py-3 font-medium">Kode</th>
-                      <th className="px-4 py-3 font-medium">Nama Rak</th>
-                      <th className="px-4 py-3 font-medium">Deskripsi</th>
-                      <th className="px-4 py-3 font-medium text-right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {shelves.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
-                          Tidak ada data rak.
-                        </td>
-                      </tr>
-                    ) : (
-                      shelves.map((item) => (
-                        <tr key={item.id} className="hover:bg-surface-muted">
-                          <td className="px-4 py-3 font-medium">{item.code}</td>
-                          <td className="px-4 py-3 font-semibold">{item.name}</td>
-                          <td className="px-4 py-3 text-muted-foreground">{item.description || "-"}</td>
-                          <td className="px-4 py-3 text-right">
-                            <div className="flex justify-end gap-2">
-                              <Button size="sm" variant="outline" onClick={() => openEdit(item)}>
-                                <Edit2 className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-rose-600 hover:text-rose-700 hover:bg-rose-50"
-                                onClick={() => handleDelete(item.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+      {error ? <ErrorState message={error} onRetry={() => void refetch()} title="Gagal memproses rak" /> : null}
+
+      <SectionCard
+        action={<SearchFilterBar onSearchChange={setSearch} onSubmit={handleSearch} searchPlaceholder="Cari rak..." searchValue={search} />}
+        description={
+          <>
+            Daftar rak buku perpustakaan. Total: <strong>{total}</strong> data.
+          </>
+        }
+        title="Data Rak"
+      >
+        <DataTable
+          actions={(item) => (
+            <>
+              <Button onClick={() => openEdit(item)} size="sm" variant="outline">
+                <Edit3 className="h-4 w-4" /> Edit
+              </Button>
+              <Button onClick={() => setPendingDelete(item)} size="sm" variant="ghost">
+                <Trash2 className="h-4 w-4" /> Hapus
+              </Button>
+            </>
           )}
-        </CardContent>
-      </Card>
+          columns={columns}
+          data={shelves}
+          emptyState={{
+            action: (
+              <Button onClick={openCreate} variant="soft">
+                Tambah rak pertama
+              </Button>
+            ),
+            description: "Belum ada data rak atau hasil pencarian kosong.",
+            title: "Data masih kosong",
+          }}
+          getRowId={(item) => item.id}
+          loading={loading}
+          minWidth="min-w-[760px]"
+        />
+      </SectionCard>
 
-      <FormModal open={isModalOpen} onClose={() => setIsModalOpen(false)} title={formData.id ? "Edit Rak" : "Tambah Rak"}>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              Kode Rak <span className="text-rose-500">*</span>
-            </label>
+      <FormModal
+        description="Lengkapi informasi rak penyimpanan buku."
+        onClose={() => setFormOpen(false)}
+        open={formOpen}
+        title={formData.id ? "Edit Rak" : "Tambah Rak"}
+      >
+        <form className="grid gap-4" onSubmit={handleSubmit}>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-foreground">
+              Kode Rak <span className="text-destructive">*</span>
+            </span>
             <Input
-              placeholder="RK-01"
-              value={formData.code}
               onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+              placeholder="RK-01"
               required
+              value={formData.code}
             />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              Nama Rak <span className="text-rose-500">*</span>
-            </label>
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-foreground">
+              Nama Rak <span className="text-destructive">*</span>
+            </span>
             <Input
-              placeholder="Fiksi, Sains, dll."
-              value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Fiksi, Sains, dll."
               required
+              value={formData.name}
             />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Lokasi</label>
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-foreground">Lokasi</span>
             <Input
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
               placeholder="Lantai 1, Sudut Kanan..."
               value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
             />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Deskripsi</label>
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-foreground">Deskripsi</span>
             <Input
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Penjelasan rak..."
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
-          </div>
-          <div className="flex items-center gap-2 pt-2">
+          </label>
+          <label className="flex items-center gap-2">
             <input
-              type="checkbox"
-              id="isActive"
               checked={formData.isActive}
-              onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
               className="h-4 w-4 rounded border-border"
+              id="isActive"
+              onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+              type="checkbox"
             />
-            <label htmlFor="isActive" className="text-sm font-medium cursor-pointer">
-              Aktif
-            </label>
-          </div>
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
+            <span className="text-sm font-semibold text-foreground">Aktif</span>
+          </label>
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button onClick={() => setFormOpen(false)} type="button" variant="outline">
               Batal
             </Button>
-            <Button type="submit" disabled={saving}>
-              {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Simpan
+            <Button disabled={submitting} type="submit">
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Simpan
             </Button>
           </div>
         </form>
       </FormModal>
+
+      <ConfirmDialog
+        description="Hapus rak ini? Tindakan tidak dapat dibatalkan."
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => void confirmDelete()}
+        open={Boolean(pendingDelete)}
+        title="Konfirmasi hapus rak"
+      />
     </div>
   );
 }

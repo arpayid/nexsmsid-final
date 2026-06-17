@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { BarChart3, CheckCircle2, FileText, Loader2, Send, Archive } from "lucide-react";
 
-import { Button, Card, CardContent, CardHeader, CardTitle, DataTable, ErrorState, PageHeader, StatCard } from "@nexsmsid/ui";
+import { Button, DataTable, ErrorState, PageHeader, SectionCard, StatCard } from "@nexsmsid/ui";
 import type { DataTableColumn } from "@nexsmsid/ui";
 
 import { useApiQuery } from "@/hooks/use-api-query";
@@ -32,7 +32,7 @@ export default function LetterReportsPage() {
     const [summaryData, letters] = await Promise.all([api.getLetterSummary(), api.listLetters({ limit: 5, status: "ISSUED" })]);
     return { summary: summaryData as Row, recentIssued: letters.items as Row[] };
   }, [api]);
-  const { data, error: fetchError, loading } = useApiQuery<LetterReportsData>(loadData, [api]);
+  const { data, error: fetchError, loading, refetch } = useApiQuery<LetterReportsData>(loadData, [api]);
   const error = actionError ?? fetchError;
   const summary = data?.summary;
   const recentIssued = data?.recentIssued ?? [];
@@ -68,7 +68,7 @@ export default function LetterReportsPage() {
         title="Rekap Surat"
       />
 
-      {error ? <ErrorState message={error} title="Gagal memproses rekap" /> : null}
+      {error ? <ErrorState message={error} onRetry={() => void refetch()} title="Gagal memproses rekap" /> : null}
 
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-6">
         <StatCard
@@ -116,26 +116,22 @@ export default function LetterReportsPage() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Surat Terbit Terbaru</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DataTable
-              columns={columns}
-              data={recentIssued}
-              getRowId={(row) => row.id as string}
-              loading={loading}
-              minWidth="min-w-[760px]"
-            />
-          </CardContent>
-        </Card>
+        <SectionCard className="lg:col-span-2" title="Surat Terbit Terbaru">
+          <DataTable
+            columns={columns}
+            data={recentIssued}
+            getRowId={(row) => row.id as string}
+            loading={loading}
+            minWidth="min-w-[760px]"
+            emptyState={{
+              title: "Belum ada surat terbit",
+              description: "Surat dengan status ISSUED akan muncul di sini.",
+            }}
+          />
+        </SectionCard>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Generate Report</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <SectionCard description="Export rekap surat ke format XLSX." title="Generate Report">
+          <div className="space-y-3">
             {reportTypes.map((report) => (
               <Button
                 className="w-full justify-start"
@@ -148,8 +144,8 @@ export default function LetterReportsPage() {
                 {report.title} XLSX
               </Button>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </SectionCard>
       </div>
     </div>
   );

@@ -1,23 +1,21 @@
 "use client";
 
 import { FormEvent, useCallback, useMemo, useState } from "react";
-import {
-  AlertCircle,
-  Edit3,
-  Plus,
-  Printer,
-  RefreshCcw,
-  Search,
-  Trash2,
-  Loader2,
-  CheckCircle2,
-  XCircle,
-  ArrowRightCircle,
-  Undo2,
-  X,
-} from "lucide-react";
+import { Edit3, Plus, Printer, RefreshCcw, Trash2, Loader2, CheckCircle2, XCircle, ArrowRightCircle, Undo2, X } from "lucide-react";
 
-import { Button, Card, CardContent, CardHeader, CardTitle, EmptyState, FormModal, Input, PageHeader, StatusBadge } from "@nexsmsid/ui";
+import {
+  Button,
+  ConfirmDialog,
+  DataTable,
+  ErrorState,
+  FormModal,
+  Input,
+  PageHeader,
+  SearchFilterBar,
+  SectionCard,
+  StatusBadge,
+} from "@nexsmsid/ui";
+import type { DataTableColumn } from "@nexsmsid/ui";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
 import { EntityPicker } from "@/components/entity-picker";
@@ -40,6 +38,30 @@ type StatusMapEntry = {
   variant: "success" | "warning" | "info" | "secondary" | "outline";
 };
 
+type LoanConfirmAction = "approve" | "reject" | "borrow" | "return" | "cancel" | "delete";
+
+const LOAN_STATUS_MAP: Record<string, StatusMapEntry> = {
+  REQUESTED: { label: "Menunggu Persetujuan", variant: "outline" },
+  APPROVED: { label: "Disetujui", variant: "info" },
+  REJECTED: { label: "Ditolak", variant: "secondary" },
+  BORROWED: { label: "Dipinjam", variant: "warning" },
+  RETURNED: { label: "Dikembalikan", variant: "success" },
+  CANCELLED: { label: "Dibatalkan", variant: "secondary" },
+  OVERDUE: { label: "Jatuh Tempo / Terlambat", variant: "warning" },
+};
+
+const CONFIRM_COPY: Record<LoanConfirmAction, { description: string; title: string }> = {
+  approve: { description: "Setujui permintaan peminjaman ini?", title: "Konfirmasi persetujuan" },
+  reject: { description: "Tolak permintaan peminjaman ini?", title: "Konfirmasi penolakan" },
+  borrow: { description: "Tandai barang sebagai sedang dipinjam?", title: "Konfirmasi peminjaman" },
+  return: { description: "Tandai barang sebagai sudah dikembalikan?", title: "Konfirmasi pengembalian" },
+  cancel: { description: "Batalkan peminjaman ini?", title: "Konfirmasi pembatalan" },
+  delete: { description: "Hapus data peminjaman ini? Tindakan tidak dapat dibatalkan.", title: "Konfirmasi hapus" },
+};
+
+const SELECT_CLASS =
+  "w-full rounded-xl border border-input bg-card px-4 py-2 text-sm shadow-sm outline-none transition-all focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+
 export default function InventoryLoansPage() {
   const api = useMemo(() => createBrowserApiClient(), []);
   const [search, setSearch] = useState("");
@@ -47,6 +69,7 @@ export default function InventoryLoansPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<InventoryLoanRow | null>(null);
+  const [pendingConfirm, setPendingConfirm] = useState<{ action: LoanConfirmAction; item: InventoryLoanRow } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [printingId, setPrintingId] = useState<string | null>(null);
 
@@ -56,7 +79,9 @@ export default function InventoryLoansPage() {
   }, [api, appliedSearch]);
   const { data: itemsData, error: fetchError, loading, refetch } = useApiQuery<InventoryLoanRow[]>(loadLoans, [api, appliedSearch]);
   const items = itemsData ?? [];
+  const total = items.length;
   const error = actionError ?? fetchError;
+
   async function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (appliedSearch === search) {
@@ -76,14 +101,21 @@ export default function InventoryLoansPage() {
     setFormOpen(true);
   }
 
-  async function handleDelete(item: InventoryLoanRow) {
-    if (!window.confirm("Hapus data peminjaman ini?")) return;
+  async function handleConfirmAction() {
+    if (!pendingConfirm) return;
+    const { action, item } = pendingConfirm;
     setActionError(null);
     try {
-      await api.deleteInventoryLoan(item.id);
+      if (action === "approve") await api.approveInventoryLoan(item.id);
+      else if (action === "reject") await api.rejectInventoryLoan(item.id);
+      else if (action === "borrow") await api.markInventoryLoanBorrowed(item.id);
+      else if (action === "return") await api.returnInventoryLoan(item.id);
+      else if (action === "cancel") await api.cancelInventoryLoan(item.id);
+      else await api.deleteInventoryLoan(item.id);
+      setPendingConfirm(null);
       await refetch();
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Gagal menghapus");
+      setActionError(err instanceof Error ? err.message : `Gagal memproses aksi peminjaman`);
     }
   }
 
@@ -96,21 +128,6 @@ export default function InventoryLoansPage() {
       setActionError(printError instanceof Error ? printError.message : "Gagal membuat PDF peminjaman");
     } finally {
       setPrintingId(null);
-    }
-  }
-
-  async function handleAction(item: InventoryLoanRow, actionType: "approve" | "reject" | "borrow" | "return" | "cancel") {
-    if (!window.confirm(`Yakin ingin melakukan aksi: ${actionType}?`)) return;
-    setActionError(null);
-    try {
-      if (actionType === "approve") await api.approveInventoryLoan(item.id);
-      if (actionType === "reject") await api.rejectInventoryLoan(item.id);
-      if (actionType === "borrow") await api.markInventoryLoanBorrowed(item.id);
-      if (actionType === "return") await api.returnInventoryLoan(item.id);
-      if (actionType === "cancel") await api.cancelInventoryLoan(item.id);
-      await refetch();
-    } catch (err) {
-      setActionError(err instanceof Error ? err.message : `Gagal melakukan aksi ${actionType}`);
     }
   }
 
@@ -146,18 +163,34 @@ export default function InventoryLoansPage() {
     }
   }
 
-  const LOAN_STATUS_MAP: Record<string, StatusMapEntry> = {
-    REQUESTED: { label: "Menunggu Persetujuan", variant: "outline" },
-    APPROVED: { label: "Disetujui", variant: "info" },
-    REJECTED: { label: "Ditolak", variant: "secondary" },
-    BORROWED: { label: "Dipinjam", variant: "warning" },
-    RETURNED: { label: "Dikembalikan", variant: "success" },
-    CANCELLED: { label: "Dibatalkan", variant: "secondary" },
-    OVERDUE: { label: "Jatuh Tempo / Terlambat", variant: "warning" },
-  };
+  const columns: DataTableColumn<InventoryLoanRow>[] = [
+    { cell: (item) => item.item?.name ?? "-", header: "Barang", key: "item" },
+    {
+      cell: (item) => (
+        <>
+          {item.borrowerName ?? "-"}
+          <br />
+          <span className="text-xs text-muted-foreground">{item.borrowerType}</span>
+        </>
+      ),
+      header: "Peminjam",
+      key: "borrower",
+    },
+    { cell: (item) => item.quantity ?? "-", header: "Jumlah", key: "quantity" },
+    {
+      cell: (item) => (item.dueAt ? new Date(item.dueAt).toLocaleDateString("id-ID") : "-"),
+      header: "Batas Waktu",
+      key: "dueAt",
+    },
+    {
+      cell: (item) => <StatusBadge map={LOAN_STATUS_MAP} value={item.status} />,
+      header: "Status",
+      key: "status",
+    },
+  ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <PageHeader
         actions={
           <>
@@ -175,142 +208,95 @@ export default function InventoryLoansPage() {
         title="Peminjaman Barang"
       />
 
-      {error ? (
-        <div className="flex items-center gap-3 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
-          <AlertCircle className="h-5 w-5" /> {error}
-        </div>
-      ) : null}
+      {error ? <ErrorState message={error} onRetry={() => void refetch()} title="Gagal memproses peminjaman" /> : null}
 
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <CardTitle>Riwayat Peminjaman</CardTitle>
-            </div>
-            <form className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row lg:items-center" onSubmit={handleSearch}>
-              <div className="relative w-full lg:max-w-sm">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  className="pl-11"
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Cari peminjam..."
-                  value={search}
-                />
-              </div>
-              <Button type="submit" variant="soft">
-                Cari
-              </Button>
-            </form>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="grid min-h-48 place-items-center rounded-xl border border-dashed bg-surface-muted text-sm font-bold text-muted-foreground">
-              <span className="inline-flex items-center gap-2">
-                <Loader2 className="h-5 w-5 animate-spin text-primary" /> Memuat data...
-              </span>
-            </div>
-          ) : items.length ? (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[900px] text-left text-sm">
-                <thead>
-                  <tr className="border-b text-xs uppercase tracking-[0.14em] text-muted-foreground">
-                    <th className="px-4 py-3 font-semibold">Barang</th>
-                    <th className="px-4 py-3 font-semibold">Peminjam</th>
-                    <th className="px-4 py-3 font-semibold">Jumlah</th>
-                    <th className="px-4 py-3 font-semibold">Batas Waktu</th>
-                    <th className="px-4 py-3 font-semibold">Status</th>
-                    <th className="px-4 py-3 text-right font-semibold">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((item) => (
-                    <tr className="border-b last:border-0" key={item.id}>
-                      <td className="px-4 py-4 font-semibold text-muted-foreground">{item.item?.name ?? "-"}</td>
-                      <td className="px-4 py-4 font-semibold text-muted-foreground">
-                        {item.borrowerName}
-                        <br />
-                        <span className="text-xs text-muted-foreground">{item.borrowerType}</span>
-                      </td>
-                      <td className="px-4 py-4 font-semibold text-muted-foreground">{item.quantity}</td>
-                      <td className="px-4 py-4 font-semibold text-muted-foreground">
-                        {item.dueAt ? new Date(item.dueAt).toLocaleDateString("id-ID") : "-"}
-                      </td>
-                      <td className="px-4 py-4">
-                        <StatusBadge map={LOAN_STATUS_MAP} value={item.status} />
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex justify-end gap-2">
-                          {item.status === "REQUESTED" ? (
-                            <>
-                              <Button onClick={() => handleAction(item, "approve")} size="sm" variant="soft" aria-label="Setujui">
-                                <CheckCircle2 className="h-4 w-4" />
-                              </Button>
-                              <Button onClick={() => handleAction(item, "reject")} size="sm" variant="outline" aria-label="Tolak">
-                                <XCircle className="h-4 w-4" />
-                              </Button>
-                              <Button onClick={() => openEdit(item)} size="sm" variant="outline" aria-label="Edit">
-                                <Edit3 className="h-4 w-4" />
-                              </Button>
-                            </>
-                          ) : null}
+      <SectionCard
+        action={
+          <SearchFilterBar onSearchChange={setSearch} onSubmit={handleSearch} searchPlaceholder="Cari peminjam..." searchValue={search} />
+        }
+        description={
+          <>
+            Riwayat peminjaman barang. Total: <strong>{total}</strong> data.
+          </>
+        }
+        title="Riwayat Peminjaman"
+      >
+        <DataTable
+          actions={(item) => (
+            <>
+              {item.status === "REQUESTED" ? (
+                <>
+                  <Button onClick={() => setPendingConfirm({ action: "approve", item })} size="sm" variant="soft" aria-label="Setujui">
+                    <CheckCircle2 className="h-4 w-4" /> Setujui
+                  </Button>
+                  <Button onClick={() => setPendingConfirm({ action: "reject", item })} size="sm" variant="outline" aria-label="Tolak">
+                    <XCircle className="h-4 w-4" /> Tolak
+                  </Button>
+                  <Button onClick={() => openEdit(item)} size="sm" variant="outline" aria-label="Edit">
+                    <Edit3 className="h-4 w-4" /> Edit
+                  </Button>
+                </>
+              ) : null}
 
-                          {item.status === "APPROVED" ? (
-                            <Button onClick={() => handleAction(item, "borrow")} size="sm" variant="soft" aria-label="Tandai Dipinjam">
-                              <ArrowRightCircle className="h-4 w-4" />
-                            </Button>
-                          ) : null}
-
-                          {item.status === "BORROWED" || item.status === "OVERDUE" ? (
-                            <Button onClick={() => handleAction(item, "return")} size="sm" variant="soft" aria-label="Dikembalikan">
-                              <Undo2 className="h-4 w-4" />
-                            </Button>
-                          ) : null}
-
-                          {item.status === "REQUESTED" || item.status === "APPROVED" ? (
-                            <Button onClick={() => handleAction(item, "cancel")} size="sm" variant="ghost" aria-label="Batal">
-                              <X className="h-4 w-4" />
-                            </Button>
-                          ) : null}
-
-                          <Button
-                            disabled={printingId === item.id}
-                            onClick={() => handlePrint(item)}
-                            size="sm"
-                            variant="soft"
-                            aria-label="Cetak Surat Peminjaman"
-                          >
-                            {printingId === item.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />}
-                          </Button>
-
-                          <Button onClick={() => handleDelete(item)} size="sm" variant="ghost" aria-label="Hapus">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <EmptyState
-              action={
-                <Button onClick={openCreate} variant="soft">
-                  Buat form peminjaman pertama
+              {item.status === "APPROVED" ? (
+                <Button onClick={() => setPendingConfirm({ action: "borrow", item })} size="sm" variant="soft" aria-label="Tandai Dipinjam">
+                  <ArrowRightCircle className="h-4 w-4" /> Dipinjam
                 </Button>
-              }
-              description="Belum ada data peminjaman."
-              title="Data masih kosong"
-            />
-          )}
-        </CardContent>
-      </Card>
+              ) : null}
 
-      <FormModal hideOverlay onClose={() => setFormOpen(false)} open={formOpen} title={`${editing ? "Edit" : "Form"} Peminjaman`}>
+              {item.status === "BORROWED" || item.status === "OVERDUE" ? (
+                <Button onClick={() => setPendingConfirm({ action: "return", item })} size="sm" variant="soft" aria-label="Dikembalikan">
+                  <Undo2 className="h-4 w-4" /> Kembali
+                </Button>
+              ) : null}
+
+              {item.status === "REQUESTED" || item.status === "APPROVED" ? (
+                <Button onClick={() => setPendingConfirm({ action: "cancel", item })} size="sm" variant="ghost" aria-label="Batal">
+                  <X className="h-4 w-4" /> Batal
+                </Button>
+              ) : null}
+
+              <Button
+                disabled={printingId === item.id}
+                onClick={() => void handlePrint(item)}
+                size="sm"
+                variant="soft"
+                aria-label="Cetak Surat Peminjaman"
+              >
+                {printingId === item.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />} PDF
+              </Button>
+
+              <Button onClick={() => setPendingConfirm({ action: "delete", item })} size="sm" variant="ghost" aria-label="Hapus">
+                <Trash2 className="h-4 w-4" /> Hapus
+              </Button>
+            </>
+          )}
+          columns={columns}
+          data={items}
+          emptyState={{
+            action: (
+              <Button onClick={openCreate} variant="soft">
+                Buat form peminjaman pertama
+              </Button>
+            ),
+            description: "Belum ada data peminjaman atau hasil pencarian kosong.",
+            title: "Data masih kosong",
+          }}
+          getRowId={(item) => item.id}
+          loading={loading}
+          minWidth="min-w-[900px]"
+        />
+      </SectionCard>
+
+      <FormModal
+        description="Lengkapi detail permintaan peminjaman barang."
+        onClose={() => setFormOpen(false)}
+        open={formOpen}
+        title={`${editing ? "Edit" : "Form"} Peminjaman`}
+      >
         <form className="grid gap-4" onSubmit={handleSubmit}>
           <label className="space-y-2">
-            <span className="text-sm font-bold text-muted-foreground">Pilih Barang</span>
+            <span className="text-sm font-semibold text-foreground">Pilih Barang</span>
             <EntityPicker
               defaultValue={editing?.itemId ?? ""}
               entityType="inventory-item"
@@ -322,13 +308,8 @@ export default function InventoryLoansPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <label className="space-y-2">
-              <span className="text-sm font-bold text-muted-foreground">Tipe Peminjam</span>
-              <select
-                className="w-full rounded-lg border border-input bg-card px-4 py-2 text-sm shadow-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
-                defaultValue={editing?.borrowerType ?? "STUDENT"}
-                name="borrowerType"
-                required
-              >
+              <span className="text-sm font-semibold text-foreground">Tipe Peminjam</span>
+              <select className={SELECT_CLASS} defaultValue={editing?.borrowerType ?? "STUDENT"} name="borrowerType" required>
                 <option value="STUDENT">Siswa</option>
                 <option value="TEACHER">Guru</option>
                 <option value="STAFF">Staff</option>
@@ -336,14 +317,14 @@ export default function InventoryLoansPage() {
               </select>
             </label>
             <label className="space-y-2">
-              <span className="text-sm font-bold text-muted-foreground">Nama Lengkap Peminjam</span>
+              <span className="text-sm font-semibold text-foreground">Nama Lengkap Peminjam</span>
               <Input defaultValue={editing?.borrowerName ?? ""} name="borrowerName" required />
             </label>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <label className="space-y-2">
-              <span className="text-sm font-bold text-muted-foreground">Tanggal Jatuh Tempo</span>
+              <span className="text-sm font-semibold text-foreground">Tanggal Jatuh Tempo</span>
               <Input
                 defaultValue={editing?.dueAt ? new Date(editing.dueAt).toISOString().split("T")[0] : ""}
                 name="dueAt"
@@ -352,27 +333,22 @@ export default function InventoryLoansPage() {
               />
             </label>
             <label className="space-y-2">
-              <span className="text-sm font-bold text-muted-foreground">Jumlah Barang</span>
+              <span className="text-sm font-semibold text-foreground">Jumlah Barang</span>
               <Input defaultValue={editing?.quantity ?? "1"} name="quantity" type="number" min="1" required />
             </label>
           </div>
 
           <label className="space-y-2">
-            <span className="text-sm font-bold text-muted-foreground">Keperluan Peminjaman</span>
+            <span className="text-sm font-semibold text-foreground">Keperluan Peminjaman</span>
             <Input defaultValue={editing?.purpose ?? ""} name="purpose" />
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm font-bold text-muted-foreground">Catatan Tambahan</span>
-            <textarea
-              className="w-full rounded-lg border border-input bg-card px-4 py-2 text-sm shadow-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
-              defaultValue={editing?.note ?? ""}
-              name="note"
-              rows={2}
-            />
+            <span className="text-sm font-semibold text-foreground">Catatan Tambahan</span>
+            <textarea className={SELECT_CLASS} defaultValue={editing?.note ?? ""} name="note" rows={2} />
           </label>
 
-          <div className="flex gap-3 justify-end mt-4">
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <Button onClick={() => setFormOpen(false)} type="button" variant="outline">
               Batal
             </Button>
@@ -382,6 +358,14 @@ export default function InventoryLoansPage() {
           </div>
         </form>
       </FormModal>
+
+      <ConfirmDialog
+        description={pendingConfirm ? CONFIRM_COPY[pendingConfirm.action].description : ""}
+        onCancel={() => setPendingConfirm(null)}
+        onConfirm={() => void handleConfirmAction()}
+        open={Boolean(pendingConfirm)}
+        title={pendingConfirm ? CONFIRM_COPY[pendingConfirm.action].title : "Konfirmasi"}
+      />
     </div>
   );
 }

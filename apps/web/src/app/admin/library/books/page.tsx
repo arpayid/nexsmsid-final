@@ -1,9 +1,22 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { Plus, Search, Edit2, Trash2, Loader2, AlertCircle, BookOpen } from "lucide-react";
+import { FormEvent, useCallback, useMemo, useState } from "react";
+import { Edit3, Loader2, Plus, RefreshCcw, Trash2 } from "lucide-react";
 
-import { Button, Card, CardContent, Input, PageHeader, FormModal } from "@nexsmsid/ui";
+import {
+  Badge,
+  Button,
+  ConfirmDialog,
+  DataTable,
+  ErrorState,
+  FormModal,
+  Input,
+  PageHeader,
+  SearchFilterBar,
+  SectionCard,
+} from "@nexsmsid/ui";
+import type { DataTableColumn } from "@nexsmsid/ui";
+
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
 
@@ -31,44 +44,60 @@ type BooksData = {
   categories: LibraryCategoryRow[];
 };
 
+const emptyFormData = () => ({
+  id: "",
+  categoryId: "",
+  code: "",
+  title: "",
+  author: "",
+  publisher: "",
+  publicationYear: new Date().getFullYear(),
+  isbn: "",
+  description: "",
+});
+
 export default function LibraryBooksPage() {
   const api = useMemo(() => createBrowserApiClient(), []);
 
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const [formData, setFormData] = useState({
-    id: "",
-    categoryId: "",
-    code: "",
-    title: "",
-    author: "",
-    publisher: "",
-    publicationYear: new Date().getFullYear(),
-    isbn: "",
-    description: "",
-  });
+  const [appliedSearch, setAppliedSearch] = useState("");
+  const [formOpen, setFormOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<LibraryBookRow | null>(null);
+  const [formData, setFormData] = useState(emptyFormData);
 
   const loadBooks = useCallback(async () => {
     const [resBooks, resCategories] = await Promise.all([
-      api.listLibraryBooks({ page, limit: 50, search }),
+      api.listLibraryBooks({ page: 1, limit: 50, search: appliedSearch || undefined }),
       api.listLibraryCategories({ limit: 100 }),
     ]);
     return { books: resBooks.data, categories: resCategories.data };
-  }, [api, page, search]);
-  const { data, error, loading, refetch } = useApiQuery<BooksData>(loadBooks, [page, search]);
+  }, [api, appliedSearch]);
+  const { data, error: fetchError, loading, refetch } = useApiQuery<BooksData>(loadBooks, [appliedSearch]);
   const books = data?.books ?? [];
   const categories = data?.categories ?? [];
+  const total = books.length;
+  const error = actionError ?? fetchError;
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (appliedSearch === search) {
+      await refetch();
+      return;
+    }
+    setAppliedSearch(search);
+  }
+
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!formData.title || !formData.categoryId || !formData.code || !formData.author) {
-      return alert("Mohon isi kolom yang wajib (Kategori, Kode, Judul, Penulis)");
+      setActionError("Mohon isi kolom yang wajib (Kategori, Kode, Judul, Penulis)");
+      return;
     }
 
-    setSaving(true);
+    setSubmitting(true);
+    setActionError(null);
     try {
       const payload = {
         categoryId: formData.categoryId,
@@ -83,44 +112,33 @@ export default function LibraryBooksPage() {
 
       if (formData.id) {
         await api.updateLibraryBook(formData.id, payload);
-        alert("Data buku berhasil diperbarui.");
       } else {
         await api.createLibraryBook(payload);
-        alert("Buku baru berhasil ditambahkan.");
       }
-      setIsModalOpen(false);
-      void refetch();
+      setFormOpen(false);
+      await refetch();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Gagal menyimpan buku");
+      setActionError(err instanceof Error ? err.message : "Gagal menyimpan buku");
     } finally {
-      setSaving(false);
+      setSubmitting(false);
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm("Apakah Anda yakin ingin menghapus buku ini? Semua eksemplar akan ikut terhapus.")) return;
+  async function confirmDelete() {
+    if (!pendingDelete) return;
+    setActionError(null);
     try {
-      await api.deleteLibraryBook(id);
-      alert("Buku berhasil dihapus.");
-      void refetch();
+      await api.deleteLibraryBook(pendingDelete.id);
+      setPendingDelete(null);
+      await refetch();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Gagal menghapus buku");
+      setActionError(err instanceof Error ? err.message : "Gagal menghapus buku");
     }
   }
 
   function openCreate() {
-    setFormData({
-      id: "",
-      categoryId: "",
-      code: "",
-      title: "",
-      author: "",
-      publisher: "",
-      publicationYear: new Date().getFullYear(),
-      isbn: "",
-      description: "",
-    });
-    setIsModalOpen(true);
+    setFormData(emptyFormData());
+    setFormOpen(true);
   }
 
   function openEdit(item: LibraryBookRow) {
@@ -135,197 +153,209 @@ export default function LibraryBooksPage() {
       isbn: item.isbn || "",
       description: item.description || "",
     });
-    setIsModalOpen(true);
+    setFormOpen(true);
   }
+
+  const columns: DataTableColumn<LibraryBookRow>[] = [
+    {
+      cell: (item) => (
+        <div>
+          <div className="font-medium">{item.code}</div>
+          {item.isbn ? <div className="text-xs text-muted-foreground">ISBN: {item.isbn}</div> : null}
+        </div>
+      ),
+      header: "Kode/ISBN",
+      key: "code",
+    },
+    {
+      cell: (item) => <span className="font-semibold text-primary">{item.title}</span>,
+      header: "Judul Buku",
+      key: "title",
+    },
+    {
+      cell: (item) => item.author,
+      header: "Pengarang",
+      key: "author",
+    },
+    {
+      cell: (item) => (
+        <span className="text-muted-foreground">
+          {item.publisher || "-"} ({item.publicationYear ?? "-"})
+        </span>
+      ),
+      header: "Penerbit",
+      key: "publisher",
+    },
+    {
+      cell: (item) => <Badge variant="secondary">{item.category?.name ?? "-"}</Badge>,
+      header: "Kategori",
+      key: "category",
+    },
+    {
+      cell: (item) => item._count?.copies ?? 0,
+      header: "Eksemplar",
+      key: "copies",
+    },
+  ];
 
   return (
     <div className="space-y-6">
       <PageHeader
+        actions={
+          <>
+            <Button onClick={() => void refetch()} variant="outline">
+              <RefreshCcw className="h-4 w-4" /> Refresh
+            </Button>
+            <Button onClick={openCreate}>
+              <Plus className="h-4 w-4" /> Tambah Buku
+            </Button>
+          </>
+        }
         breadcrumb={["Admin", "Perpustakaan", "Data Buku"]}
         description="Kelola katalog buku, judul, pengarang, dan klasifikasi buku perpustakaan."
+        eyebrow="Perpustakaan"
         title="Data Buku"
       />
 
-      <Card>
-        <CardContent className="p-4 sm:p-6">
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input className="pl-9" placeholder="Cari buku..." value={search} onChange={(e) => setSearch(e.target.value)} />
-            </div>
-            <Button onClick={openCreate} className="w-full sm:w-auto">
-              <Plus className="mr-2 h-4 w-4" /> Tambah Buku
-            </Button>
-          </div>
+      {error ? <ErrorState message={error} onRetry={() => void refetch()} title="Gagal memproses data buku" /> : null}
 
-          {error ? (
-            <div className="flex items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">
-              <AlertCircle className="h-5 w-5" /> {error}
-            </div>
-          ) : loading ? (
-            <div className="flex h-32 items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-surface-muted text-muted-foreground">
-                    <tr>
-                      <th className="px-4 py-3 font-medium">Kode/ISBN</th>
-                      <th className="px-4 py-3 font-medium">Judul Buku</th>
-                      <th className="px-4 py-3 font-medium">Pengarang</th>
-                      <th className="px-4 py-3 font-medium">Penerbit</th>
-                      <th className="px-4 py-3 font-medium">Kategori</th>
-                      <th className="px-4 py-3 font-medium">Eksemplar</th>
-                      <th className="px-4 py-3 font-medium text-right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {books.length === 0 ? (
-                      <tr>
-                        <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                          Tidak ada data buku ditemukan.
-                        </td>
-                      </tr>
-                    ) : (
-                      books.map((item) => (
-                        <tr key={item.id} className="hover:bg-surface-muted transition-colors">
-                          <td className="px-4 py-3 font-medium text-foreground">
-                            {item.code}
-                            {item.isbn && <div className="text-xs text-muted-foreground font-normal">ISBN: {item.isbn}</div>}
-                          </td>
-                          <td className="px-4 py-3 font-semibold text-primary">{item.title}</td>
-                          <td className="px-4 py-3">{item.author}</td>
-                          <td className="px-4 py-3 text-muted-foreground">
-                            {item.publisher || "-"} ({item.publicationYear})
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className="inline-flex rounded-full bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
-                              {item.category?.name}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 font-medium">{item._count?.copies || 0}</td>
-                          <td className="px-4 py-3 text-right">
-                            <div className="flex justify-end gap-2">
-                              <Button size="sm" variant="outline" onClick={() => openEdit(item)}>
-                                <Edit2 className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-rose-600 hover:text-rose-700 hover:bg-rose-50"
-                                onClick={() => handleDelete(item.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+      <SectionCard
+        action={
+          <SearchFilterBar onSearchChange={setSearch} onSubmit={handleSearch} searchPlaceholder="Cari buku..." searchValue={search} />
+        }
+        description={
+          <>
+            Daftar katalog buku perpustakaan. Total: <strong>{total}</strong> data.
+          </>
+        }
+        title="Data Buku"
+      >
+        <DataTable
+          actions={(item) => (
+            <>
+              <Button onClick={() => openEdit(item)} size="sm" variant="outline">
+                <Edit3 className="h-4 w-4" /> Edit
+              </Button>
+              <Button onClick={() => setPendingDelete(item)} size="sm" variant="ghost">
+                <Trash2 className="h-4 w-4" /> Hapus
+              </Button>
+            </>
           )}
-        </CardContent>
-      </Card>
+          columns={columns}
+          data={books}
+          emptyState={{
+            action: (
+              <Button onClick={openCreate} variant="soft">
+                Tambah buku pertama
+              </Button>
+            ),
+            description: "Belum ada data buku atau hasil pencarian kosong.",
+            title: "Data masih kosong",
+          }}
+          getRowId={(item) => item.id}
+          loading={loading}
+          minWidth="min-w-[900px]"
+        />
+      </SectionCard>
 
-      <FormModal open={isModalOpen} onClose={() => setIsModalOpen(false)} title={formData.id ? "Edit Buku" : "Tambah Buku"}>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Kategori <span className="text-rose-500">*</span>
-              </label>
-              <select
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                value={formData.categoryId}
-                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                required
-              >
-                <option value="">-- Pilih Kategori --</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Kode Buku <span className="text-rose-500">*</span>
-              </label>
-              <Input
-                placeholder="BK-001"
-                value={formData.code}
-                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              Judul Buku <span className="text-rose-500">*</span>
-            </label>
-            <Input
-              placeholder="Masukkan judul buku"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+      <FormModal
+        description="Lengkapi informasi katalog buku perpustakaan."
+        onClose={() => setFormOpen(false)}
+        open={formOpen}
+        title={formData.id ? "Edit Buku" : "Tambah Buku"}
+      >
+        <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-foreground">
+              Kategori <span className="text-destructive">*</span>
+            </span>
+            <select
+              className="w-full rounded-xl border border-input bg-card px-4 py-2 text-sm shadow-sm outline-none transition-all focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
               required
+              value={formData.categoryId}
+            >
+              <option value="">-- Pilih Kategori --</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-foreground">
+              Kode Buku <span className="text-destructive">*</span>
+            </span>
+            <Input
+              onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+              placeholder="BK-001"
+              required
+              value={formData.code}
             />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Pengarang <span className="text-rose-500">*</span>
-              </label>
+          </label>
+          <div className="md:col-span-2">
+            <label className="space-y-2">
+              <span className="text-sm font-semibold text-foreground">
+                Judul Buku <span className="text-destructive">*</span>
+              </span>
               <Input
-                placeholder="Nama Pengarang"
-                value={formData.author}
-                onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder="Masukkan judul buku"
                 required
+                value={formData.title}
               />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Penerbit</label>
-              <Input
-                placeholder="Penerbit"
-                value={formData.publisher}
-                onChange={(e) => setFormData({ ...formData, publisher: e.target.value })}
-              />
-            </div>
+            </label>
           </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Tahun Terbit</label>
-              <Input
-                type="number"
-                value={formData.publicationYear}
-                onChange={(e) => setFormData({ ...formData, publicationYear: parseInt(e.target.value) || new Date().getFullYear() })}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">ISBN</label>
-              <Input placeholder="123-456-789" value={formData.isbn} onChange={(e) => setFormData({ ...formData, isbn: e.target.value })} />
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-foreground">
+              Pengarang <span className="text-destructive">*</span>
+            </span>
+            <Input
+              onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+              placeholder="Nama Pengarang"
+              required
+              value={formData.author}
+            />
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-foreground">Penerbit</span>
+            <Input
+              onChange={(e) => setFormData({ ...formData, publisher: e.target.value })}
+              placeholder="Penerbit"
+              value={formData.publisher}
+            />
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-foreground">Tahun Terbit</span>
+            <Input
+              onChange={(e) => setFormData({ ...formData, publicationYear: parseInt(e.target.value, 10) || new Date().getFullYear() })}
+              type="number"
+              value={formData.publicationYear}
+            />
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-foreground">ISBN</span>
+            <Input onChange={(e) => setFormData({ ...formData, isbn: e.target.value })} placeholder="123-456-789" value={formData.isbn} />
+          </label>
+          <div className="flex flex-col-reverse gap-3 md:col-span-2 sm:flex-row sm:justify-end">
+            <Button onClick={() => setFormOpen(false)} type="button" variant="outline">
               Batal
             </Button>
-            <Button type="submit" disabled={saving}>
-              {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              {formData.id ? "Simpan Perubahan" : "Tambahkan Buku"}
+            <Button disabled={submitting} type="submit">
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} {formData.id ? "Simpan Perubahan" : "Tambahkan Buku"}
             </Button>
           </div>
         </form>
       </FormModal>
+
+      <ConfirmDialog
+        description="Hapus buku ini? Semua eksemplar akan ikut terhapus. Tindakan tidak dapat dibatalkan."
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => void confirmDelete()}
+        open={Boolean(pendingDelete)}
+        title="Konfirmasi hapus buku"
+      />
     </div>
   );
 }

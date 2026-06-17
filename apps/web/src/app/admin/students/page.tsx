@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { AlertCircle } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 import type { ClassroomReference, MasterDataRecord } from "@nexsmsid/api-client";
-import { Button, Card, CardContent, CardHeader, CardTitle } from "@nexsmsid/ui";
+import { Button, ErrorState, SectionCard } from "@nexsmsid/ui";
 
 import { PeoplePage, type PeopleField } from "@/components/people-page";
 import { createBrowserApiClient } from "@/lib/api-client";
@@ -52,32 +51,25 @@ export default function StudentsPage() {
   const [classrooms, setClassrooms] = useState<ClassroomReference[]>([]);
   const [classroomError, setClassroomError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let active = true;
-
-    async function loadClassrooms() {
-      try {
-        const response = await api.masterDataList("classrooms", { limit: 100 });
-        const items = (response.data as unknown as Array<Record<string, unknown>>).map((item) => ({
-          id: String(item.id),
-          code: String(item.code ?? ""),
-          name: String(item.name ?? ""),
-          level: Number(item.level ?? 0),
-        }));
-        if (active) setClassrooms(items);
-      } catch (loadError) {
-        if (active) {
-          setClassroomError(loadError instanceof Error ? loadError.message : "Gagal memuat classroom");
-        }
-      }
+  const loadClassrooms = useCallback(async () => {
+    setClassroomError(null);
+    try {
+      const response = await api.masterDataList("classrooms", { limit: 100 });
+      const items = (response.data as unknown as Array<Record<string, unknown>>).map((item) => ({
+        id: String(item.id),
+        code: String(item.code ?? ""),
+        name: String(item.name ?? ""),
+        level: Number(item.level ?? 0),
+      }));
+      setClassrooms(items);
+    } catch (loadError) {
+      setClassroomError(loadError instanceof Error ? loadError.message : "Gagal memuat classroom");
     }
-
-    void loadClassrooms();
-
-    return () => {
-      active = false;
-    };
   }, [api]);
+
+  useEffect(() => {
+    void loadClassrooms();
+  }, [loadClassrooms]);
 
   const resource = useMemo(
     () => ({
@@ -111,9 +103,7 @@ export default function StudentsPage() {
   return (
     <div className="space-y-6">
       {classroomError ? (
-        <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
-          <AlertCircle className="h-5 w-5" /> {classroomError}
-        </div>
+        <ErrorState message={classroomError} onRetry={() => void loadClassrooms()} title="Gagal memuat referensi kelas" />
       ) : null}
 
       <ClassroomSummary classrooms={classrooms} />
@@ -138,39 +128,30 @@ export default function StudentsPage() {
 function ClassroomSummary({ classrooms }: { classrooms: ClassroomReference[] }) {
   if (classrooms.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Belum ada kelas</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm leading-6 text-muted-foreground">
-            Tambahkan kelas terlebih dahulu di menu Master Data Kelas agar siswa dapat ditempatkan.
-          </p>
-        </CardContent>
-      </Card>
+      <SectionCard
+        description="Tambahkan kelas terlebih dahulu di menu Master Data Kelas agar siswa dapat ditempatkan."
+        title="Belum ada kelas"
+      >
+        <span className="sr-only">Tidak ada kelas</span>
+      </SectionCard>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Referensi Kelas</CardTitle>
-        <p className="mt-1 text-xs font-semibold text-muted-foreground">
-          {classrooms.length} kelas aktif. Gunakan pencarian di form siswa untuk memilih kelas.
-        </p>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-          {classrooms.slice(0, 6).map((classroom) => (
-            <div className="rounded-lg border border-border bg-surface-muted px-4 py-3 text-xs" key={classroom.id}>
-              <p className="font-semibold uppercase tracking-widest text-primary">
-                Tingkat {classroom.level} • {classroom.code}
-              </p>
-              <p className="text-sm font-bold text-foreground">{classroom.name}</p>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <SectionCard
+      description={`${classrooms.length} kelas aktif. Gunakan pencarian di form siswa untuk memilih kelas.`}
+      title="Referensi Kelas"
+    >
+      <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
+        {classrooms.slice(0, 6).map((classroom) => (
+          <div className="rounded-lg border border-border bg-surface-muted px-4 py-3 text-xs" key={classroom.id}>
+            <p className="font-semibold uppercase tracking-widest text-primary">
+              Tingkat {classroom.level} • {classroom.code}
+            </p>
+            <p className="text-sm font-bold text-foreground">{classroom.name}</p>
+          </div>
+        ))}
+      </div>
+    </SectionCard>
   );
 }

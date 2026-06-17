@@ -1,10 +1,8 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
-import { AlertCircle, Loader2 } from "lucide-react";
-
 import type { RoleSummary } from "@nexsmsid/api-client";
-import { DataTable, PageHeader } from "@nexsmsid/ui";
+import { DataTable, ErrorState, PageHeader, SectionCard } from "@nexsmsid/ui";
 
 import { PermissionGate } from "@/components/permission-gate";
 import { useApiQuery } from "@/hooks/use-api-query";
@@ -17,12 +15,12 @@ export default function RolesPage() {
     const response = await api.roles();
     return response.data;
   }, [api]);
-  const { data, error, loading } = useApiQuery<RoleSummary[]>(loadRoles, [api]);
+  const { data, error, loading, refetch } = useApiQuery<RoleSummary[]>(loadRoles, [api]);
   const items = data ?? [];
 
   return (
     <PermissionGate permission="roles.view">
-      <div className="space-y-8">
+      <div className="space-y-6">
         <PageHeader
           breadcrumb={["Admin", "Peran"]}
           description="Kelola peran dan izin akses pengguna."
@@ -30,19 +28,16 @@ export default function RolesPage() {
           title="Peran & Izin"
         />
 
-        {error ? (
-          <div className="flex items-center gap-3 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
-            <AlertCircle className="h-5 w-5" /> {error}
-          </div>
-        ) : null}
+        {error ? <ErrorState message={error} onRetry={() => void refetch()} title="Gagal memuat peran" /> : null}
 
-        {loading ? (
-          <div className="grid min-h-48 place-items-center rounded-xl border border-dashed bg-surface-muted text-sm font-bold text-muted-foreground">
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="h-5 w-5 animate-spin text-primary" /> Memuat data peran...
-            </span>
-          </div>
-        ) : (
+        <SectionCard
+          description={
+            <>
+              Peran sistem dan jumlah izin. Total: <strong>{items.length}</strong>.
+            </>
+          }
+          title="Data Peran"
+        >
           <DataTable
             columns={[
               { key: "name", header: "Nama" },
@@ -59,9 +54,11 @@ export default function RolesPage() {
               },
             ]}
             data={items}
+            emptyState={{ description: "Belum ada peran.", title: "Data kosong" }}
             getRowId={(item) => item.id}
+            loading={loading}
           />
-        )}
+        </SectionCard>
       </div>
     </PermissionGate>
   );

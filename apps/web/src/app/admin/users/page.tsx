@@ -1,10 +1,8 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
-import { AlertCircle, Loader2 } from "lucide-react";
-
 import type { UserSummary } from "@nexsmsid/api-client";
-import { DataTable, PageHeader } from "@nexsmsid/ui";
+import { DataTable, ErrorState, PageHeader, SectionCard } from "@nexsmsid/ui";
 
 import { PermissionGate } from "@/components/permission-gate";
 import { useApiQuery } from "@/hooks/use-api-query";
@@ -17,12 +15,12 @@ export default function UsersPage() {
     const response = await api.users();
     return response.data;
   }, [api]);
-  const { data, error, loading } = useApiQuery<UserSummary[]>(loadUsers, [api]);
+  const { data, error, loading, refetch } = useApiQuery<UserSummary[]>(loadUsers, [api]);
   const items = data ?? [];
 
   return (
     <PermissionGate permission="users.view">
-      <div className="space-y-8">
+      <div className="space-y-6">
         <PageHeader
           breadcrumb={["Admin", "Pengguna"]}
           description="Kelola akun pengguna dan peran akses sistem."
@@ -30,19 +28,16 @@ export default function UsersPage() {
           title="Pengguna"
         />
 
-        {error ? (
-          <div className="flex items-center gap-3 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
-            <AlertCircle className="h-5 w-5" /> {error}
-          </div>
-        ) : null}
+        {error ? <ErrorState message={error} onRetry={() => void refetch()} title="Gagal memuat pengguna" /> : null}
 
-        {loading ? (
-          <div className="grid min-h-48 place-items-center rounded-xl border border-dashed bg-surface-muted text-sm font-bold text-muted-foreground">
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="h-5 w-5 animate-spin text-primary" /> Memuat data pengguna...
-            </span>
-          </div>
-        ) : (
+        <SectionCard
+          description={
+            <>
+              Daftar akun terdaftar. Total: <strong>{items.length}</strong>.
+            </>
+          }
+          title="Data Pengguna"
+        >
           <DataTable
             columns={[
               { key: "name", header: "Nama" },
@@ -55,9 +50,11 @@ export default function UsersPage() {
               { key: "status", header: "Status" },
             ]}
             data={items}
+            emptyState={{ description: "Belum ada pengguna.", title: "Data kosong" }}
             getRowId={(item) => item.id}
+            loading={loading}
           />
-        )}
+        </SectionCard>
       </div>
     </PermissionGate>
   );

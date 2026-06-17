@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
-import { AlertCircle, FileText, Loader2, UserCheck, UserMinus, UserPlus, UserX, Users } from "lucide-react";
+import { FileText, Loader2, UserCheck, UserMinus, UserPlus, UserX, Users } from "lucide-react";
 import Link from "next/link";
 
-import { Button, Card, CardContent, PageHeader, StatCard } from "@nexsmsid/ui";
+import { Button, Card, CardContent, ErrorState, PageHeader, StatCard } from "@nexsmsid/ui";
 
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
@@ -23,7 +23,7 @@ export default function PpdbDashboardPage() {
     const response = await api.getPpdbSummary();
     return response as unknown as Record<string, unknown>;
   }, [api]);
-  const { data: summary, error, loading } = useApiQuery<Record<string, unknown>>(loadSummary, [api]);
+  const { data: summary, error, loading, refetch } = useApiQuery<Record<string, unknown>>(loadSummary, [api]);
 
   return (
     <div className="space-y-6">
@@ -44,11 +44,7 @@ export default function PpdbDashboardPage() {
         title="Dashboard PPDB"
       />
 
-      {error ? (
-        <div className="flex items-center gap-3 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
-          <AlertCircle className="h-5 w-5" /> {error}
-        </div>
-      ) : null}
+      {error ? <ErrorState message={error} onRetry={() => void refetch()} title="Gagal memuat dashboard PPDB" /> : null}
 
       {loading ? (
         <Card>

@@ -1,9 +1,22 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { Plus, Search, CheckCircle, XCircle, AlertTriangle, Loader2, AlertCircle } from "lucide-react";
+import { FormEvent, useCallback, useMemo, useState } from "react";
+import { CheckCircle, Loader2, Plus, RefreshCcw, XCircle } from "lucide-react";
 
-import { Button, Card, CardContent, Input, PageHeader, FormModal } from "@nexsmsid/ui";
+import {
+  Badge,
+  Button,
+  ConfirmDialog,
+  DataTable,
+  ErrorState,
+  FormModal,
+  Input,
+  PageHeader,
+  SearchFilterBar,
+  SectionCard,
+} from "@nexsmsid/ui";
+import type { DataTableColumn } from "@nexsmsid/ui";
+
 import { EntityPicker } from "@/components/entity-picker";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
@@ -23,44 +36,63 @@ type LibraryLoanRow = {
   };
 };
 
+const LOAN_STATUS_MAP: Record<string, { label: string; variant: "outline" | "info" | "success" | "secondary" | "warning" }> = {
+  BORROWED: { label: "Dipinjam", variant: "info" },
+  RETURNED: { label: "Dikembalikan", variant: "success" },
+  OVERDUE: { label: "Terlambat", variant: "warning" },
+  LOST: { label: "Hilang", variant: "secondary" },
+  CANCELLED: { label: "Dibatalkan", variant: "secondary" },
+};
+
+const emptyLoanForm = () => ({
+  memberId: "",
+  copyId: "",
+  dueAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+  note: "",
+});
+
 export default function LibraryLoansPage() {
   const api = useMemo(() => createBrowserApiClient(), []);
 
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-
+  const [appliedSearch, setAppliedSearch] = useState("");
+  const [formOpen, setFormOpen] = useState(false);
+  const [returnFormOpen, setReturnFormOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [pendingCancel, setPendingCancel] = useState<LibraryLoanRow | null>(null);
   const [selectedLoan, setSelectedLoan] = useState<LibraryLoanRow | null>(null);
-
-  const [formData, setFormData] = useState(() => ({
-    memberId: "",
-    copyId: "",
-    dueAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0], // 7 days from now
-    note: "",
-  }));
-
-  const [returnFormData, setReturnFormData] = useState({
-    returnNote: "",
-    condition: "GOOD",
-  });
-
-  // Since we don't have a lookup dropdown ready here,
-  // ideally we'd search members and copies dynamically.
-  // For simplicity, we just use text inputs for IDs if it's purely a UI demo,
-  // but a real app uses react-select. We'll use text input here.
+  const [formData, setFormData] = useState(emptyLoanForm);
+  const [returnFormData, setReturnFormData] = useState({ returnNote: "", condition: "GOOD" });
 
   const loadLoans = useCallback(async () => {
-    const res = await api.listLibraryLoans({ page, limit: 50, search });
+    const res = await api.listLibraryLoans({ page: 1, limit: 50, search: appliedSearch || undefined });
     return res.data;
-  }, [api, page, search]);
-  const { data: loansData, error, loading, refetch } = useApiQuery<LibraryLoanRow[]>(loadLoans, [page, search]);
+  }, [api, appliedSearch]);
+  const { data: loansData, error: fetchError, loading, refetch } = useApiQuery<LibraryLoanRow[]>(loadLoans, [appliedSearch]);
   const loans = loansData ?? [];
+  const total = loans.length;
+  const error = actionError ?? fetchError;
 
-  async function handleSubmit(e: React.FormEvent) {
+  const statusInfo = useCallback((status: string) => LOAN_STATUS_MAP[status] ?? { label: status, variant: "outline" as const }, []);
+
+  function memberName(item: LibraryLoanRow) {
+    return item.member?.student?.name || item.member?.teacher?.name || item.member?.externalName || item.member?.memberCode || "-";
+  }
+
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (appliedSearch === search) {
+      await refetch();
+      return;
+    }
+    setAppliedSearch(search);
+  }
+
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    setSaving(true);
+    setSubmitting(true);
+    setActionError(null);
     try {
       await api.createLibraryLoan({
         memberId: formData.memberId,
@@ -68,289 +100,265 @@ export default function LibraryLoansPage() {
         dueAt: new Date(formData.dueAt).toISOString(),
         note: formData.note,
       });
-      alert("Peminjaman berhasil dicatat.");
-      setIsModalOpen(false);
-      void refetch();
+      setFormOpen(false);
+      await refetch();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Gagal menyimpan");
+      setActionError(err instanceof Error ? err.message : "Gagal menyimpan peminjaman");
     } finally {
-      setSaving(false);
+      setSubmitting(false);
     }
   }
 
-  async function handleReturnSubmit(e: React.FormEvent) {
+  async function handleReturnSubmit(e: FormEvent) {
     e.preventDefault();
     if (!selectedLoan) return;
-    setSaving(true);
+    setSubmitting(true);
+    setActionError(null);
     try {
       await api.returnLibraryLoan(selectedLoan.id, {
         returnNote: returnFormData.returnNote,
         condition: returnFormData.condition,
       });
-      alert("Buku berhasil dikembalikan.");
-      setIsReturnModalOpen(false);
-      void refetch();
+      setReturnFormOpen(false);
+      setSelectedLoan(null);
+      await refetch();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Gagal mengembalikan buku");
+      setActionError(err instanceof Error ? err.message : "Gagal mengembalikan buku");
     } finally {
-      setSaving(false);
+      setSubmitting(false);
     }
   }
 
-  async function handleCancel(id: string) {
-    if (!confirm("Batalkan peminjaman ini?")) return;
+  async function confirmCancel() {
+    if (!pendingCancel) return;
+    setActionError(null);
     try {
-      await api.cancelLibraryLoan(id);
-      alert("Peminjaman dibatalkan.");
-      void refetch();
+      await api.cancelLibraryLoan(pendingCancel.id);
+      setPendingCancel(null);
+      await refetch();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Gagal membatalkan");
+      setActionError(err instanceof Error ? err.message : "Gagal membatalkan peminjaman");
     }
   }
 
   function openCreate() {
-    setFormData({
-      memberId: "",
-      copyId: "",
-      dueAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-      note: "",
-    });
-    setIsModalOpen(true);
+    setFormData(emptyLoanForm());
+    setFormOpen(true);
   }
 
   function openReturn(loan: LibraryLoanRow) {
     setSelectedLoan(loan);
     setReturnFormData({ returnNote: "", condition: "GOOD" });
-    setIsReturnModalOpen(true);
+    setReturnFormOpen(true);
   }
 
-  function renderStatus(status: string) {
-    switch (status) {
-      case "BORROWED":
-        return <span className="inline-flex rounded-full bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-800">Dipinjam</span>;
-      case "RETURNED":
-        return (
-          <span className="inline-flex rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-800">Dikembalikan</span>
-        );
-      case "OVERDUE":
-        return <span className="inline-flex rounded-full bg-rose-100 px-2 py-1 text-xs font-semibold text-rose-800">Terlambat</span>;
-      case "LOST":
-        return <span className="inline-flex rounded-full bg-muted px-2 py-1 text-xs font-semibold text-foreground">Hilang</span>;
-      case "CANCELLED":
-        return <span className="inline-flex rounded-full bg-muted px-2 py-1 text-xs font-semibold text-foreground">Dibatalkan</span>;
-      default:
-        return <span>{status}</span>;
-    }
-  }
+  const columns: DataTableColumn<LibraryLoanRow>[] = [
+    {
+      cell: (item) => (
+        <div>
+          <div className="font-semibold">{item.copy?.book?.title ?? "-"}</div>
+          <div className="text-xs text-muted-foreground">Kode Copy: {item.copy?.copyCode ?? "-"}</div>
+        </div>
+      ),
+      header: "Buku & Eksemplar",
+      key: "book",
+    },
+    {
+      cell: (item) => memberName(item),
+      header: "Peminjam",
+      key: "member",
+    },
+    {
+      cell: (item) => new Date(item.borrowedAt).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }),
+      header: "Tgl Pinjam",
+      key: "borrowedAt",
+    },
+    {
+      cell: (item) => (
+        <div>
+          <div className={new Date(item.dueAt) < new Date() && item.status === "BORROWED" ? "font-semibold text-destructive" : ""}>
+            {new Date(item.dueAt).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}
+          </div>
+          {item.returnedAt ? (
+            <div className="mt-1 text-xs text-emerald-600">
+              Dikembalikan: {new Date(item.returnedAt).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}
+            </div>
+          ) : null}
+        </div>
+      ),
+      header: "Tgl Kembali",
+      key: "dueAt",
+    },
+    {
+      cell: (item) => {
+        const st = statusInfo(item.status);
+        return <Badge variant={st.variant}>{st.label}</Badge>;
+      },
+      header: "Status",
+      key: "status",
+    },
+  ];
 
   return (
     <div className="space-y-6">
       <PageHeader
+        actions={
+          <>
+            <Button onClick={() => void refetch()} variant="outline">
+              <RefreshCcw className="h-4 w-4" /> Refresh
+            </Button>
+            <Button onClick={openCreate}>
+              <Plus className="h-4 w-4" /> Peminjaman Baru
+            </Button>
+          </>
+        }
         breadcrumb={["Admin", "Perpustakaan", "Peminjaman"]}
         description="Kelola transaksi peminjaman dan pengembalian buku."
+        eyebrow="Perpustakaan"
         title="Sirkulasi Peminjaman"
       />
 
-      <Card>
-        <CardContent className="p-4 sm:p-6">
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input className="pl-9" placeholder="Cari transaksi..." value={search} onChange={(e) => setSearch(e.target.value)} />
-            </div>
-            <Button onClick={openCreate} className="w-full sm:w-auto">
-              <Plus className="mr-2 h-4 w-4" /> Peminjaman Baru
-            </Button>
-          </div>
+      {error ? <ErrorState message={error} onRetry={() => void refetch()} title="Gagal memproses peminjaman" /> : null}
 
-          {error ? (
-            <div className="flex items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">
-              <AlertCircle className="h-5 w-5" /> {error}
-            </div>
-          ) : loading ? (
-            <div className="flex h-32 items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-surface-muted text-muted-foreground">
-                    <tr>
-                      <th className="px-4 py-3 font-medium">Buku & Eksemplar</th>
-                      <th className="px-4 py-3 font-medium">Peminjam</th>
-                      <th className="px-4 py-3 font-medium">Tgl Pinjam</th>
-                      <th className="px-4 py-3 font-medium">Tgl Kembali</th>
-                      <th className="px-4 py-3 font-medium">Status</th>
-                      <th className="px-4 py-3 font-medium text-right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {loans.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                          Tidak ada data transaksi.
-                        </td>
-                      </tr>
-                    ) : (
-                      loans.map((item) => {
-                        const memberName =
-                          item.member?.student?.name || item.member?.teacher?.name || item.member?.externalName || item.member?.memberCode;
-                        return (
-                          <tr key={item.id} className="hover:bg-surface-muted">
-                            <td className="px-4 py-3">
-                              <div className="font-semibold">{item.copy?.book?.title}</div>
-                              <div className="text-xs text-muted-foreground">Kode Copy: {item.copy?.copyCode}</div>
-                            </td>
-                            <td className="px-4 py-3 font-medium">{memberName}</td>
-                            <td className="px-4 py-3 text-muted-foreground">
-                              {new Date(item.borrowedAt).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}
-                            </td>
-                            <td className="px-4 py-3 text-muted-foreground">
-                              <div
-                                className={
-                                  new Date(item.dueAt) < new Date() && item.status === "BORROWED" ? "text-rose-600 font-semibold" : ""
-                                }
-                              >
-                                {new Date(item.dueAt).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}
-                              </div>
-                              {item.returnedAt && (
-                                <div className="text-xs text-emerald-600 mt-1">
-                                  Dikembalikan:{" "}
-                                  {new Date(item.returnedAt).toLocaleDateString("id-ID", {
-                                    day: "2-digit",
-                                    month: "short",
-                                    year: "numeric",
-                                  })}
-                                </div>
-                              )}
-                            </td>
-                            <td className="px-4 py-3">{renderStatus(item.status)}</td>
-                            <td className="px-4 py-3 text-right">
-                              {(item.status === "BORROWED" || item.status === "OVERDUE") && (
-                                <div className="flex justify-end gap-2">
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                                    onClick={() => openReturn(item)}
-                                  >
-                                    <CheckCircle className="h-4 w-4 mr-1" /> Kembali
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="text-rose-600 hover:text-rose-700 hover:bg-rose-50"
-                                    onClick={() => handleCancel(item.id)}
-                                  >
-                                    <XCircle className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <SectionCard
+        action={
+          <SearchFilterBar onSearchChange={setSearch} onSubmit={handleSearch} searchPlaceholder="Cari transaksi..." searchValue={search} />
+        }
+        description={
+          <>
+            Daftar transaksi peminjaman buku. Total: <strong>{total}</strong> data.
+          </>
+        }
+        title="Data Peminjaman"
+      >
+        <DataTable
+          actions={(item) =>
+            item.status === "BORROWED" || item.status === "OVERDUE" ? (
+              <>
+                <Button onClick={() => openReturn(item)} size="sm" variant="soft">
+                  <CheckCircle className="h-4 w-4" /> Kembali
+                </Button>
+                <Button onClick={() => setPendingCancel(item)} size="sm" variant="ghost">
+                  <XCircle className="h-4 w-4" /> Batalkan
+                </Button>
+              </>
+            ) : null
+          }
+          columns={columns}
+          data={loans}
+          emptyState={{
+            action: (
+              <Button onClick={openCreate} variant="soft">
+                Catat peminjaman pertama
+              </Button>
+            ),
+            description: "Belum ada data transaksi atau hasil pencarian kosong.",
+            title: "Data masih kosong",
+          }}
+          getRowId={(item) => item.id}
+          loading={loading}
+          minWidth="min-w-[900px]"
+        />
+      </SectionCard>
 
-      {/* CREATE MODAL */}
-      <FormModal open={isModalOpen} onClose={() => setIsModalOpen(false)} title="Peminjaman Baru">
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              Anggota <span className="text-rose-500">*</span>
-            </label>
+      <FormModal description="Catat peminjaman buku baru." onClose={() => setFormOpen(false)} open={formOpen} title="Peminjaman Baru">
+        <form className="grid gap-4" onSubmit={handleSubmit}>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-foreground">
+              Anggota <span className="text-destructive">*</span>
+            </span>
             <EntityPicker
               entityType="library-member"
               onChange={(memberId) => setFormData({ ...formData, memberId })}
               placeholder="Cari anggota perpustakaan..."
               value={formData.memberId}
             />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              Eksemplar Buku <span className="text-rose-500">*</span>
-            </label>
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-foreground">
+              Eksemplar Buku <span className="text-destructive">*</span>
+            </span>
             <EntityPicker
               entityType="library-copy"
               onChange={(copyId) => setFormData({ ...formData, copyId })}
               placeholder="Cari eksemplar buku..."
               value={formData.copyId}
             />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              Tenggat Waktu (Due Date) <span className="text-rose-500">*</span>
-            </label>
-            <Input type="date" value={formData.dueAt} onChange={(e) => setFormData({ ...formData, dueAt: e.target.value })} required />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Catatan</label>
-            <Input placeholder="Opsional..." value={formData.note} onChange={(e) => setFormData({ ...formData, note: e.target.value })} />
-          </div>
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-foreground">
+              Tenggat Waktu (Due Date) <span className="text-destructive">*</span>
+            </span>
+            <Input onChange={(e) => setFormData({ ...formData, dueAt: e.target.value })} required type="date" value={formData.dueAt} />
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-foreground">Catatan</span>
+            <Input onChange={(e) => setFormData({ ...formData, note: e.target.value })} placeholder="Opsional..." value={formData.note} />
+          </label>
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button onClick={() => setFormOpen(false)} type="button" variant="outline">
               Batal
             </Button>
-            <Button type="submit" disabled={saving}>
-              {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Simpan
+            <Button disabled={submitting} type="submit">
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Simpan
             </Button>
           </div>
         </form>
       </FormModal>
 
-      {/* RETURN MODAL */}
-      <FormModal open={isReturnModalOpen} onClose={() => setIsReturnModalOpen(false)} title="Pengembalian Buku">
-        <form onSubmit={handleReturnSubmit} className="space-y-4 pt-4">
-          <div className="rounded-lg bg-surface-muted p-4 mb-4">
+      <FormModal
+        description="Proses pengembalian buku yang dipinjam."
+        onClose={() => setReturnFormOpen(false)}
+        open={returnFormOpen}
+        title="Pengembalian Buku"
+      >
+        <form className="grid gap-4" onSubmit={handleReturnSubmit}>
+          <div className="rounded-lg bg-muted/50 p-4">
             <div className="text-sm font-semibold">{selectedLoan?.copy?.book?.title}</div>
-            <div className="text-xs text-muted-foreground mt-1">
-              Peminjam: {selectedLoan?.member?.student?.name || selectedLoan?.member?.memberCode}
-            </div>
+            <div className="mt-1 text-xs text-muted-foreground">Peminjam: {selectedLoan ? memberName(selectedLoan) : "-"}</div>
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              Kondisi Buku <span className="text-rose-500">*</span>
-            </label>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-foreground">
+              Kondisi Buku <span className="text-destructive">*</span>
+            </span>
             <select
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-              value={returnFormData.condition}
+              className="w-full rounded-xl border border-input bg-card px-4 py-2 text-sm shadow-sm outline-none transition-all focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               onChange={(e) => setReturnFormData({ ...returnFormData, condition: e.target.value })}
               required
+              value={returnFormData.condition}
             >
               <option value="GOOD">Baik (Good)</option>
               <option value="DAMAGED">Rusak Sedang (Damaged)</option>
               <option value="HEAVILY_DAMAGED">Rusak Berat (Heavily Damaged)</option>
               <option value="LOST">Hilang (Lost)</option>
             </select>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Catatan Pengembalian</label>
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-foreground">Catatan Pengembalian</span>
             <Input
+              onChange={(e) => setReturnFormData({ ...returnFormData, returnNote: e.target.value })}
               placeholder="Kondisi cover sedikit tertekuk..."
               value={returnFormData.returnNote}
-              onChange={(e) => setReturnFormData({ ...returnFormData, returnNote: e.target.value })}
             />
-          </div>
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => setIsReturnModalOpen(false)}>
+          </label>
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button onClick={() => setReturnFormOpen(false)} type="button" variant="outline">
               Batal
             </Button>
-            <Button type="submit" disabled={saving}>
-              {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Proses Pengembalian
+            <Button disabled={submitting} type="submit">
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Proses Pengembalian
             </Button>
           </div>
         </form>
       </FormModal>
+
+      <ConfirmDialog
+        description="Batalkan peminjaman ini? Eksemplar akan kembali tersedia."
+        onCancel={() => setPendingCancel(null)}
+        onConfirm={() => void confirmCancel()}
+        open={Boolean(pendingCancel)}
+        title="Konfirmasi batalkan peminjaman"
+      />
     </div>
   );
 }

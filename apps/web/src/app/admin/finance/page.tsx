@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
-import { AlertCircle, CreditCard, DollarSign, Loader2, Percent, TrendingDown, TrendingUp } from "lucide-react";
+import { CreditCard, DollarSign, Loader2, Percent, TrendingDown, TrendingUp } from "lucide-react";
 
-import { Card, CardContent, PageHeader, StatCard } from "@nexsmsid/ui";
+import { Card, CardContent, ErrorState, PageHeader, StatCard } from "@nexsmsid/ui";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
 
@@ -19,7 +19,7 @@ type FinanceDashboardSummary = {
 export default function FinancePage() {
   const api = useMemo(() => createBrowserApiClient(), []);
   const loadSummary = useCallback(() => api.financeSummary() as Promise<FinanceDashboardSummary>, [api]);
-  const { data: summary, error, loading } = useApiQuery(loadSummary, [api]);
+  const { data: summary, error, loading, refetch } = useApiQuery(loadSummary, [api]);
 
   return (
     <div className="space-y-6">
@@ -30,11 +30,7 @@ export default function FinancePage() {
         title="Dashboard Keuangan"
       />
 
-      {error ? (
-        <div className="flex items-center gap-3 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
-          <AlertCircle className="h-5 w-5" /> {error}
-        </div>
-      ) : null}
+      {error ? <ErrorState message={error} onRetry={() => void refetch()} title="Gagal memuat dashboard keuangan" /> : null}
 
       {loading ? (
         <Card>

@@ -483,8 +483,8 @@ export default function PpdbRegistrationsPage() {
               </div>
 
               {rejectingDocId ? (
-                <div className="rounded-lg border border-rose-200 bg-rose-50 p-4">
-                  <p className="text-sm font-semibold text-rose-800">Tolak dokumen</p>
+                <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4">
+                  <p className="text-sm font-semibold text-destructive">Tolak dokumen</p>
                   <textarea
                     className="mt-2 w-full rounded-lg border border-input bg-card px-3 py-2 text-sm"
                     onChange={(e) => setRejectDocNote(e.target.value)}
@@ -504,8 +504,8 @@ export default function PpdbRegistrationsPage() {
               ) : null}
 
               {rejectingRegistrationId ? (
-                <div className="rounded-lg border border-rose-200 bg-rose-50 p-4">
-                  <p className="text-sm font-semibold text-rose-800">Tolak pendaftaran</p>
+                <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4">
+                  <p className="text-sm font-semibold text-destructive">Tolak pendaftaran</p>
                   <textarea
                     className="mt-2 w-full rounded-lg border border-input bg-card px-3 py-2 text-sm"
                     onChange={(e) => setRejectRegistrationReason(e.target.value)}

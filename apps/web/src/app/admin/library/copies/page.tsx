@@ -1,8 +1,11 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { AlertCircle, Loader2, RefreshCcw, Barcode } from "lucide-react";
-import { Button, Card, Input, PageHeader, StatusBadge } from "@nexsmsid/ui";
+import { FormEvent, useCallback, useMemo, useState } from "react";
+import { Barcode, Loader2, RefreshCcw } from "lucide-react";
+
+import { Button, DataTable, ErrorState, PageHeader, SearchFilterBar, SectionCard, StatusBadge } from "@nexsmsid/ui";
+import type { DataTableColumn } from "@nexsmsid/ui";
+
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
 
@@ -18,15 +21,27 @@ type LibraryCopyRow = {
 export default function LibraryCopiesPage() {
   const api = useMemo(() => createBrowserApiClient(), []);
   const [search, setSearch] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
   const [printingId, setPrintingId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+
   const loadCopies = useCallback(async () => {
-    const res = await api.listAllCopies({ limit: 100, search });
+    const res = await api.listAllCopies({ limit: 100, search: appliedSearch || undefined });
     return res.data ?? [];
-  }, [api, search]);
-  const { data: copiesData, error: fetchError, loading, refetch } = useApiQuery<LibraryCopyRow[]>(loadCopies, [search]);
+  }, [api, appliedSearch]);
+  const { data: copiesData, error: fetchError, loading, refetch } = useApiQuery<LibraryCopyRow[]>(loadCopies, [appliedSearch]);
   const copies = copiesData ?? [];
+  const total = copies.length;
   const error = actionError ?? fetchError;
+
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (appliedSearch === search) {
+      await refetch();
+      return;
+    }
+    setAppliedSearch(search);
+  }
 
   async function handlePrintLabel(copyId: string) {
     setActionError(null);
@@ -39,6 +54,34 @@ export default function LibraryCopiesPage() {
       setPrintingId(null);
     }
   }
+
+  const columns: DataTableColumn<LibraryCopyRow>[] = [
+    {
+      cell: (item) => <span className="font-mono text-xs">{item.code || "-"}</span>,
+      header: "Kode",
+      key: "code",
+    },
+    {
+      cell: (item) => item.book?.title || "-",
+      header: "Judul Buku",
+      key: "title",
+    },
+    {
+      cell: (item) => <StatusBadge value={item.status || "AVAILABLE"} />,
+      header: "Status",
+      key: "status",
+    },
+    {
+      cell: (item) => item.condition || "GOOD",
+      header: "Kondisi",
+      key: "condition",
+    },
+    {
+      cell: (item) => item.shelf?.name || "-",
+      header: "Lokasi",
+      key: "shelf",
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -53,58 +96,42 @@ export default function LibraryCopiesPage() {
         eyebrow="Perpustakaan"
         title="Eksemplar Buku"
       />
-      <div className="flex gap-2">
-        <Input className="max-w-xs" onChange={(e) => setSearch(e.target.value)} placeholder="Cari kode atau judul..." value={search} />
-      </div>
-      {error ? (
-        <div className="flex items-center gap-3 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
-          <AlertCircle className="h-5 w-5" /> {error}
-        </div>
-      ) : null}
-      {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-      ) : copies.length === 0 ? (
-        <Card>
-          <div className="p-8 text-center text-muted-foreground">
-            <p>Tidak ada data eksemplar.</p>
-          </div>
-        </Card>
-      ) : (
-        <div className="overflow-x-auto rounded-xl border bg-card">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="p-4 text-left font-semibold">Kode</th>
-                <th className="p-4 text-left font-semibold">Judul Buku</th>
-                <th className="p-4 text-left font-semibold">Status</th>
-                <th className="p-4 text-left font-semibold">Kondisi</th>
-                <th className="p-4 text-left font-semibold">Lokasi</th>
-                <th className="p-4 text-left font-semibold">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {copies.map((copy) => (
-                <tr className="border-b last:border-0 hover:bg-muted/30" key={copy.id}>
-                  <td className="p-4 font-mono text-xs">{copy.code || "-"}</td>
-                  <td className="p-4">{copy.book?.title || "-"}</td>
-                  <td className="p-4">
-                    <StatusBadge value={copy.status || "AVAILABLE"} />
-                  </td>
-                  <td className="p-4">{copy.condition || "GOOD"}</td>
-                  <td className="p-4">{copy.shelf?.name || "-"}</td>
-                  <td className="p-4">
-                    <Button disabled={printingId === copy.id} onClick={() => void handlePrintLabel(copy.id)} size="sm" variant="outline">
-                      {printingId === copy.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Barcode className="h-4 w-4" />} Label
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+
+      {error ? <ErrorState message={error} onRetry={() => void refetch()} title="Gagal memproses eksemplar" /> : null}
+
+      <SectionCard
+        action={
+          <SearchFilterBar
+            onSearchChange={setSearch}
+            onSubmit={handleSearch}
+            searchPlaceholder="Cari kode atau judul..."
+            searchValue={search}
+          />
+        }
+        description={
+          <>
+            Daftar eksemplar buku perpustakaan. Total: <strong>{total}</strong> data.
+          </>
+        }
+        title="Data Eksemplar"
+      >
+        <DataTable
+          actions={(copy) => (
+            <Button disabled={printingId === copy.id} onClick={() => void handlePrintLabel(copy.id)} size="sm" variant="outline">
+              {printingId === copy.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Barcode className="h-4 w-4" />} Label
+            </Button>
+          )}
+          columns={columns}
+          data={copies}
+          emptyState={{
+            description: "Belum ada data eksemplar atau hasil pencarian kosong.",
+            title: "Data masih kosong",
+          }}
+          getRowId={(item) => item.id}
+          loading={loading}
+          minWidth="min-w-[760px]"
+        />
+      </SectionCard>
     </div>
   );
 }

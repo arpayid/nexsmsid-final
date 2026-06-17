@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { AlertCircle, BriefcaseBusiness, Building2, FileText, Loader2, Users } from "lucide-react";
+import { useCallback, useMemo } from "react";
+import { BriefcaseBusiness, Building2, FileText, Loader2, Users } from "lucide-react";
 
-import { Card, CardContent, PageHeader, StatCard } from "@nexsmsid/ui";
+import { Card, CardContent, ErrorState, PageHeader, StatCard } from "@nexsmsid/ui";
 
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
@@ -11,7 +11,7 @@ import { createBrowserApiClient } from "@/lib/api-client";
 export default function BkkDashboardPage() {
   const api = useMemo(() => createBrowserApiClient(), []);
   const loadSummary = useCallback(() => api.getBkkSummary() as Promise<Record<string, unknown>>, [api]);
-  const { data, error, loading } = useApiQuery<Record<string, unknown>>(loadSummary, [api]);
+  const { data, error, loading, refetch } = useApiQuery<Record<string, unknown>>(loadSummary, [api]);
 
   const jobs = data?.jobs as Record<string, unknown> | undefined;
   const internships = data?.internships as Record<string, unknown> | undefined;
@@ -24,11 +24,7 @@ export default function BkkDashboardPage() {
         eyebrow="BKK"
         title="Dashboard BKK"
       />
-      {error ? (
-        <div className="flex items-center gap-3 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
-          <AlertCircle className="h-5 w-5" /> {error}
-        </div>
-      ) : null}
+      {error ? <ErrorState message={error} onRetry={() => void refetch()} title="Gagal memuat dashboard BKK" /> : null}
       {loading ? (
         <Card>
           <CardContent>

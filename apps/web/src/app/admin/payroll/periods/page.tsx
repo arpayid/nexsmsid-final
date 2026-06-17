@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useMemo, useState } from "react";
-import { PageHeader, SectionCard, DataTable, Button, ErrorState, FormModal, Input } from "@nexsmsid/ui";
+import { ConfirmDialog, PageHeader, SectionCard, DataTable, Button, ErrorState, FormModal, Input } from "@nexsmsid/ui";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
 import { Loader2, Plus, RefreshCcw } from "lucide-react";
@@ -16,10 +16,29 @@ type PayrollPeriodRow = {
   status?: string;
 };
 
+type WorkflowAction = "open" | "calculate" | "approve" | "pay" | "close";
+
+type PendingWorkflow = {
+  id: string;
+  action: WorkflowAction;
+};
+
+const confirmCopy: Partial<Record<WorkflowAction, { description: string; title: string }>> = {
+  pay: {
+    description: "Konfirmasi pembayaran gaji untuk periode ini?",
+    title: "Konfirmasi pembayaran",
+  },
+  close: {
+    description: "Tutup periode ini? Periode yang ditutup tidak dapat diubah.",
+    title: "Tutup periode",
+  },
+};
+
 export default function Page() {
   const [formOpen, setFormOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [actionBusy, setActionBusy] = useState<string | null>(null);
+  const [pendingWorkflow, setPendingWorkflow] = useState<PendingWorkflow | null>(null);
   const client = useMemo(() => createBrowserApiClient(), []);
 
   const loadItems = useCallback(async () => {
@@ -55,8 +74,7 @@ export default function Page() {
     }
   }
 
-  async function runWorkflow(id: string, action: "open" | "calculate" | "approve" | "pay" | "close", confirmMessage?: string) {
-    if (confirmMessage && !window.confirm(confirmMessage)) return;
+  async function runWorkflow(id: string, action: WorkflowAction) {
     setActionBusy(id);
     setError(null);
     try {
@@ -65,12 +83,21 @@ export default function Page() {
       else if (action === "approve") await client.approvePayrollPeriod(id);
       else if (action === "pay") await client.payPayrollPeriod(id);
       else if (action === "close") await client.closePayrollPeriod(id);
+      setPendingWorkflow(null);
       await refetch();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Gagal menjalankan aksi periode");
     } finally {
       setActionBusy(null);
     }
+  }
+
+  function requestWorkflow(id: string, action: WorkflowAction) {
+    if (confirmCopy[action]) {
+      setPendingWorkflow({ id, action });
+      return;
+    }
+    void runWorkflow(id, action);
   }
 
   const columns = [
@@ -100,44 +127,34 @@ export default function Page() {
         }
       />
 
-      {error ? <ErrorState message={error} title="Terjadi Kesalahan" /> : null}
+      {error ? <ErrorState message={error} onRetry={() => void refetch()} title="Terjadi Kesalahan" /> : null}
 
       <SectionCard title="Daftar Periode Penggajian">
         <DataTable
           actions={(item) => (
             <>
               {item.status === "DRAFT" ? (
-                <Button disabled={actionBusy === item.id} onClick={() => void runWorkflow(item.id, "open")} size="sm" variant="soft">
+                <Button disabled={actionBusy === item.id} onClick={() => requestWorkflow(item.id, "open")} size="sm" variant="soft">
                   {actionBusy === item.id ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Buka
                 </Button>
               ) : null}
               {item.status === "OPEN" ? (
-                <Button disabled={actionBusy === item.id} onClick={() => void runWorkflow(item.id, "calculate")} size="sm" variant="soft">
+                <Button disabled={actionBusy === item.id} onClick={() => requestWorkflow(item.id, "calculate")} size="sm" variant="soft">
                   Hitung
                 </Button>
               ) : null}
               {item.status === "CALCULATED" ? (
-                <Button disabled={actionBusy === item.id} onClick={() => void runWorkflow(item.id, "approve")} size="sm" variant="soft">
+                <Button disabled={actionBusy === item.id} onClick={() => requestWorkflow(item.id, "approve")} size="sm" variant="soft">
                   Setujui
                 </Button>
               ) : null}
               {item.status === "APPROVED" ? (
-                <Button
-                  disabled={actionBusy === item.id}
-                  onClick={() => void runWorkflow(item.id, "pay", "Konfirmasi pembayaran gaji untuk periode ini?")}
-                  size="sm"
-                  variant="soft"
-                >
+                <Button disabled={actionBusy === item.id} onClick={() => requestWorkflow(item.id, "pay")} size="sm" variant="soft">
                   Bayar
                 </Button>
               ) : null}
               {item.status === "PAID" ? (
-                <Button
-                  disabled={actionBusy === item.id}
-                  onClick={() => void runWorkflow(item.id, "close", "Tutup periode ini? Periode yang ditutup tidak dapat diubah.")}
-                  size="sm"
-                  variant="outline"
-                >
+                <Button disabled={actionBusy === item.id} onClick={() => requestWorkflow(item.id, "close")} size="sm" variant="outline">
                   Tutup
                 </Button>
               ) : null}
@@ -196,6 +213,14 @@ export default function Page() {
           </div>
         </form>
       </FormModal>
+
+      <ConfirmDialog
+        description={pendingWorkflow ? confirmCopy[pendingWorkflow.action]?.description : ""}
+        onCancel={() => setPendingWorkflow(null)}
+        onConfirm={() => pendingWorkflow && void runWorkflow(pendingWorkflow.id, pendingWorkflow.action)}
+        open={Boolean(pendingWorkflow)}
+        title={pendingWorkflow ? (confirmCopy[pendingWorkflow.action]?.title ?? "Konfirmasi") : "Konfirmasi"}
+      />
     </div>
   );
 }

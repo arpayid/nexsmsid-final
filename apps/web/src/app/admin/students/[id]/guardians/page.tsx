@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { FormEvent, useCallback, useMemo, useState } from "react";
 
-import { Button, DataTable, ErrorState, FormModal, PageHeader, SectionCard } from "@nexsmsid/ui";
+import { Button, ConfirmDialog, DataTable, ErrorState, FormModal, PageHeader, SectionCard } from "@nexsmsid/ui";
 
 import { EntityPicker } from "@/components/entity-picker";
 import { useApiQuery } from "@/hooks/use-api-query";
@@ -30,6 +30,7 @@ export default function StudentGuardiansPage() {
   const [submitting, setSubmitting] = useState(false);
   const [actionBusy, setActionBusy] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [pendingUnlink, setPendingUnlink] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     const [student, guardians] = await Promise.all([client.getStudent(studentId), client.listStudentGuardians(studentId)]);
@@ -74,11 +75,11 @@ export default function StudentGuardiansPage() {
   }
 
   async function handleUnlink(guardianId: string) {
-    if (!window.confirm("Hapus hubungan wali ini?")) return;
     setActionBusy(guardianId);
     setActionError(null);
     try {
       await client.unlinkStudentGuardian(studentId, guardianId);
+      setPendingUnlink(null);
       await refetch();
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Gagal menghapus wali");
@@ -121,7 +122,7 @@ export default function StudentGuardiansPage() {
         title={`Wali — ${studentName || "Siswa"}`}
       />
 
-      {error ? <ErrorState message={error} title="Terjadi Kesalahan" /> : null}
+      {error ? <ErrorState message={error} onRetry={() => void refetch()} title="Terjadi Kesalahan" /> : null}
 
       <SectionCard title="Daftar Wali Terhubung">
         <DataTable
@@ -137,12 +138,7 @@ export default function StudentGuardiansPage() {
                   <Star className="h-4 w-4" /> Jadikan Utama
                 </Button>
               ) : null}
-              <Button
-                disabled={actionBusy === item.guardianId}
-                onClick={() => void handleUnlink(item.guardianId)}
-                size="sm"
-                variant="ghost"
-              >
+              <Button disabled={actionBusy === item.guardianId} onClick={() => setPendingUnlink(item.guardianId)} size="sm" variant="ghost">
                 <Trash2 className="h-4 w-4" /> Hapus
               </Button>
             </>
@@ -175,6 +171,14 @@ export default function StudentGuardiansPage() {
           </div>
         </form>
       </FormModal>
+
+      <ConfirmDialog
+        description="Hapus hubungan wali ini?"
+        onCancel={() => setPendingUnlink(null)}
+        onConfirm={() => pendingUnlink && void handleUnlink(pendingUnlink)}
+        open={Boolean(pendingUnlink)}
+        title="Konfirmasi hapus wali"
+      />
     </div>
   );
 }

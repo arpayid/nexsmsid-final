@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { AlertCircle, Download, FileText, Loader2, RefreshCcw } from "lucide-react";
+import { Download, FileText, Loader2, RefreshCcw } from "lucide-react";
 import Link from "next/link";
 
-import { Button, Card, CardContent, CardHeader, CardTitle, PageHeader, StatCard } from "@nexsmsid/ui";
+import { Button, ErrorState, PageHeader, SectionCard, StatCard } from "@nexsmsid/ui";
+
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
 
@@ -13,6 +14,7 @@ export default function LibraryReportsPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+
   const loadSummary = useCallback(() => api.getLibrarySummary(), [api]);
   const { data: summary, error: fetchError, loading, refetch } = useApiQuery(loadSummary, [api]);
   const error = actionError ?? fetchError;
@@ -36,73 +38,64 @@ export default function LibraryReportsPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <PageHeader
         actions={
-          <Button asChild variant="outline">
-            <Link href="/admin/reports">Report Center</Link>
-          </Button>
+          <>
+            <Button onClick={() => void refetch()} variant="outline">
+              <RefreshCcw className="h-4 w-4" /> Refresh
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/admin/reports">Report Center</Link>
+            </Button>
+          </>
         }
         breadcrumb={["Admin", "Perpustakaan", "Laporan"]}
         description="Ringkasan aktivitas perpustakaan dan ekspor data."
         eyebrow="Perpustakaan"
         title="Laporan Perpustakaan"
       />
-      {error ? (
-        <div className="flex items-center gap-3 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
-          <AlertCircle className="h-5 w-5" /> {error}
-        </div>
-      ) : null}
+
+      {error ? <ErrorState message={error} onRetry={() => void refetch()} title="Gagal memuat laporan perpustakaan" /> : null}
+
       {message ? (
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">{message}</div>
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">{message}</div>
       ) : null}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           description="Terdaftar"
           icon={<FileText className="h-5 w-5" />}
           title="Total Buku"
-          value={String(summary?.totalBooks ?? "—")}
           tone="violet"
+          value={loading ? "…" : String(summary?.totalBooks ?? "—")}
         />
         <StatCard
           description="Tersedia"
           icon={<FileText className="h-5 w-5" />}
           title="Eksemplar"
-          value={String(summary?.totalCopies ?? "—")}
           tone="blue"
+          value={loading ? "…" : String(summary?.totalCopies ?? "—")}
         />
         <StatCard
           description="Sedang dipinjam"
           icon={<FileText className="h-5 w-5" />}
           title="Peminjaman Aktif"
-          value={String(summary?.activeLoans ?? "—")}
           tone="emerald"
+          value={loading ? "…" : String(summary?.activeLoans ?? "—")}
         />
         <StatCard
           description="Total anggota"
           icon={<FileText className="h-5 w-5" />}
           title="Anggota"
-          value={String(summary?.totalMembers ?? "—")}
           tone="amber"
+          value={loading ? "…" : String(summary?.totalMembers ?? "—")}
         />
       </div>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Export Data</CardTitle>
-          <Button onClick={() => void refetch()} size="sm" variant="outline">
-            <RefreshCcw className="h-4 w-4" /> Refresh
-          </Button>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-3">
+
+      <SectionCard description="Unduh rekap data perpustakaan dalam format XLSX atau PDF." title="Export Data">
+        <div className="flex flex-wrap gap-3">
           <Button
             disabled={busy === "library-book-recap"}
             onClick={() => void handleExport("library-book-recap", "Rekap Buku", "XLSX")}
@@ -127,8 +120,8 @@ export default function LibraryReportsPage() {
             {busy === "library-loan-recap" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />} Cetak
             Peminjaman (PDF)
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </SectionCard>
     </div>
   );
 }

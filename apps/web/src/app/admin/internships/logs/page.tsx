@@ -1,9 +1,10 @@
 "use client";
 
 import { FormEvent, useCallback, useMemo, useState } from "react";
-import { CheckCircle, Loader2, RefreshCcw, Search, XCircle } from "lucide-react";
+import { CheckCircle, Loader2, Plus, RefreshCcw, XCircle } from "lucide-react";
 
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle, EmptyState, ErrorState, Input, PageHeader } from "@nexsmsid/ui";
+import { Badge, Button, DataTable, ErrorState, FormModal, Input, PageHeader, SearchFilterBar, SectionCard } from "@nexsmsid/ui";
+import type { DataTableColumn } from "@nexsmsid/ui";
 
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
@@ -17,6 +18,8 @@ export default function InternshipLogsPage() {
   const api = useMemo(() => createBrowserApiClient(), []);
   const [internshipId, setInternshipId] = useState("");
   const [search, setSearch] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
+  const [formOpen, setFormOpen] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
   const loadInternships = useCallback(async () => {
@@ -24,27 +27,33 @@ export default function InternshipLogsPage() {
     return response.items;
   }, [api]);
 
-  const { data: internshipsData, error: internshipsError } = useApiQuery(loadInternships, [api]);
+  const { data: internshipsData, error: internshipsError, refetch: refetchInternships } = useApiQuery(loadInternships, [api]);
   const internships = internshipsData ?? [];
   const resolvedInternshipId = internshipId || (internships[0]?.id as string) || "";
 
   const loadLogs = useCallback(async () => {
     if (!resolvedInternshipId) return [];
-    const response = await api.listInternshipLogs(resolvedInternshipId, { limit: 50, search: search || undefined });
+    const response = await api.listInternshipLogs(resolvedInternshipId, { limit: 50, search: appliedSearch || undefined });
     return response.items;
-  }, [api, resolvedInternshipId, search]);
+  }, [api, resolvedInternshipId, appliedSearch]);
 
   const {
     data: itemsData,
     error: logsError,
     loading,
     refetch: refetchLogs,
-  } = useApiQuery(loadLogs, [api, resolvedInternshipId, search], {
+  } = useApiQuery(loadLogs, [api, resolvedInternshipId, appliedSearch], {
     enabled: Boolean(resolvedInternshipId),
   });
   const items = itemsData ?? [];
 
   const error = actionError ?? internshipsError ?? logsError;
+
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAppliedSearch(search);
+    await refetchLogs();
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -59,7 +68,7 @@ export default function InternshipLogsPage() {
         solution: formData.get("solution") || undefined,
         status: formData.get("status") || "SUBMITTED",
       });
-      event.currentTarget.reset();
+      setFormOpen(false);
       await refetchLogs();
     } catch (submitError) {
       setActionError(submitError instanceof Error ? submitError.message : "Gagal menambah jurnal");
@@ -77,117 +86,118 @@ export default function InternshipLogsPage() {
     }
   }
 
+  const columns: DataTableColumn<Row>[] = [
+    {
+      key: "date",
+      header: "Tanggal",
+      cell: (item) => String(item.date ?? "-").slice(0, 10),
+    },
+    {
+      key: "activity",
+      header: "Aktivitas",
+      cell: (item) => String(item.activity ?? "-"),
+    },
+    {
+      key: "status",
+      header: "Status",
+      cell: (item) => {
+        const badge = badges[String(item.status)] ?? { label: String(item.status), variant: "outline" as const };
+        return <Badge variant={badge.variant}>{badge.label}</Badge>;
+      },
+    },
+  ];
+
   return (
     <div className="space-y-8">
       <PageHeader
+        actions={
+          <>
+            <Button onClick={() => void refetchLogs()} variant="outline">
+              <RefreshCcw className="h-4 w-4" /> Refresh
+            </Button>
+            <Button disabled={!resolvedInternshipId} onClick={() => setFormOpen(true)}>
+              <Plus className="h-4 w-4" /> Tambah Jurnal
+            </Button>
+          </>
+        }
         breadcrumb={["Admin", "PKL", "Jurnal PKL"]}
         description="Kelola jurnal kegiatan PKL siswa."
         eyebrow="PKL"
         title="Jurnal PKL"
       />
-      {error ? <ErrorState message={error} title="Gagal memproses jurnal PKL" /> : null}
 
-      <Card>
-        <CardHeader>
-          <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
-            <div>
-              <CardTitle>Filter Jurnal</CardTitle>
-              <p className="mt-1 text-sm text-muted-foreground">Pilih data PKL untuk melihat jurnal.</p>
-            </div>
-            <form
-              className="flex flex-col gap-3 lg:flex-row"
-              onSubmit={(event) => {
-                event.preventDefault();
-                void refetchLogs();
-              }}
-            >
-              <select
-                className="h-11 rounded-xl border border-border bg-card px-4 text-sm font-semibold"
-                onChange={(event) => setInternshipId(event.target.value)}
-                value={resolvedInternshipId}
-              >
-                {internships.map((item) => (
-                  <option key={item.id as string} value={item.id as string}>
-                    {String((item as Row).title ?? item.id)}
-                  </option>
-                ))}
-              </select>
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input className="pl-11" onChange={(event) => setSearch(event.target.value)} placeholder="Cari aktivitas" value={search} />
-              </div>
-              <Button type="submit" variant="soft">
-                Cari
-              </Button>
-              <Button onClick={() => void refetchLogs()} type="button" variant="outline">
-                <RefreshCcw className="h-4 w-4" /> Refresh
-              </Button>
-            </form>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="grid min-h-40 place-items-center rounded-xl border border-dashed bg-surface-muted">
-              <Loader2 className="h-5 w-5 animate-spin text-primary" />
-            </div>
-          ) : items.length ? (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[800px] text-left text-sm">
-                <thead>
-                  <tr className="border-b text-xs uppercase tracking-[0.14em] text-muted-foreground">
-                    <th className="px-4 py-3">Tanggal</th>
-                    <th className="px-4 py-3">Aktivitas</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3 text-right">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((item) => {
-                    const badge = badges[String(item.status)] ?? { label: String(item.status), variant: "outline" as const };
-                    return (
-                      <tr className="border-b last:border-0" key={item.id as string}>
-                        <td className="px-4 py-4 font-semibold">{String(item.date ?? "-").slice(0, 10)}</td>
-                        <td className="px-4 py-4 font-semibold">{String(item.activity ?? "-")}</td>
-                        <td className="px-4 py-4">
-                          <Badge variant={badge.variant}>{badge.label}</Badge>
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="flex justify-end gap-2">
-                            {item.status === "SUBMITTED" ? (
-                              <>
-                                <Button onClick={() => void runAction(item.id as string, "approve")} size="sm" variant="soft">
-                                  <CheckCircle className="h-4 w-4" /> Approve
-                                </Button>
-                                <Button onClick={() => void runAction(item.id as string, "reject")} size="sm" variant="ghost">
-                                  <XCircle className="h-4 w-4" /> Reject
-                                </Button>
-                              </>
-                            ) : null}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <EmptyState title="Belum ada jurnal" description="Tambahkan jurnal untuk data PKL terpilih." />
-          )}
-        </CardContent>
-      </Card>
+      {error ? (
+        <ErrorState
+          message={error}
+          onRetry={() => {
+            void refetchInternships();
+            void refetchLogs();
+          }}
+          title="Gagal memproses jurnal PKL"
+        />
+      ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Tambah Jurnal</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
+      <SectionCard
+        action={
+          <SearchFilterBar
+            filters={[
+              {
+                label: "Data PKL",
+                onChange: setInternshipId,
+                options: internships.map((item) => ({
+                  label: String((item as Row).title ?? item.id),
+                  value: item.id as string,
+                })),
+                placeholder: "Pilih PKL",
+                value: resolvedInternshipId,
+              },
+            ]}
+            onSearchChange={setSearch}
+            onSubmit={handleSearch}
+            searchPlaceholder="Cari aktivitas..."
+            searchValue={search}
+          />
+        }
+        description="Pilih data PKL untuk melihat dan mengelola jurnal kegiatan."
+        title="Daftar Jurnal"
+      >
+        <DataTable
+          actions={(item) =>
+            item.status === "SUBMITTED" ? (
+              <>
+                <Button onClick={() => void runAction(item.id as string, "approve")} size="sm" variant="soft">
+                  <CheckCircle className="h-4 w-4" /> Approve
+                </Button>
+                <Button onClick={() => void runAction(item.id as string, "reject")} size="sm" variant="ghost">
+                  <XCircle className="h-4 w-4" /> Reject
+                </Button>
+              </>
+            ) : null
+          }
+          columns={columns}
+          data={items}
+          emptyState={{
+            description: "Tambahkan jurnal untuk data PKL terpilih.",
+            title: "Belum ada jurnal",
+          }}
+          getRowId={(item) => item.id as string}
+          loading={loading}
+          minWidth="min-w-[800px]"
+        />
+      </SectionCard>
+
+      <FormModal hideOverlay onClose={() => setFormOpen(false)} open={formOpen} title="Tambah Jurnal">
+        <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-foreground">Tanggal</span>
             <Input name="date" required type="date" />
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-foreground">Status</span>
             <select
-              className="h-11 rounded-xl border border-border bg-card px-4 text-sm font-semibold"
-              name="status"
+              className="h-11 w-full rounded-xl border border-input bg-card px-4 text-sm font-semibold shadow-sm outline-none transition-all focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               defaultValue="SUBMITTED"
+              name="status"
             >
               {options(statuses.slice(0, 2)).map((option) => (
                 <option key={option.value} value={option.value}>
@@ -195,20 +205,32 @@ export default function InternshipLogsPage() {
                 </option>
               ))}
             </select>
+          </label>
+          <label className="space-y-2 md:col-span-2">
+            <span className="text-sm font-semibold text-foreground">Aktivitas</span>
             <textarea
-              className="min-h-24 rounded-xl border border-border px-4 py-3 text-sm font-semibold md:col-span-2"
+              className="min-h-24 w-full rounded-xl border border-input bg-card px-4 py-3 text-sm font-semibold shadow-sm outline-none transition-all focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               name="activity"
               placeholder="Aktivitas"
               required
             />
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-foreground">Kendala</span>
             <Input name="obstacle" placeholder="Kendala" />
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm font-semibold text-foreground">Solusi</span>
             <Input name="solution" placeholder="Solusi" />
-            <div className="flex justify-end md:col-span-2">
-              <Button type="submit">Simpan Jurnal</Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+          </label>
+          <div className="flex flex-col-reverse gap-3 md:col-span-2 sm:flex-row sm:justify-end">
+            <Button onClick={() => setFormOpen(false)} type="button" variant="outline">
+              Batal
+            </Button>
+            <Button type="submit">Simpan Jurnal</Button>
+          </div>
+        </form>
+      </FormModal>
     </div>
   );
 }

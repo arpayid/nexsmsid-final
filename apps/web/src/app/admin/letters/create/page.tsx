@@ -3,7 +3,7 @@
 import { FormEvent, useCallback, useMemo, useState } from "react";
 import { FilePlus2, Loader2, Send } from "lucide-react";
 
-import { Button, Card, CardContent, CardHeader, CardTitle, ErrorState, Input, PageHeader } from "@nexsmsid/ui";
+import { Button, ErrorState, Input, PageHeader, SectionCard } from "@nexsmsid/ui";
 
 import { EntityPicker } from "@/components/entity-picker";
 import { useApiQuery } from "@/hooks/use-api-query";
@@ -96,97 +96,86 @@ export default function CreateLetterPage() {
         <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">{message}</div>
       ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Form Surat</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form className="grid gap-5 md:grid-cols-2" onSubmit={(event) => void handleSubmit(event, "draft")}>
-            <label className="space-y-2 md:col-span-2">
-              <span className="text-sm font-bold text-muted-foreground">Template Opsional</span>
-              <select
-                className="h-11 w-full rounded-xl border border-border bg-card px-4 text-sm font-semibold text-muted-foreground shadow-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
-                value={form.templateId ?? ""}
-                onChange={(event) => chooseTemplate(event.target.value)}
-              >
-                <option value="">Tulis manual</option>
-                {templates.map((template) => (
-                  <option key={template.id} value={template.id}>
-                    {String(template.code)} - {String(template.name)}
-                  </option>
-                ))}
-              </select>
-            </label>
+      <SectionCard description="Lengkapi detail surat dari template atau tulis manual." title="Form Surat">
+        <form className="grid gap-5 md:grid-cols-2" onSubmit={(event) => void handleSubmit(event, "draft")}>
+          <label className="space-y-2 md:col-span-2">
+            <span className="text-sm font-bold text-muted-foreground">Template Opsional</span>
+            <select
+              className="h-11 w-full rounded-xl border border-border bg-card px-4 text-sm font-semibold text-muted-foreground shadow-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
+              value={form.templateId ?? ""}
+              onChange={(event) => chooseTemplate(event.target.value)}
+            >
+              <option value="">Tulis manual</option>
+              {templates.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {String(template.code)} - {String(template.name)}
+                </option>
+              ))}
+            </select>
+          </label>
 
-            <Field label="Kategori" name="category" required value={form.category ?? ""} onChange={updateField} placeholder="SKL" />
-            <SelectField
-              label="Direction"
-              name="direction"
-              options={directions}
-              value={form.direction ?? "OUTGOING"}
-              onChange={updateField}
-            />
-            <SelectField label="Prioritas" name="priority" options={priorities} value={form.priority ?? "NORMAL"} onChange={updateField} />
-            <SelectField
-              label="Tipe Penerima"
-              name="recipientType"
-              options={recipientTypes}
-              value={form.recipientType ?? "EXTERNAL"}
-              onChange={updateField}
-            />
-            <Field label="Nama Penerima" name="recipientName" required value={form.recipientName ?? ""} onChange={updateField} />
-            <Field label="Email Penerima" name="recipientEmail" value={form.recipientEmail ?? ""} onChange={updateField} />
-            <EntityField entityType="student" label="Siswa Terkait" name="studentId" onChange={updateField} value={form.studentId ?? ""} />
-            <EntityField
-              entityType="guardian"
-              label="Wali Terkait"
-              name="guardianId"
-              onChange={updateField}
-              value={form.guardianId ?? ""}
-            />
-            <EntityField entityType="teacher" label="Guru Terkait" name="teacherId" onChange={updateField} value={form.teacherId ?? ""} />
-            <EntityField entityType="staff" label="Staff Terkait" name="staffId" onChange={updateField} value={form.staffId ?? ""} />
-            <EntityField
-              entityType="counseling-case"
-              label="Kasus BK Terkait"
-              name="relatedCounselingCaseId"
-              onChange={updateField}
-              value={form.relatedCounselingCaseId ?? ""}
-            />
-            <EntityField
-              entityType="discipline-violation"
-              label="Pelanggaran Terkait"
-              name="relatedDisciplineViolationId"
-              onChange={updateField}
-              value={form.relatedDisciplineViolationId ?? ""}
-            />
-            <TextArea label="Alamat Penerima" name="recipientAddress" value={form.recipientAddress ?? ""} onChange={updateField} />
-            <TextArea label="Perihal" name="subject" required value={form.subject ?? ""} onChange={updateField} />
-            <TextArea label="Isi Surat" name="body" required value={form.body ?? ""} onChange={updateField} className="md:col-span-2" />
+          <Field label="Kategori" name="category" required value={form.category ?? ""} onChange={updateField} placeholder="SKL" />
+          <SelectField
+            label="Direction"
+            name="direction"
+            options={directions}
+            value={form.direction ?? "OUTGOING"}
+            onChange={updateField}
+          />
+          <SelectField label="Prioritas" name="priority" options={priorities} value={form.priority ?? "NORMAL"} onChange={updateField} />
+          <SelectField
+            label="Tipe Penerima"
+            name="recipientType"
+            options={recipientTypes}
+            value={form.recipientType ?? "EXTERNAL"}
+            onChange={updateField}
+          />
+          <Field label="Nama Penerima" name="recipientName" required value={form.recipientName ?? ""} onChange={updateField} />
+          <Field label="Email Penerima" name="recipientEmail" value={form.recipientEmail ?? ""} onChange={updateField} />
+          <EntityField entityType="student" label="Siswa Terkait" name="studentId" onChange={updateField} value={form.studentId ?? ""} />
+          <EntityField entityType="guardian" label="Wali Terkait" name="guardianId" onChange={updateField} value={form.guardianId ?? ""} />
+          <EntityField entityType="teacher" label="Guru Terkait" name="teacherId" onChange={updateField} value={form.teacherId ?? ""} />
+          <EntityField entityType="staff" label="Staff Terkait" name="staffId" onChange={updateField} value={form.staffId ?? ""} />
+          <EntityField
+            entityType="counseling-case"
+            label="Kasus BK Terkait"
+            name="relatedCounselingCaseId"
+            onChange={updateField}
+            value={form.relatedCounselingCaseId ?? ""}
+          />
+          <EntityField
+            entityType="discipline-violation"
+            label="Pelanggaran Terkait"
+            name="relatedDisciplineViolationId"
+            onChange={updateField}
+            value={form.relatedDisciplineViolationId ?? ""}
+          />
+          <TextArea label="Alamat Penerima" name="recipientAddress" value={form.recipientAddress ?? ""} onChange={updateField} />
+          <TextArea label="Perihal" name="subject" required value={form.subject ?? ""} onChange={updateField} />
+          <TextArea label="Isi Surat" name="body" required value={form.body ?? ""} onChange={updateField} className="md:col-span-2" />
 
-            <div className="flex flex-col-reverse gap-3 md:col-span-2 sm:flex-row sm:justify-end">
-              <Button disabled={Boolean(submitting)} type="submit" variant="outline">
-                {submitting === "draft" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FilePlus2 className="h-4 w-4" />} Simpan Draft
-              </Button>
-              <Button
-                disabled={Boolean(submitting)}
-                onClick={(event) => void handleSubmit(event as unknown as FormEvent<HTMLFormElement>, "submit")}
-                type="button"
-                variant="soft"
-              >
-                {submitting === "submit" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Submit
-              </Button>
-              <Button
-                disabled={Boolean(submitting)}
-                onClick={(event) => void handleSubmit(event as unknown as FormEvent<HTMLFormElement>, "issue")}
-                type="button"
-              >
-                {submitting === "issue" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FilePlus2 className="h-4 w-4" />} Issue Langsung
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+          <div className="flex flex-col-reverse gap-3 md:col-span-2 sm:flex-row sm:justify-end">
+            <Button disabled={Boolean(submitting)} type="submit" variant="outline">
+              {submitting === "draft" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FilePlus2 className="h-4 w-4" />} Simpan Draft
+            </Button>
+            <Button
+              disabled={Boolean(submitting)}
+              onClick={(event) => void handleSubmit(event as unknown as FormEvent<HTMLFormElement>, "submit")}
+              type="button"
+              variant="soft"
+            >
+              {submitting === "submit" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Submit
+            </Button>
+            <Button
+              disabled={Boolean(submitting)}
+              onClick={(event) => void handleSubmit(event as unknown as FormEvent<HTMLFormElement>, "issue")}
+              type="button"
+            >
+              {submitting === "issue" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FilePlus2 className="h-4 w-4" />} Issue Langsung
+            </Button>
+          </div>
+        </form>
+      </SectionCard>
     </div>
   );
 }

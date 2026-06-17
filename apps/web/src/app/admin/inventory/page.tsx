@@ -1,19 +1,9 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
-import {
-  AlertCircle,
-  Building2,
-  ClipboardCheck,
-  BriefcaseBusiness,
-  Settings,
-  HeartHandshake,
-  Loader2,
-  AlertTriangle,
-  Clock,
-} from "lucide-react";
+import { ClipboardCheck, BriefcaseBusiness, Settings, HeartHandshake, Loader2, AlertTriangle } from "lucide-react";
 
-import { Card, CardContent, PageHeader, StatCard, SectionCard } from "@nexsmsid/ui";
+import { Card, CardContent, ErrorState, PageHeader, StatCard } from "@nexsmsid/ui";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
 
@@ -29,7 +19,7 @@ type InventorySummary = {
 export default function InventoryDashboardPage() {
   const api = useMemo(() => createBrowserApiClient(), []);
   const loadSummary = useCallback(() => api.getInventorySummary() as Promise<InventorySummary>, [api]);
-  const { data: summary, error, loading } = useApiQuery(loadSummary, [api]);
+  const { data: summary, error, loading, refetch } = useApiQuery(loadSummary, [api]);
 
   return (
     <div className="space-y-8">
@@ -40,11 +30,7 @@ export default function InventoryDashboardPage() {
         title="Dashboard Inventaris"
       />
 
-      {error ? (
-        <div className="flex items-center gap-3 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
-          <AlertCircle className="h-5 w-5" /> {error}
-        </div>
-      ) : null}
+      {error ? <ErrorState message={error} onRetry={() => void refetch()} title="Gagal memuat dashboard inventaris" /> : null}
 
       {loading ? (
         <Card>
@@ -95,7 +81,7 @@ export default function InventoryDashboardPage() {
           />
           <StatCard
             description="Barang dengan kuantitas <= stok minimum"
-            icon={<AlertCircle className="h-5 w-5" />}
+            icon={<AlertTriangle className="h-5 w-5" />}
             title="Stok Menipis / Habis"
             tone="amber"
             value={String(summary.lowStockItems ?? 0)}

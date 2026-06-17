@@ -4,7 +4,7 @@ import { BarChart3, BookOpen, GraduationCap, Loader2, RefreshCcw } from "lucide-
 import Link from "next/link";
 import { useCallback, useMemo } from "react";
 
-import { Button, Card, CardContent, CardHeader, CardTitle, ErrorState, PageHeader, StatCard, StatusBadge } from "@nexsmsid/ui";
+import { Button, ErrorState, PageHeader, SectionCard, StatCard, StatusBadge } from "@nexsmsid/ui";
 
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
@@ -25,7 +25,7 @@ export default function ExamReportsPage() {
   const { data: summary, error, loading, refetch } = useApiQuery<ExamSummary>(loadSummary, [client]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <PageHeader
         actions={
           <Button onClick={() => void refetch()} variant="outline">
@@ -59,39 +59,29 @@ export default function ExamReportsPage() {
           </div>
 
           {summary.byStatus ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Ujian per Status</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-3">
-                  {Object.entries(summary.byStatus).map(([status, count]) => (
-                    <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3" key={status}>
-                      <StatusBadge value={status} />
-                      <span className="text-lg font-bold">{count as number}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <SectionCard title="Ujian per Status">
+              <div className="flex flex-wrap gap-3">
+                {Object.entries(summary.byStatus).map(([status, count]) => (
+                  <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3" key={status}>
+                    <StatusBadge value={status} />
+                    <span className="text-lg font-bold">{count as number}</span>
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
           ) : null}
 
           {summary.byType ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Ujian per Tipe</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-3">
-                  {Object.entries(summary.byType).map(([type, count]) => (
-                    <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3" key={type}>
-                      <span className="text-sm font-bold text-muted-foreground">{type}</span>
-                      <span className="text-lg font-bold">{count as number}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <SectionCard title="Ujian per Tipe">
+              <div className="flex flex-wrap gap-3">
+                {Object.entries(summary.byType).map(([type, count]) => (
+                  <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3" key={type}>
+                    <span className="text-sm font-bold text-muted-foreground">{type}</span>
+                    <span className="text-lg font-bold">{count as number}</span>
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
           ) : null}
 
           <div className="flex flex-wrap gap-3">
