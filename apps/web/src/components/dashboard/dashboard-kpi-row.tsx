@@ -1,12 +1,15 @@
 "use client";
 
-import { CalendarCheck, GraduationCap, UsersRound, WalletCards, type LucideIcon } from "lucide-react";
+import { GraduationCap, School, UsersRound, WalletCards, type LucideIcon } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer } from "recharts";
 
-import type { FinanceSummary, Overview } from "./dashboard-types";
-import { formatCurrency, formatNumber } from "./dashboard-utils";
+import { Badge } from "@nexsmsid/ui";
+
+import type { AcademicSummary, FinanceSummary, Overview } from "./dashboard-types";
+import { formatCurrency, formatNumber, percentChange } from "./dashboard-utils";
 
 type DashboardKpiRowProps = {
+  academic: AcademicSummary;
   finance: FinanceSummary;
   overview: Overview;
 };
@@ -20,57 +23,74 @@ const toneStyles: Record<KpiTone, { icon: string; spark: string }> = {
   emerald: { icon: "bg-emerald-100 text-emerald-700 ring-emerald-200/80", spark: "#10B981" },
 };
 
-export function DashboardKpiRow({ finance, overview }: DashboardKpiRowProps) {
+export function DashboardKpiRow({ academic, finance, overview }: DashboardKpiRowProps) {
+  const peopleTrend = academic.peopleComparison ?? [];
   const incomeTrend = finance.monthly.map((row) => row.income || 0);
-  const expenseTrend = finance.monthly.map((row) => row.expense || 0);
+  const studentSpark = peopleTrend.map((row) => row.students);
+  const teacherSpark = peopleTrend.map((row) => row.teachers);
+  const classroomSpark = peopleTrend.map((row) => row.classrooms);
+
+  const studentDelta = percentChange(
+    peopleTrend.at(-2)?.students ?? overview.people.studentsActive,
+    peopleTrend.at(-1)?.students ?? overview.people.studentsActive,
+  );
+  const teacherDelta = percentChange(
+    peopleTrend.at(-2)?.teachers ?? overview.people.teachersActive,
+    peopleTrend.at(-1)?.teachers ?? overview.people.teachersActive,
+  );
+  const classroomDelta = percentChange(
+    peopleTrend.at(-2)?.classrooms ?? overview.academic.classrooms,
+    peopleTrend.at(-1)?.classrooms ?? overview.academic.classrooms,
+  );
+  const paymentDelta = percentChange(incomeTrend.at(-2) ?? 0, incomeTrend.at(-1) ?? finance.payments.total);
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <DashboardKpiCard
-        description={`${formatNumber(overview.people.guardians)} wali terdaftar`}
+        change={studentDelta}
         icon={UsersRound}
-        sparkline={padSparkline(incomeTrend.length ? incomeTrend : [overview.people.studentsActive])}
+        sparkline={padSparkline(studentSpark.length ? studentSpark : [overview.people.studentsActive])}
         title="Siswa Aktif"
         tone="teal"
         value={formatNumber(overview.people.studentsActive)}
       />
       <DashboardKpiCard
-        description={`${formatNumber(overview.academic.subjects)} mata pelajaran · ${formatNumber(overview.academic.classrooms)} kelas`}
+        change={teacherDelta}
         icon={GraduationCap}
-        sparkline={padSparkline([overview.people.teachersActive, overview.academic.subjects, overview.academic.classrooms])}
+        sparkline={padSparkline(teacherSpark.length ? teacherSpark : [overview.people.teachersActive])}
         title="Guru Aktif"
         tone="indigo"
         value={formatNumber(overview.people.teachersActive)}
       />
       <DashboardKpiCard
-        description={`${formatNumber(overview.finance.outstandingInvoices)} tagihan belum lunas`}
-        icon={WalletCards}
-        sparkline={padSparkline(expenseTrend.length ? expenseTrend : [overview.finance.outstandingAmount])}
-        title="Tagihan Outstanding"
-        tone="amber"
-        value={formatCurrency(overview.finance.outstandingAmount)}
+        change={classroomDelta}
+        icon={School}
+        sparkline={padSparkline(classroomSpark.length ? classroomSpark : [overview.academic.classrooms])}
+        title="Kelas Aktif"
+        tone="emerald"
+        value={formatNumber(overview.academic.classrooms)}
       />
       <DashboardKpiCard
-        description={`${formatNumber(overview.academic.assessmentsThisSemester)} penilaian semester ini`}
-        icon={CalendarCheck}
-        sparkline={padSparkline([0, overview.academic.attendanceSessionsThisWeek, overview.academic.assessmentsThisSemester])}
-        title="Sesi Presensi Minggu Ini"
-        tone="emerald"
-        value={formatNumber(overview.academic.attendanceSessionsThisWeek)}
+        change={paymentDelta}
+        icon={WalletCards}
+        sparkline={padSparkline(incomeTrend.length ? incomeTrend : [finance.payments.total])}
+        title="Total Pembayaran"
+        tone="amber"
+        value={formatCurrency(finance.payments.total)}
       />
     </div>
   );
 }
 
 function DashboardKpiCard({
-  description,
+  change,
   icon: Icon,
   sparkline,
   title,
   tone,
   value,
 }: {
-  description: string;
+  change: number | null;
   icon: LucideIcon;
   sparkline: number[];
   title: string;
@@ -85,8 +105,16 @@ function DashboardKpiCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{title}</p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">{value}</p>
-          <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <p className="text-2xl font-bold tracking-tight text-foreground">{value}</p>
+            {change !== null ? (
+              <Badge className="text-[10px] font-semibold normal-case tracking-normal" variant={change >= 0 ? "success" : "warning"}>
+                {change >= 0 ? "+" : ""}
+                {change.toLocaleString("id-ID", { maximumFractionDigits: 1 })}%
+              </Badge>
+            ) : null}
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">vs bulan lalu</p>
         </div>
         <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ring-1 ${palette.icon}`}>
           <Icon className="h-5 w-5" />

@@ -15,6 +15,8 @@ export type Overview = {
 
 export type AcademicSummary = {
   attendanceThisWeek: Record<string, number>;
+  attendanceTrend: Array<{ month: string; rate: number }>;
+  peopleComparison: Array<{ classrooms: number; month: string; students: number; teachers: number }>;
   studentsByGender: Record<string, number>;
   studentsByStatus: Record<string, number>;
 };

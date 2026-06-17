@@ -301,7 +301,9 @@ export class DashboardService {
     endOfWeek.setDate(endOfWeek.getDate() + 6);
     endOfWeek.setHours(23, 59, 59, 999);
 
-    const [byStatus, studentsByGender, attendanceMonthly, topSubjects] = await Promise.all([
+    const monthRanges = this.getLastMonthRanges(6);
+
+    const [byStatus, studentsByGender, attendanceMonthly, topSubjects, attendanceTrend, peopleComparison] = await Promise.all([
       this.prisma.student.groupBy({ by: ["status"], _count: true, where: { deletedAt: null } }),
       this.prisma.student.groupBy({ by: ["gender"], _count: true, where: { deletedAt: null } }),
       this.prisma.attendanceRecord.groupBy({
@@ -321,6 +323,42 @@ export class DashboardService {
         orderBy: { _count: { subjectId: "desc" } },
         take: 5,
       }),
+      Promise.all(
+        monthRanges.map(async ({ end, label, start }) => {
+          const records = await this.prisma.attendanceRecord.groupBy({
+            by: ["status"],
+            _count: true,
+            where: {
+              session: {
+                date: { gte: start, lte: end },
+                deletedAt: null,
+              },
+            },
+          });
+          const present = records.find((row) => row.status === "PRESENT")?._count ?? 0;
+          const total = records.reduce((sum, row) => sum + row._count, 0);
+          return {
+            month: label,
+            rate: total > 0 ? Math.round((present / total) * 1000) / 10 : 0,
+          };
+        }),
+      ),
+      Promise.all(
+        monthRanges.map(async ({ end, label }) => {
+          const [students, teachers, classrooms] = await Promise.all([
+            this.prisma.student.count({
+              where: { deletedAt: null, status: PersonStatus.ACTIVE, createdAt: { lte: end } },
+            }),
+            this.prisma.teacher.count({
+              where: { deletedAt: null, status: PersonStatus.ACTIVE, createdAt: { lte: end } },
+            }),
+            this.prisma.classroom.count({
+              where: { deletedAt: null, isActive: true, createdAt: { lte: end } },
+            }),
+          ]);
+          return { classrooms, month: label, students, teachers };
+        }),
+      ),
     ]);
 
     const statusCounts: Record<string, number> = {};
@@ -348,6 +386,8 @@ export class DashboardService {
       studentsByStatus: statusCounts,
       studentsByGender: genderCounts,
       attendanceThisWeek: attendanceCounts,
+      attendanceTrend,
+      peopleComparison,
       topSubjects: topSubjects.map((s) => ({
         subject: subjectMap.get(s.subjectId)
           ? { id: s.subjectId, ...subjectMap.get(s.subjectId) }
@@ -355,6 +395,25 @@ export class DashboardService {
         count: s._count,
       })),
     };
+  }
+
+  private getLastMonthRanges(count: number) {
+    const monthLabels = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+    const ranges: Array<{ end: Date; label: string; start: Date }> = [];
+    const cursor = new Date();
+
+    for (let i = count - 1; i >= 0; i -= 1) {
+      const ref = new Date(cursor.getFullYear(), cursor.getMonth() - i, 1);
+      const start = new Date(ref.getFullYear(), ref.getMonth(), 1);
+      const end = new Date(ref.getFullYear(), ref.getMonth() + 1, 0, 23, 59, 59, 999);
+      ranges.push({
+        end,
+        label: `${monthLabels[ref.getMonth()]} ${ref.getFullYear()}`,
+        start,
+      });
+    }
+
+    return ranges;
   }
 
   async getFinanceSummary() {

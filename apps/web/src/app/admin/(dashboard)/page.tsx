@@ -52,9 +52,9 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       <DashboardHero loading={loading} onRefresh={() => void refetch()} />
-      <DashboardKpiRow finance={data.finance} overview={data.overview} />
+      <DashboardKpiRow academic={data.academic} finance={data.finance} overview={data.overview} />
       <div className="grid gap-4 lg:grid-cols-2">
-        <DashboardCharts finance={data.finance} ppdb={data.ppdb} />
+        <DashboardCharts academic={data.academic} />
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
         <DashboardAlerts alerts={data.alerts} />

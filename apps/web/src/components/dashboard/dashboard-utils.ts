@@ -13,3 +13,9 @@ export function formatNumber(value: number) {
 export function formatCurrency(value: number) {
   return new Intl.NumberFormat("id-ID", { currency: "IDR", maximumFractionDigits: 0, style: "currency" }).format(value ?? 0);
 }
+
+export function percentChange(previous: number, current: number): number | null {
+  if (previous <= 0 && current <= 0) return null;
+  if (previous <= 0) return 100;
+  return Math.round(((current - previous) / previous) * 1000) / 10;
+}
