@@ -60,34 +60,35 @@ export default async function HomePage() {
   return (
     <>
       <script dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} type="application/ld+json" />
-      <section className="relative overflow-hidden border-b border-border bg-gradient-to-b from-primary/5 to-background px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-        <div className="absolute inset-x-0 top-0 -z-10 h-full bg-grid-soft opacity-40" aria-hidden="true" />
+      <section className="dashboard-hero-banner relative overflow-hidden border-b border-border px-4 py-16 text-white sm:px-6 lg:px-8 lg:py-24">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div>
-            <Badge variant="secondary">{profile?.npsn ? `NPSN ${profile.npsn}` : "SMK Terakreditasi"}</Badge>
-            <h1 className="mt-5 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">{schoolName}</h1>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">
+            <Badge className="border-white/30 bg-white/15 text-white" variant="outline">
+              {profile?.npsn ? `NPSN ${profile.npsn}` : "SMK Terakreditasi"}
+            </Badge>
+            <h1 className="mt-5 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">{schoolName}</h1>
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-white/85">
               {profile?.description ??
                 "Membentuk lulusan kompeten, berkarakter, dan siap bersaing di dunia industri melalui pendidikan kejuruan berbasis link and match."}
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button asChild size="lg">
+              <Button asChild size="lg" variant="secondary">
                 <Link href="/ppdb/register">
                   Daftar PPDB <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
+              <Button asChild className="border-white/30 bg-white/10 text-white hover:bg-white/20" size="lg" variant="outline">
                 <Link href="/jurusan">Lihat Jurusan</Link>
               </Button>
             </div>
             {profile?.principalName ? (
-              <p className="mt-6 text-sm text-muted-foreground">
-                Kepala Sekolah: <span className="font-medium text-foreground">{profile.principalName}</span>
+              <p className="mt-6 text-sm text-white/80">
+                Kepala Sekolah: <span className="font-medium text-white">{profile.principalName}</span>
               </p>
             ) : null}
           </div>
 
-          <Card className="surface-panel overflow-hidden">
+          <Card className="surface-panel overflow-hidden border-white/20 bg-white/95 text-foreground shadow-premium">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <GraduationCap className="h-5 w-5 text-primary" />
