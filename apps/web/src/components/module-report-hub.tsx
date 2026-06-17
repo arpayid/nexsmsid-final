@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { FileText, Loader2 } from "lucide-react";
+import { CheckCircle2, FileText, Loader2 } from "lucide-react";
 import Link from "next/link";
 
-import { Button, Card, CardContent, CardHeader, CardTitle, PageHeader } from "@nexsmsid/ui";
+import { Button, ErrorState, ModuleCard, PageHeader, SectionCard } from "@nexsmsid/ui";
 
 import { createBrowserApiClient } from "@/lib/api-client";
 
@@ -63,27 +63,31 @@ export function ModuleReportHub({ breadcrumb, description, eyebrow, footer, repo
         title={title}
       />
 
-      {error ? (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">{error}</div>
-      ) : null}
+      {error ? <ErrorState message={error} title="Gagal membuat laporan" /> : null}
+
       {message ? (
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">{message}</div>
+        <SectionCard className="border-emerald-200 bg-emerald-50/40" title="Laporan dalam antrian">
+          <p className="flex items-center gap-2 text-sm font-semibold text-emerald-700">
+            <CheckCircle2 className="h-4 w-4 shrink-0" />
+            {message}
+          </p>
+        </SectionCard>
       ) : null}
 
       {footer}
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {reports.map((report) => (
-          <Card key={report.code}>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <FileText className="h-4 w-4 text-primary" />
-                {report.label}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {report.description ? <p className="text-sm text-muted-foreground">{report.description}</p> : null}
-              <div className="flex flex-wrap gap-2">
+      <SectionCard description="Pilih laporan modul untuk digenerate ke format Excel atau PDF." title="Daftar Laporan">
+        <div className="grid gap-4 md:grid-cols-2">
+          {reports.map((report) => (
+            <div className="space-y-3" key={report.code}>
+              <ModuleCard
+                description={report.description ?? `Generate laporan ${report.label}.`}
+                icon={<FileText className="h-5 w-5" />}
+                meta={report.format ?? "XLSX"}
+                title={report.label}
+                tone="teal"
+              />
+              <div className="flex flex-wrap gap-2 px-1">
                 <Button disabled={busyCode === report.code} onClick={() => void handleGenerate(report)} size="sm">
                   {busyCode === report.code ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                   Generate {report.format ?? "XLSX"}
@@ -92,10 +96,10 @@ export function ModuleReportHub({ breadcrumb, description, eyebrow, footer, repo
                   <Link href="/admin/reports/jobs">Lihat Antrian</Link>
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            </div>
+          ))}
+        </div>
+      </SectionCard>
     </div>
   );
 }
