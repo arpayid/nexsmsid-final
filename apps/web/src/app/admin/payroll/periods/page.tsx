@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useMemo, useState } from "react";
-import { ConfirmDialog, PageHeader, SectionCard, DataTable, Button, ErrorState, FormModal, Input } from "@nexsmsid/ui";
+import { ConfirmDialog, PageHeader, SectionCard, DataTable, Button, ErrorState, FormModal, Input, SearchFilterBar } from "@nexsmsid/ui";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
 import { Loader2, Plus, RefreshCcw } from "lucide-react";
@@ -39,14 +39,22 @@ export default function Page() {
   const [submitting, setSubmitting] = useState(false);
   const [actionBusy, setActionBusy] = useState<string | null>(null);
   const [pendingWorkflow, setPendingWorkflow] = useState<PendingWorkflow | null>(null);
+  const [search, setSearch] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
   const client = useMemo(() => createBrowserApiClient(), []);
 
   const loadItems = useCallback(async () => {
-    const response = await client.listPayrollPeriods({ limit: 50, page: 1 });
+    const response = await client.listPayrollPeriods({ limit: 50, page: 1, search: appliedSearch || undefined });
     return (response as { data?: PayrollPeriodRow[] }).data ?? [];
-  }, [client]);
-  const { data: itemsData, error, loading, refetch, setError } = useApiQuery<PayrollPeriodRow[]>(loadItems, [client]);
+  }, [client, appliedSearch]);
+  const { data: itemsData, error, loading, refetch, setError } = useApiQuery<PayrollPeriodRow[]>(loadItems, [client, appliedSearch]);
   const items = itemsData ?? [];
+
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAppliedSearch(search);
+    await refetch();
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -129,7 +137,12 @@ export default function Page() {
 
       {error ? <ErrorState message={error} onRetry={() => void refetch()} title="Terjadi Kesalahan" /> : null}
 
-      <SectionCard title="Daftar Periode Penggajian">
+      <SectionCard
+        action={
+          <SearchFilterBar onSearchChange={setSearch} onSubmit={handleSearch} searchPlaceholder="Cari periode..." searchValue={search} />
+        }
+        title="Daftar Periode Penggajian"
+      >
         <DataTable
           actions={(item) => (
             <>

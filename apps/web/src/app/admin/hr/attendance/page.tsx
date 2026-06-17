@@ -3,7 +3,7 @@
 import { FormEvent, useCallback, useMemo, useState } from "react";
 import { Loader2, Plus, RefreshCcw } from "lucide-react";
 
-import { Button, DataTable, ErrorState, FormModal, Input, PageHeader, SectionCard } from "@nexsmsid/ui";
+import { Button, DataTable, ErrorState, FormModal, Input, PageHeader, SearchFilterBar, SectionCard } from "@nexsmsid/ui";
 import { createBrowserApiClient } from "@/lib/api-client";
 import { EntityPicker } from "@/components/entity-picker";
 import { useApiQuery } from "@/hooks/use-api-query";
@@ -24,14 +24,22 @@ export default function Page() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [search, setSearch] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
 
   const loadItems = useCallback(async () => {
-    const response = await api.listEmployeeAttendance({ limit: 50, page: 1 });
+    const response = await api.listEmployeeAttendance({ limit: 50, page: 1, search: appliedSearch || undefined });
     return (response as { data?: AttendanceRow[] }).data || [];
-  }, [api]);
-  const { data: itemsData, error: fetchError, loading, refetch } = useApiQuery<AttendanceRow[]>(loadItems, [api]);
+  }, [api, appliedSearch]);
+  const { data: itemsData, error: fetchError, loading, refetch } = useApiQuery<AttendanceRow[]>(loadItems, [api, appliedSearch]);
   const items = itemsData ?? [];
   const error = actionError ?? fetchError;
+
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAppliedSearch(search);
+    await refetch();
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -86,7 +94,12 @@ export default function Page() {
 
       {error ? <ErrorState message={error} title="Terjadi Kesalahan" /> : null}
 
-      <SectionCard title="Daftar Kehadiran Pegawai">
+      <SectionCard
+        action={
+          <SearchFilterBar onSearchChange={setSearch} onSubmit={handleSearch} searchPlaceholder="Cari kehadiran..." searchValue={search} />
+        }
+        title="Daftar Kehadiran Pegawai"
+      >
         <DataTable
           columns={columns}
           data={items}

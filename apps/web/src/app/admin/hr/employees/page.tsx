@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useMemo, useState } from "react";
-import { PageHeader, SectionCard, DataTable, Button, ErrorState, FormModal, Input } from "@nexsmsid/ui";
+import { PageHeader, SectionCard, DataTable, Button, ErrorState, FormModal, Input, SearchFilterBar } from "@nexsmsid/ui";
 import { createBrowserApiClient } from "@/lib/api-client";
 import { EntityPicker } from "@/components/entity-picker";
 import { useApiQuery } from "@/hooks/use-api-query";
@@ -20,15 +20,23 @@ export default function Page() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [search, setSearch] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
   const client = useMemo(() => createBrowserApiClient(), []);
 
   const loadItems = useCallback(async () => {
-    const response = await client.listEmployees({ limit: 50, page: 1 });
+    const response = await client.listEmployees({ limit: 50, page: 1, search: appliedSearch || undefined });
     return (response as { data?: EmployeeRow[] }).data || [];
-  }, [client]);
-  const { data: itemsData, error: fetchError, loading, refetch } = useApiQuery<EmployeeRow[]>(loadItems, [client]);
+  }, [client, appliedSearch]);
+  const { data: itemsData, error: fetchError, loading, refetch } = useApiQuery<EmployeeRow[]>(loadItems, [client, appliedSearch]);
   const items = itemsData ?? [];
   const error = actionError ?? fetchError;
+
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAppliedSearch(search);
+    await refetch();
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -83,7 +91,12 @@ export default function Page() {
 
       {error ? <ErrorState message={error} title="Terjadi Kesalahan" /> : null}
 
-      <SectionCard title="Daftar Data Pegawai">
+      <SectionCard
+        action={
+          <SearchFilterBar onSearchChange={setSearch} onSubmit={handleSearch} searchPlaceholder="Cari pegawai..." searchValue={search} />
+        }
+        title="Daftar Data Pegawai"
+      >
         <DataTable
           columns={columns}
           data={items}

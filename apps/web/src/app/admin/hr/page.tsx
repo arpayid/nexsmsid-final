@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
-import { AlertCircle, BriefcaseBusiness, CalendarOff, Loader2, UserCheck, Users } from "lucide-react";
+import { AlertCircle, BriefcaseBusiness, CalendarOff, Loader2, UserCheck, Users, UserCog, CalendarClock } from "lucide-react";
 
-import { Card, CardContent, ErrorState, PageHeader, StatCard } from "@nexsmsid/ui";
+import { Card, CardContent, ErrorState, ModuleCard, PageHeader, SectionCard, StatCard } from "@nexsmsid/ui";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
 
@@ -80,6 +80,39 @@ export default function Page() {
           />
         </div>
       ) : null}
+
+      <SectionCard description="Akses cepat modul kepegawaian." title="Menu HR">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <ModuleCard
+            description="Profil dan data pegawai sekolah."
+            href="/admin/hr/employees"
+            icon={<Users className="h-5 w-5" />}
+            title="Data Pegawai"
+            tone="blue"
+          />
+          <ModuleCard
+            description="Pengajuan cuti dan izin pegawai."
+            href="/admin/hr/leaves"
+            icon={<CalendarOff className="h-5 w-5" />}
+            title="Cuti & Izin"
+            tone="amber"
+          />
+          <ModuleCard
+            description="Rekap presensi harian pegawai."
+            href="/admin/hr/attendance"
+            icon={<CalendarClock className="h-5 w-5" />}
+            title="Kehadiran"
+            tone="emerald"
+          />
+          <ModuleCard
+            description="Master jabatan dan posisi."
+            href="/admin/hr/positions"
+            icon={<UserCog className="h-5 w-5" />}
+            title="Jabatan"
+            tone="violet"
+          />
+        </div>
+      </SectionCard>
     </div>
   );
 }

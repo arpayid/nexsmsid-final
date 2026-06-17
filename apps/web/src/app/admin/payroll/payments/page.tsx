@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
-import { RefreshCcw, Wallet } from "lucide-react";
+import { FormEvent, useCallback, useMemo, useState } from "react";
+import { RefreshCcw } from "lucide-react";
 import Link from "next/link";
 
-import { Button, DataTable, ErrorState, PageHeader, SectionCard } from "@nexsmsid/ui";
+import { Button, DataTable, ErrorState, PageHeader, SearchFilterBar, SectionCard } from "@nexsmsid/ui";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
 
@@ -23,12 +23,20 @@ type PayrollPaymentRow = {
 
 export default function PayrollPaymentsPage() {
   const api = useMemo(() => createBrowserApiClient(), []);
+  const [search, setSearch] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
   const loadPayments = useCallback(async () => {
-    const response = await api.listPayrollPayments({ limit: 50, page: 1 });
+    const response = await api.listPayrollPayments({ limit: 50, page: 1, search: appliedSearch || undefined });
     return (response as { data?: PayrollPaymentRow[] }).data ?? [];
-  }, [api]);
-  const { data: itemsData, error, loading, refetch } = useApiQuery<PayrollPaymentRow[]>(loadPayments, [api]);
+  }, [api, appliedSearch]);
+  const { data: itemsData, error, loading, refetch } = useApiQuery<PayrollPaymentRow[]>(loadPayments, [api, appliedSearch]);
   const items = itemsData ?? [];
+
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAppliedSearch(search);
+    await refetch();
+  }
 
   const columns = [
     { key: "payslipNumber", header: "Nomor Slip", cell: (item: PayrollPaymentRow) => String(item.payslipNumber ?? "-") },
@@ -60,7 +68,12 @@ export default function PayrollPaymentsPage() {
 
       {error ? <ErrorState message={error} title="Terjadi Kesalahan" /> : null}
 
-      <SectionCard title="Daftar Pembayaran Payroll">
+      <SectionCard
+        action={
+          <SearchFilterBar onSearchChange={setSearch} onSubmit={handleSearch} searchPlaceholder="Cari pembayaran..." searchValue={search} />
+        }
+        title="Daftar Pembayaran Payroll"
+      >
         <DataTable
           columns={columns}
           data={items}

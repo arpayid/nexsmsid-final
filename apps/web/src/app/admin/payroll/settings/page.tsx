@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState, type FormEvent } from "react";
 import { Info, RefreshCcw } from "lucide-react";
 import Link from "next/link";
 
-import { Button, DataTable, ErrorState, PageHeader, SectionCard } from "@nexsmsid/ui";
+import { Button, DataTable, ErrorState, PageHeader, SearchFilterBar, SectionCard } from "@nexsmsid/ui";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
 
@@ -32,6 +32,7 @@ type PayrollSettingsData = {
 
 export default function PayrollSettingsPage() {
   const api = useMemo(() => createBrowserApiClient(), []);
+  const [search, setSearch] = useState("");
   const loadSettings = useCallback(async () => {
     const [employeeResponse, componentResponse] = await Promise.all([
       api.listEmployees({ limit: 50, page: 1 }),
@@ -43,8 +44,12 @@ export default function PayrollSettingsPage() {
     };
   }, [api]);
   const { data, error, loading, refetch } = useApiQuery<PayrollSettingsData>(loadSettings, [api]);
-  const employees = data?.employees ?? [];
-  const components = data?.components ?? [];
+  const employees = (data?.employees ?? []).filter((item) => matchesSearch(item, search));
+  const components = (data?.components ?? []).filter((item) => matchesSearch(item, search));
+
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+  }
 
   const employeeColumns = [
     { key: "employeeCode", header: "Kode Pegawai", cell: (item: PayrollEmployeeRow) => String(item.employeeCode ?? "-") },
@@ -87,7 +92,17 @@ export default function PayrollSettingsPage() {
 
       {error ? <ErrorState message={error} title="Terjadi Kesalahan" /> : null}
 
-      <SectionCard title="Gaji Pokok Pegawai">
+      <SectionCard
+        action={
+          <SearchFilterBar
+            onSearchChange={setSearch}
+            onSubmit={handleSearch}
+            searchPlaceholder="Cari pegawai atau komponen..."
+            searchValue={search}
+          />
+        }
+        title="Gaji Pokok Pegawai"
+      >
         <DataTable
           columns={employeeColumns}
           data={employees}
@@ -112,4 +127,21 @@ export default function PayrollSettingsPage() {
 
 function formatCurrency(value: unknown) {
   return `Rp ${Number(value ?? 0).toLocaleString("id-ID")}`;
+}
+
+function matchesSearch(item: Record<string, unknown>, search: string) {
+  if (!search.trim()) return true;
+  const needle = search.toLowerCase();
+  return Object.values(item).some((value) => {
+    if (value && typeof value === "object") {
+      return Object.values(value as Record<string, unknown>).some((nested) =>
+        String(nested ?? "")
+          .toLowerCase()
+          .includes(needle),
+      );
+    }
+    return String(value ?? "")
+      .toLowerCase()
+      .includes(needle);
+  });
 }

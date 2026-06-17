@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
-import { Banknote, Calculator, Loader2, Receipt, Wallet } from "lucide-react";
+import { Banknote, Calculator, Loader2, Receipt, Wallet, Settings, FileText } from "lucide-react";
 
-import { Card, CardContent, ErrorState, PageHeader, StatCard } from "@nexsmsid/ui";
+import { Card, CardContent, ErrorState, ModuleCard, PageHeader, SectionCard, StatCard } from "@nexsmsid/ui";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
 
@@ -80,6 +80,53 @@ export default function Page() {
           />
         </div>
       ) : null}
+
+      <SectionCard description="Akses cepat modul penggajian." title="Menu Payroll">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <ModuleCard
+            description="Kelola periode dan siklus penggajian."
+            href="/admin/payroll/periods"
+            icon={<Receipt className="h-5 w-5" />}
+            title="Periode Penggajian"
+            tone="blue"
+          />
+          <ModuleCard
+            description="Daftar gaji per pegawai."
+            href="/admin/payroll/runs"
+            icon={<Calculator className="h-5 w-5" />}
+            title="Payroll Run"
+            tone="violet"
+          />
+          <ModuleCard
+            description="Slip gaji dan riwayat terbit."
+            href="/admin/payroll/payslips"
+            icon={<Wallet className="h-5 w-5" />}
+            title="Slip Gaji"
+            tone="emerald"
+          />
+          <ModuleCard
+            description="Pembayaran gaji ke pegawai."
+            href="/admin/payroll/payments"
+            icon={<Banknote className="h-5 w-5" />}
+            title="Pembayaran"
+            tone="amber"
+          />
+          <ModuleCard
+            description="Komponen dan pengaturan gaji."
+            href="/admin/payroll/settings"
+            icon={<Settings className="h-5 w-5" />}
+            title="Pengaturan"
+            tone="slate"
+          />
+          <ModuleCard
+            description="Laporan HR dan payroll."
+            href="/admin/payroll/reports"
+            icon={<FileText className="h-5 w-5" />}
+            title="Laporan"
+            tone="teal"
+          />
+        </div>
+      </SectionCard>
     </div>
   );
 }

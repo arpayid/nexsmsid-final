@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { FormEvent, useCallback, useMemo, useState } from "react";
 import Link from "next/link";
-import { PageHeader, SectionCard, DataTable, Button, ErrorState } from "@nexsmsid/ui";
+import { PageHeader, SectionCard, DataTable, Button, ErrorState, SearchFilterBar } from "@nexsmsid/ui";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
 import { RefreshCcw } from "lucide-react";
@@ -20,12 +20,20 @@ type PayrollRunRow = {
 
 export default function Page() {
   const client = useMemo(() => createBrowserApiClient(), []);
+  const [search, setSearch] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
   const loadItems = useCallback(async () => {
-    const response = await client.listPayrollRuns({ limit: 50, page: 1 });
+    const response = await client.listPayrollRuns({ limit: 50, page: 1, search: appliedSearch || undefined });
     return (response as { data?: PayrollRunRow[] }).data ?? [];
-  }, [client]);
-  const { data: itemsData, error, loading, refetch } = useApiQuery<PayrollRunRow[]>(loadItems, [client]);
+  }, [client, appliedSearch]);
+  const { data: itemsData, error, loading, refetch } = useApiQuery<PayrollRunRow[]>(loadItems, [client, appliedSearch]);
   const items = itemsData ?? [];
+
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAppliedSearch(search);
+    await refetch();
+  }
 
   const columns = [
     { key: "employee", header: "Pegawai", cell: (item: PayrollRunRow) => String(item.employee?.fullName ?? item.employeeId ?? "-") },
@@ -56,7 +64,17 @@ export default function Page() {
 
       {error ? <ErrorState message={error} title="Terjadi Kesalahan" /> : null}
 
-      <SectionCard title="Daftar Daftar Gaji (Payroll Run)">
+      <SectionCard
+        action={
+          <SearchFilterBar
+            onSearchChange={setSearch}
+            onSubmit={handleSearch}
+            searchPlaceholder="Cari payroll run..."
+            searchValue={search}
+          />
+        }
+        title="Daftar Daftar Gaji (Payroll Run)"
+      >
         <DataTable
           columns={columns}
           data={items}

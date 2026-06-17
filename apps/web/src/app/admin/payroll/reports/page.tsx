@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, type FormEvent } from "react";
 import { FileText, Loader2, RefreshCcw } from "lucide-react";
 
-import { Button, DataTable, ErrorState, PageHeader, SectionCard } from "@nexsmsid/ui";
+import { Button, DataTable, ErrorState, PageHeader, SearchFilterBar, SectionCard } from "@nexsmsid/ui";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
 
@@ -31,6 +31,7 @@ type PayrollReportsData = {
 export default function PayrollReportsPage() {
   const api = useMemo(() => createBrowserApiClient(), []);
   const [submitting, setSubmitting] = useState(false);
+  const [search, setSearch] = useState("");
   const loadReports = useCallback(async () => {
     const [types, jobResponse] = await Promise.all([api.listReportTypes(), api.listReportJobs({ limit: 10, page: 1 })]);
     return {
@@ -41,8 +42,12 @@ export default function PayrollReportsPage() {
     };
   }, [api]);
   const { data, error, loading, refetch, setError } = useApiQuery<PayrollReportsData>(loadReports, [api]);
-  const reports = data?.reports ?? [];
+  const reports = (data?.reports ?? []).filter((item) => matchesSearch(item, search));
   const jobs = data?.jobs ?? [];
+
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+  }
   async function generateEmployeeRecap() {
     setSubmitting(true);
     setError(null);
@@ -91,7 +96,17 @@ export default function PayrollReportsPage() {
 
       {error ? <ErrorState message={error} title="Terjadi Kesalahan" /> : null}
 
-      <SectionCard title="Report Type HR & Payroll">
+      <SectionCard
+        action={
+          <SearchFilterBar
+            onSearchChange={setSearch}
+            onSubmit={handleSearch}
+            searchPlaceholder="Cari tipe laporan..."
+            searchValue={search}
+          />
+        }
+        title="Report Type HR & Payroll"
+      >
         <DataTable
           columns={reportColumns}
           data={reports}
@@ -116,4 +131,17 @@ export default function PayrollReportsPage() {
 
 function formatDate(value: unknown) {
   return value ? new Date(String(value)).toLocaleString("id-ID") : "-";
+}
+
+function matchesSearch(item: Record<string, unknown>, search: string) {
+  if (!search.trim()) return true;
+  const needle = search.toLowerCase();
+  return (
+    String(item.code ?? "")
+      .toLowerCase()
+      .includes(needle) ||
+    String(item.name ?? "")
+      .toLowerCase()
+      .includes(needle)
+  );
 }
