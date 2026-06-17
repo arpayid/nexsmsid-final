@@ -110,6 +110,7 @@ export default function StudentsPage() {
 
       <PeoplePage
         description="Kelola data siswa, wali kelas, dan histori akademik dasar."
+        eyebrow="People & Akademik"
         excel={excel}
         extraRowActions={(item) => (
           <Button asChild size="sm" variant="soft">

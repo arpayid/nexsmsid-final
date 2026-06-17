@@ -74,6 +74,7 @@ export default function StaffsPage() {
   return (
     <PeoplePage
       description="Kelola data staff tata usaha dan tenaga kependidikan non-guru."
+      eyebrow="People & Akademik"
       excel={excel}
       fields={fields}
       resource={resource}

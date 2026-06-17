@@ -75,6 +75,7 @@ export default function TeachersPage() {
   return (
     <PeoplePage
       description="Kelola data guru dan tenaga pendidik untuk kebutuhan penjadwalan serta pembelajaran."
+      eyebrow="People & Akademik"
       excel={excel}
       fields={fields}
       resource={resource}

@@ -72,16 +72,20 @@ export type PeoplePageProps = {
 };
 
 const statusMap: StatusBadgeMap = {
-  ACTIVE: { label: "ACTIVE", variant: "success" },
-  INACTIVE: { label: "INACTIVE", variant: "outline" },
-  GRADUATED: { label: "GRADUATED", variant: "secondary" },
-  TRANSFERRED: { label: "TRANSFERRED", variant: "warning" },
-  RESIGNED: { label: "RESIGNED", variant: "warning" },
-  PERMANENT: { label: "PERMANENT", variant: "success" },
-  CONTRACT: { label: "CONTRACT", variant: "warning" },
-  HONORARY: { label: "HONORARY", variant: "secondary" },
-  PROBATION: { label: "PROBATION", variant: "outline" },
+  ACTIVE: { label: "Aktif", variant: "success" },
+  INACTIVE: { label: "Nonaktif", variant: "outline" },
+  GRADUATED: { label: "Lulus", variant: "secondary" },
+  TRANSFERRED: { label: "Pindah", variant: "warning" },
+  RESIGNED: { label: "Resign", variant: "warning" },
+  PERMANENT: { label: "Tetap", variant: "success" },
+  CONTRACT: { label: "Kontrak", variant: "warning" },
+  HONORARY: { label: "Honorer", variant: "secondary" },
+  PROBATION: { label: "Percobaan", variant: "outline" },
 };
+
+function statusLabel(status: string) {
+  return statusMap[status]?.label ?? status;
+}
 
 export function PeoplePage({ description, eyebrow, excel, extraRowActions, fields, resource, statusOptions, title }: PeoplePageProps) {
   const [editing, setEditing] = useState<MasterDataRecord | null>(null);
@@ -286,7 +290,7 @@ export function PeoplePage({ description, eyebrow, excel, extraRowActions, field
               {
                 label: "Status",
                 onChange: setStatusFilter,
-                options: statusOptions.map((status) => ({ label: status, value: status })),
+                options: statusOptions.map((status) => ({ label: statusLabel(status), value: status })),
                 placeholder: "Semua status",
                 value: statusFilter,
               },
@@ -298,7 +302,7 @@ export function PeoplePage({ description, eyebrow, excel, extraRowActions, field
         }
         description={
           <>
-            Search, filter, create, update, dan soft delete data. Total: <strong>{total}</strong> data.
+            Cari, filter, tambah, ubah, dan hapus data. Total: <strong>{total}</strong> data.
           </>
         }
         title={`Data ${title}`}

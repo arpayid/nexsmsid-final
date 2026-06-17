@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { FormEvent, useCallback, useMemo, useState } from "react";
 
-import { Button, ConfirmDialog, DataTable, ErrorState, FormModal, PageHeader, SectionCard } from "@nexsmsid/ui";
+import { Button, ConfirmDialog, DataTable, ErrorState, FormModal, PageHeader, SearchFilterBar, SectionCard } from "@nexsmsid/ui";
 
 import { EntityPicker } from "@/components/entity-picker";
 import { useApiQuery } from "@/hooks/use-api-query";
@@ -31,6 +31,8 @@ export default function StudentGuardiansPage() {
   const [actionBusy, setActionBusy] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [pendingUnlink, setPendingUnlink] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
 
   const loadData = useCallback(async () => {
     const [student, guardians] = await Promise.all([client.getStudent(studentId), client.listStudentGuardians(studentId)]);
@@ -40,7 +42,21 @@ export default function StudentGuardiansPage() {
   const { data, error: fetchError, loading, refetch } = useApiQuery<GuardiansPageData>(loadData, [client, studentId]);
   const studentName = data?.studentName ?? "";
   const items = data?.items ?? [];
+  const filteredItems = useMemo(() => {
+    const query = appliedSearch.trim().toLowerCase();
+    if (!query) return items;
+    return items.filter((item) => {
+      const name = item.guardian?.name?.toLowerCase() ?? "";
+      const phone = item.guardian?.phone?.toLowerCase() ?? "";
+      return name.includes(query) || phone.includes(query);
+    });
+  }, [appliedSearch, items]);
   const error = actionError ?? fetchError;
+
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAppliedSearch(search);
+  }
 
   async function handleLink(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -119,12 +135,24 @@ export default function StudentGuardiansPage() {
         }
         breadcrumb={["Admin", "Siswa", studentName || studentId, "Wali"]}
         description="Kelola hubungan siswa dengan wali murid."
+        eyebrow="People & Akademik"
         title={`Wali — ${studentName || "Siswa"}`}
       />
 
       {error ? <ErrorState message={error} onRetry={() => void refetch()} title="Terjadi Kesalahan" /> : null}
 
-      <SectionCard title="Daftar Wali Terhubung">
+      <SectionCard
+        action={
+          <SearchFilterBar
+            onSearchChange={setSearch}
+            onSubmit={handleSearch}
+            searchPlaceholder="Cari nama atau telepon wali..."
+            searchValue={search}
+          />
+        }
+        description={`${filteredItems.length} wali terhubung dengan siswa ini.`}
+        title="Daftar Wali Terhubung"
+      >
         <DataTable
           actions={(item) => (
             <>
@@ -144,7 +172,7 @@ export default function StudentGuardiansPage() {
             </>
           )}
           columns={columns}
-          data={items}
+          data={filteredItems}
           getRowId={(item) => item.guardianId}
           loading={loading}
           emptyState={{ title: "Belum ada wali", description: "Tambahkan wali murid untuk siswa ini." }}

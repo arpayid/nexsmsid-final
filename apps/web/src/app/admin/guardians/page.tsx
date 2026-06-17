@@ -55,6 +55,7 @@ export default function GuardiansPage() {
   return (
     <PeoplePage
       description="Kelola data wali/orang tua siswa untuk kebutuhan komunikasi dan persetujuan akademik."
+      eyebrow="People & Akademik"
       excel={excel}
       fields={fields}
       resource={resource}
