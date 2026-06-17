@@ -3,10 +3,10 @@
 import { ArrowLeft, Calendar, Clock, Edit3, FileText, Layers, Loader2, Printer, Users } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 
 import type { ExamRecord } from "@nexsmsid/api-client";
-import { Button, Card, CardContent, CardHeader, CardTitle, ErrorState, PageHeader, StatusBadge } from "@nexsmsid/ui";
+import { Button, ErrorState, PageHeader, SectionCard, StatusBadge } from "@nexsmsid/ui";
 
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
@@ -36,7 +36,7 @@ export default function ExamDetailPage() {
   if (loading) return <div className="py-20 text-center text-sm text-muted-foreground">Memuat detail ujian...</div>;
   if (error || !exam) return <ErrorState message={error ?? "Data tidak ditemukan"} title="Gagal memuat" />;
 
-  const info = [
+  const info: Array<{ label: string; value: ReactNode }> = [
     { label: "Kode", value: exam.code },
     { label: "Nama", value: exam.name },
     { label: "Tipe", value: exam.examType?.name ?? "-" },
@@ -63,28 +63,21 @@ export default function ExamDetailPage() {
         title={exam.name}
       />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {info.map((item) => (
-          <Card key={item.label}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{item.label}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <span className="text-lg font-bold">{item.value}</span>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <SectionCard title="Informasi Ujian">
+        <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {info.map((item) => (
+            <div className="rounded-xl border border-border/80 bg-muted/20 px-4 py-3" key={item.label}>
+              <dt className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{item.label}</dt>
+              <dd className="mt-1 text-lg font-bold text-foreground">{item.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </SectionCard>
 
       {exam.instruction ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Instruksi</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm leading-7 text-muted-foreground whitespace-pre-wrap">{exam.instruction}</p>
-          </CardContent>
-        </Card>
+        <SectionCard title="Instruksi">
+          <p className="text-sm leading-7 text-muted-foreground whitespace-pre-wrap">{exam.instruction}</p>
+        </SectionCard>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

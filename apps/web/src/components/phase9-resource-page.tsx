@@ -426,6 +426,24 @@ export function options(values: string[]) {
   return values.map((value) => ({ label: value, value }));
 }
 
+/** Coerce select "true"/"false" strings to boolean for API payloads. */
+export function coerceBooleanFields(payload: Row, fields: string[]): Row {
+  const next = { ...payload };
+  for (const field of fields) {
+    if (typeof next[field] === "string") {
+      next[field] = next[field] === "true";
+    }
+  }
+  return next;
+}
+
+/** Preferred name for Phase9ResourcePage — generic admin CRUD shell. */
+export { Phase9ResourcePage as ResourceCrudPage };
+export type ResourceCrudField = Phase9Field;
+export type ResourceCrudColumn = Phase9Column;
+export type ResourceCrudAction = Phase9Action;
+export type ResourceCrudModalAction = Phase9ModalAction;
+
 function getPath(row: Row, path: string) {
   return path.split(".").reduce<unknown>((value, key) => (value as Record<string, unknown> | null | undefined)?.[key], row);
 }
