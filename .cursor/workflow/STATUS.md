@@ -1,6 +1,6 @@
 # Project Status — NexSMSID V4
 
-Terakhir diperbarui: **2026-06-16**
+Terakhir diperbarui: **2026-06-17**
 
 ## Fase aktif
 
@@ -85,18 +85,19 @@ Setiap perubahan kode mengikuti **D→P→I→V→R** — lihat [WORKFLOW.md](WO
 | #15 | UI-S5 admin CRUD patterns |
 | #16 | UI-S6 portal shells |
 | #17 | UI-S7 dark mode + a11y |
+| #26 | UI-S8 portal polish + prod smoke + HTTPS scripts |
 
 ## Backlog lokal
 
 | Task | Next step |
 |------|-----------|
-| UI Enterprise 2026 | ✅ S1–S7 + rollout admin (#18–#24); smoke prod ✅ otomatis |
-| UI-S8 | Portal polish + prod smoke + HTTPS scripts | 🔧 PR UI-S8 |
+| UI Enterprise 2026 | ✅ S1–S8 + rollout admin (#18–#26); `pnpm prod:smoke` ✅ |
 | Fase 4 go-live | HTTPS domain nyata + certbot (saat DNS siap) |
+| QA manual browser | Dark mode, mobile nav, skip link (manual) |
 
 ## Log singkat
 
 | Tanggal | Event |
 |---------|-------|
 | 2026-06-16 | Program UI Enterprise 2026 + workflow A→P→E→V→PR→M documented |
-| 2026-06-17 | UI-5p ResourceCrudPage batch 2 (#25); UI-S8 portal polish in progress |
+| 2026-06-17 | UI-S8 merged (#26); prod rebuild + `pnpm prod:smoke` 17/17; HTTPS staging OK |
