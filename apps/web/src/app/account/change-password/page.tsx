@@ -1,10 +1,12 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { AlertCircle, Loader2, ShieldCheck, KeyRound } from "lucide-react";
+import { AlertCircle, KeyRound, Loader2, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { Button, Card, CardContent, CardHeader, CardTitle, Input } from "@nexsmsid/ui";
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Input } from "@nexsmsid/ui";
+
+import { AuthPageShell } from "@/components/auth-page-shell";
 import { createBrowserApiClient } from "@/lib/api-client";
 import { clearAuthSession } from "@/lib/auth-storage";
 
@@ -69,28 +71,34 @@ export default function ChangePasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md shadow-premium">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-xl bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200/80">
-            <KeyRound className="h-6 w-6" />
-          </div>
-          <CardTitle className="text-2xl font-bold">Ganti Password</CardTitle>
-          <p className="mt-2 text-sm text-muted-foreground">
+    <AuthPageShell
+      badge="Keamanan Akun"
+      description="Perbarui kredensial Anda untuk melindungi akses ke dashboard sekolah dan data sensitif."
+      heroIcon={ShieldCheck}
+      heroTitle="Jaga akun Anda tetap aman."
+      highlights={["Password kuat minimal 12 karakter", "Sesi diperbarui setelah ganti password"]}
+    >
+      <Card className="shadow-premium">
+        <CardHeader className="pb-4 text-center">
+          <Badge className="mx-auto mb-3 w-max" variant="soft">
+            <KeyRound className="mr-2 h-3.5 w-3.5" /> Ganti Password
+          </Badge>
+          <CardTitle className="text-xl">Perbarui Password</CardTitle>
+          <p className="text-sm leading-6 text-muted-foreground">
             {forced
-              ? "Anda diwajibkan mengganti password untuk alasan keamanan sebelum melanjutkan."
-              : "Ganti password akun Anda secara berkala untuk menjaga keamanan."}
+              ? "Anda diwajibkan mengganti password sebelum melanjutkan."
+              : "Ganti password secara berkala untuk menjaga keamanan akun."}
           </p>
         </CardHeader>
         <CardContent>
           {success ? (
-            <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-5 py-4 text-emerald-800 text-center">
-              <ShieldCheck className="mx-auto h-8 w-8 text-emerald-500 mb-2" />
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-5 py-4 text-center text-emerald-800">
+              <ShieldCheck className="mx-auto mb-2 h-8 w-8 text-emerald-500" />
               <p className="text-sm font-bold">Password berhasil diubah!</p>
               <p className="mt-1 text-xs">Mengarahkan ke halaman login...</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form className="space-y-5" onSubmit={handleSubmit}>
               {error ? (
                 <div className="flex items-center gap-3 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
                   <AlertCircle className="h-5 w-5 shrink-0" />
@@ -101,34 +109,34 @@ export default function ChangePasswordPage() {
               <div className="space-y-4">
                 <label className="block space-y-1.5">
                   <span className="text-sm font-bold text-muted-foreground">Password Saat Ini</span>
-                  <Input type="password" name="currentPassword" required placeholder="Masukkan password lama" />
+                  <Input name="currentPassword" placeholder="Masukkan password lama" required type="password" />
                 </label>
 
                 <label className="block space-y-1.5">
                   <span className="text-sm font-bold text-muted-foreground">Password Baru</span>
-                  <Input type="password" name="newPassword" required placeholder="Minimal 12 karakter" />
+                  <Input name="newPassword" placeholder="Minimal 12 karakter" required type="password" />
                   <p className="text-xs text-muted-foreground">Gunakan kombinasi huruf besar, kecil, angka, dan simbol.</p>
                 </label>
 
                 <label className="block space-y-1.5">
                   <span className="text-sm font-bold text-muted-foreground">Konfirmasi Password Baru</span>
-                  <Input type="password" name="confirmPassword" required placeholder="Ketik ulang password baru" />
+                  <Input name="confirmPassword" placeholder="Ketik ulang password baru" required type="password" />
                 </label>
               </div>
 
-              <Button className="w-full" disabled={loading} type="submit" size="lg">
+              <Button className="w-full" disabled={loading} size="lg" type="submit">
                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Simpan Password
               </Button>
-              {!forced && (
-                <Button className="w-full mt-2" variant="ghost" onClick={() => router.back()} type="button">
+              {!forced ? (
+                <Button className="mt-2 w-full" onClick={() => router.back()} type="button" variant="ghost">
                   Batal
                 </Button>
-              )}
+              ) : null}
             </form>
           )}
         </CardContent>
       </Card>
-    </div>
+    </AuthPageShell>
   );
 }

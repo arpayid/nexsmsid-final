@@ -1,11 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Laptop, Shield, LogOut, KeyRound } from "lucide-react";
+import { KeyRound, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { Button, Card, CardContent, CardHeader, CardTitle, Badge, PageHeader, StatCard } from "@nexsmsid/ui";
+import { Badge, Button, PageHeader, SectionCard } from "@nexsmsid/ui";
 import { Phase9ResourcePage, options } from "@/components/phase9-resource-page";
 import { createBrowserApiClient } from "@/lib/api-client";
 import { clearAuthSession } from "@/lib/auth-storage";
@@ -37,41 +37,26 @@ export default function SecurityPage() {
         title="Keamanan Akun"
       />
 
-      <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <KeyRound className="h-5 w-5 text-primary" />
-              Password
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">Ubah password Anda secara berkala untuk menjaga keamanan akun.</p>
-            <Button asChild variant="outline" className="w-full">
-              <Link href="/account/change-password">Ganti Password</Link>
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="mt-8 grid gap-6 md:grid-cols-2">
+        <SectionCard description="Ubah password Anda secara berkala untuk menjaga keamanan akun." title="Password">
+          <Button asChild className="w-full" variant="outline">
+            <Link href="/account/change-password">
+              <KeyRound className="h-4 w-4" /> Ganti Password
+            </Link>
+          </Button>
+        </SectionCard>
 
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg text-rose-600">
-              <LogOut className="h-5 w-5" />
-              Sesi Aktif
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">Keluar dari semua perangkat web yang pernah Anda gunakan.</p>
-            <Button
-              onClick={handleLogoutAll}
-              disabled={loggingOut}
-              variant="outline"
-              className="w-full text-rose-600 hover:bg-rose-50 hover:text-rose-700"
-            >
-              {loggingOut ? "Memproses..." : "Keluar Semua Perangkat"}
-            </Button>
-          </CardContent>
-        </Card>
+        <SectionCard description="Keluar dari semua perangkat web yang pernah Anda gunakan." title="Sesi Aktif">
+          <Button
+            className="w-full text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+            disabled={loggingOut}
+            onClick={handleLogoutAll}
+            variant="outline"
+          >
+            <LogOut className="h-4 w-4" />
+            {loggingOut ? "Memproses..." : "Keluar Semua Perangkat"}
+          </Button>
+        </SectionCard>
       </div>
 
       <div className="mt-8">
