@@ -1,15 +1,23 @@
 "use client";
 
-import { BarChart3, Search, Loader2, Eye, Edit3, Trash2, Plus, RefreshCcw } from "lucide-react";
+import { FormEvent, useCallback, useMemo, useState } from "react";
+import { BarChart3, Edit3, Eye, Loader2, Plus, RefreshCcw, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
 
 import type { ExamRecord } from "@nexsmsid/api-client";
-import { Button, ConfirmDialog, DataTable, ErrorState, Input, PageHeader, StatusBadge } from "@nexsmsid/ui";
+import { Button, ConfirmDialog, DataTable, ErrorState, PageHeader, SearchFilterBar, SectionCard, StatusBadge } from "@nexsmsid/ui";
 import type { DataTableColumn } from "@nexsmsid/ui";
 
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
+
+const statusOptions = [
+  { label: "Draft", value: "DRAFT" },
+  { label: "Published", value: "PUBLISHED" },
+  { label: "Ongoing", value: "ONGOING" },
+  { label: "Completed", value: "COMPLETED" },
+  { label: "Archived", value: "ARCHIVED" },
+];
 
 export default function ExamsPage() {
   const client = useMemo(() => createBrowserApiClient(), []);
@@ -32,7 +40,8 @@ export default function ExamsPage() {
   const exams = data ?? [];
   const error = actionError ?? queryError;
 
-  async function handleRefresh() {
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setAppliedSearch(search);
     setAppliedStatus(statusFilter);
     await refetch();
@@ -67,7 +76,7 @@ export default function ExamsPage() {
                 <BarChart3 className="h-4 w-4" /> Laporan
               </Link>
             </Button>
-            <Button onClick={() => void handleRefresh()} variant="outline">
+            <Button onClick={() => void refetch()} variant="outline">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />} Refresh
             </Button>
             <Button asChild>
@@ -79,58 +88,63 @@ export default function ExamsPage() {
         }
         breadcrumb={["Admin", "Ujian / CBT"]}
         description="Kelola data ujian, jadwal, peserta, sesi, soal, dan hasil."
+        eyebrow="Ujian / CBT"
         title="Data Ujian"
       />
 
       {error ? <ErrorState message={error} title="Gagal memuat data" /> : null}
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 max-w-md">
-          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input className="pl-11" placeholder="Cari ujian..." value={search} onChange={(e) => setSearch(e.target.value)} />
-        </div>
-        <select
-          className="h-11 rounded-lg border border-input bg-card px-4 text-sm shadow-sm outline-none"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="">Semua Status</option>
-          <option value="DRAFT">Draft</option>
-          <option value="PUBLISHED">Published</option>
-          <option value="ONGOING">Ongoing</option>
-          <option value="COMPLETED">Completed</option>
-          <option value="ARCHIVED">Archived</option>
-        </select>
-        <Button onClick={() => void handleRefresh()} size="sm" variant="secondary">
-          Cari
-        </Button>
-      </div>
-
-      <DataTable
-        actions={(row) => (
+      <SectionCard
+        action={
+          <SearchFilterBar
+            filters={[
+              {
+                label: "Status",
+                onChange: setStatusFilter,
+                options: statusOptions,
+                placeholder: "Semua status",
+                value: statusFilter,
+              },
+            ]}
+            onSearchChange={setSearch}
+            onSubmit={handleSearch}
+            searchPlaceholder="Cari ujian..."
+            searchValue={search}
+          />
+        }
+        description={
           <>
-            <Button asChild size="sm" variant="outline">
-              <Link href={`/admin/exams/${row.id}`}>
-                <Eye className="h-4 w-4" /> Lihat
-              </Link>
-            </Button>
-            <Button asChild size="sm" variant="outline">
-              <Link href={`/admin/exams/${row.id}/edit`}>
-                <Edit3 className="h-4 w-4" /> Edit
-              </Link>
-            </Button>
-            <Button onClick={() => setPendingDelete(row.id)} size="sm" variant="ghost">
-              <Trash2 className="h-4 w-4" /> Hapus
-            </Button>
+            Total: <strong>{exams.length}</strong> ujian
           </>
-        )}
-        columns={columns}
-        data={exams}
-        emptyState={{ title: "Belum ada ujian", description: "Buat ujian pertama untuk memulai." }}
-        getRowId={(row) => row.id}
-        loading={loading}
-        minWidth="min-w-[720px]"
-      />
+        }
+        title="Daftar Ujian"
+      >
+        <DataTable
+          actions={(row) => (
+            <>
+              <Button asChild size="sm" variant="outline">
+                <Link href={`/admin/exams/${row.id}`}>
+                  <Eye className="h-4 w-4" /> Lihat
+                </Link>
+              </Button>
+              <Button asChild size="sm" variant="outline">
+                <Link href={`/admin/exams/${row.id}/edit`}>
+                  <Edit3 className="h-4 w-4" /> Edit
+                </Link>
+              </Button>
+              <Button onClick={() => setPendingDelete(row.id)} size="sm" variant="ghost">
+                <Trash2 className="h-4 w-4" /> Hapus
+              </Button>
+            </>
+          )}
+          columns={columns}
+          data={exams}
+          emptyState={{ title: "Belum ada ujian", description: "Buat ujian pertama untuk memulai." }}
+          getRowId={(row) => row.id}
+          loading={loading}
+          minWidth="min-w-[720px]"
+        />
+      </SectionCard>
 
       <ConfirmDialog
         description="Hapus ujian ini? Semua data terkait juga akan dihapus."

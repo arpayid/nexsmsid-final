@@ -1,9 +1,9 @@
 "use client";
 
+import { FormEvent, useCallback, useMemo, useState } from "react";
 import { Loader2, Plus, RefreshCcw } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
 
-import { Button, DataTable, ErrorState, Input, PageHeader } from "@nexsmsid/ui";
+import { Button, DataTable, ErrorState, Input, PageHeader, SearchFilterBar, SectionCard } from "@nexsmsid/ui";
 import type { DataTableColumn } from "@nexsmsid/ui";
 
 import { useApiQuery } from "@/hooks/use-api-query";
@@ -21,14 +21,22 @@ export default function ExamBanksPage() {
   const [submitting, setSubmitting] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [search, setSearch] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
 
   const loadBanks = useCallback(async () => {
-    const res = await client.listExamBanks({ limit: 100 });
+    const res = await client.listExamBanks({ limit: 100, search: appliedSearch || undefined });
     return res.data;
-  }, [client]);
+  }, [client, appliedSearch]);
 
-  const { data, error, loading, refetch, setError } = useApiQuery<ExamBankRow[]>(loadBanks, [client]);
+  const { data, error, loading, refetch, setError } = useApiQuery<ExamBankRow[]>(loadBanks, [client, appliedSearch]);
   const banks = data ?? [];
+
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAppliedSearch(search);
+    await refetch();
+  }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -67,43 +75,58 @@ export default function ExamBanksPage() {
         }
         breadcrumb={["Admin", "Ujian / CBT", "Bank Soal"]}
         description="Kelola bank soal."
+        eyebrow="Ujian / CBT"
         title="Bank Soal"
       />
 
       {error ? <ErrorState message={error} title="Gagal" /> : null}
 
       {showForm ? (
-        <form className="max-w-lg rounded-xl border border-border bg-card p-6 space-y-4" onSubmit={handleCreate}>
-          <label className="space-y-2">
-            <span className="text-sm font-bold text-muted-foreground">Nama Bank Soal</span>
-            <Input placeholder="Bank Soal Matematika" value={name} onChange={(e) => setName(e.target.value)} required />
-          </label>
-          <label className="space-y-2">
-            <span className="text-sm font-bold text-muted-foreground">Deskripsi</span>
-            <textarea
-              className="w-full min-h-20 rounded-lg border border-input bg-card px-4 py-3 text-sm shadow-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </label>
-          <div className="flex gap-3">
-            <Button disabled={submitting} type="submit">
-              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Simpan
-            </Button>
-            <Button onClick={() => setShowForm(false)} type="button" variant="outline">
-              Batal
-            </Button>
-          </div>
-        </form>
+        <SectionCard title="Tambah Bank Soal">
+          <form className="max-w-lg space-y-4" onSubmit={handleCreate}>
+            <label className="space-y-2">
+              <span className="text-sm font-bold text-muted-foreground">Nama Bank Soal</span>
+              <Input placeholder="Bank Soal Matematika" value={name} onChange={(e) => setName(e.target.value)} required />
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm font-bold text-muted-foreground">Deskripsi</span>
+              <textarea
+                className="w-full min-h-20 rounded-lg border border-input bg-card px-4 py-3 text-sm shadow-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </label>
+            <div className="flex gap-3">
+              <Button disabled={submitting} type="submit">
+                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Simpan
+              </Button>
+              <Button onClick={() => setShowForm(false)} type="button" variant="outline">
+                Batal
+              </Button>
+            </div>
+          </form>
+        </SectionCard>
       ) : null}
 
-      <DataTable
-        columns={columns}
-        data={banks}
-        emptyState={{ title: "Belum ada bank soal", description: "Tambah bank soal pertama." }}
-        getRowId={(row) => row.id}
-        loading={loading}
-      />
+      <SectionCard
+        action={
+          <SearchFilterBar onSearchChange={setSearch} onSubmit={handleSearch} searchPlaceholder="Cari bank soal..." searchValue={search} />
+        }
+        description={
+          <>
+            Total: <strong>{banks.length}</strong> bank soal
+          </>
+        }
+        title="Daftar Bank Soal"
+      >
+        <DataTable
+          columns={columns}
+          data={banks}
+          emptyState={{ title: "Belum ada bank soal", description: "Tambah bank soal pertama." }}
+          getRowId={(row) => row.id}
+          loading={loading}
+        />
+      </SectionCard>
     </div>
   );
 }

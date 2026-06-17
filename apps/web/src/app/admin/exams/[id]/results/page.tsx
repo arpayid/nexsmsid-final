@@ -3,9 +3,9 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState, type FormEvent } from "react";
 
-import { Button, DataTable, ErrorState, PageHeader } from "@nexsmsid/ui";
+import { Button, DataTable, ErrorState, PageHeader, SearchFilterBar, SectionCard } from "@nexsmsid/ui";
 import type { DataTableColumn } from "@nexsmsid/ui";
 
 import { useApiQuery } from "@/hooks/use-api-query";
@@ -26,6 +26,7 @@ export default function ExamResultsPage() {
   const searchParams = useSearchParams();
   const client = useMemo(() => createBrowserApiClient(), []);
   const page = searchParams.get("page") ?? "";
+  const [search, setSearch] = useState("");
 
   const loadResults = useCallback(async () => {
     const params: Record<string, string> = {};
@@ -35,7 +36,17 @@ export default function ExamResultsPage() {
   }, [client, id, page]);
 
   const { data, error, loading } = useApiQuery<ExamResultRow[]>(loadResults, [client, id, page]);
-  const results = data ?? [];
+  const results = (data ?? []).filter((row) => {
+    if (!search.trim()) return true;
+    const needle = search.toLowerCase();
+    return String(row.participantName ?? row.participantId ?? "")
+      .toLowerCase()
+      .includes(needle);
+  });
+
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+  }
 
   const columns: DataTableColumn<ExamResultRow>[] = [
     { header: "Peserta", key: "participant", cell: (row) => row.participantName ?? row.participantId ?? "-" },
@@ -61,14 +72,26 @@ export default function ExamResultsPage() {
 
       {error ? <ErrorState message={error} title="Gagal" /> : null}
 
-      <DataTable
-        columns={columns}
-        data={results}
-        emptyState={{ title: "Belum ada hasil", description: "Hasil akan muncul setelah peserta mengerjakan ujian." }}
-        getRowId={(row, i) => row.id ?? `row-${i}`}
-        loading={loading}
-        minWidth="min-w-[700px]"
-      />
+      <SectionCard
+        action={
+          <SearchFilterBar onSearchChange={setSearch} onSubmit={handleSearch} searchPlaceholder="Cari peserta..." searchValue={search} />
+        }
+        description={
+          <>
+            Total: <strong>{results.length}</strong> baris hasil
+          </>
+        }
+        title="Daftar Hasil"
+      >
+        <DataTable
+          columns={columns}
+          data={results}
+          emptyState={{ title: "Belum ada hasil", description: "Hasil akan muncul setelah peserta mengerjakan ujian." }}
+          getRowId={(row, i) => row.id ?? `row-${i}`}
+          loading={loading}
+          minWidth="min-w-[700px]"
+        />
+      </SectionCard>
     </div>
   );
 }

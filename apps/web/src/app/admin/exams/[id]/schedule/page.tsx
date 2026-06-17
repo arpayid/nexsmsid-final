@@ -3,10 +3,10 @@
 import { ArrowLeft, Loader2, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, type FormEvent } from "react";
 
 import type { ExamScheduleRecord } from "@nexsmsid/api-client";
-import { Button, DataTable, ErrorState, PageHeader } from "@nexsmsid/ui";
+import { Button, DataTable, ErrorState, PageHeader, SearchFilterBar, SectionCard } from "@nexsmsid/ui";
 import type { DataTableColumn } from "@nexsmsid/ui";
 
 import { EntityPicker } from "@/components/entity-picker";
@@ -20,10 +20,23 @@ export default function ExamSchedulePage() {
   const client = useMemo(() => createBrowserApiClient(), []);
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [search, setSearch] = useState("");
 
   const loadSchedules = useCallback(() => client.listExamSchedules(id), [client, id]);
   const { data, error, loading, refetch, setError } = useApiQuery<ExamScheduleRecord[]>(loadSchedules, [client, id]);
-  const schedules = data ?? [];
+  const schedules = (data ?? []).filter((row) => {
+    if (!search.trim()) return true;
+    const needle = search.toLowerCase();
+    return (
+      String(row.room?.name ?? "")
+        .toLowerCase()
+        .includes(needle) || String(row.date ?? "").includes(needle)
+    );
+  });
+
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+  }
 
   async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -82,63 +95,77 @@ export default function ExamSchedulePage() {
       </Button>
 
       {showForm ? (
-        <form className="max-w-lg rounded-xl border border-border bg-card p-6 space-y-4" onSubmit={handleCreate}>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="space-y-2">
-              <span className="text-sm font-bold text-muted-foreground">Tanggal</span>
-              <input
-                className="w-full h-11 rounded-lg border border-input bg-card px-4 text-sm shadow-sm outline-none"
-                name="date"
-                type="date"
-                required
-              />
-            </label>
-            <label className="space-y-2">
-              <span className="text-sm font-bold text-muted-foreground">Ruangan</span>
-              <EntityPicker entityType="exam-room" name="roomId" placeholder="Cari ruangan ujian..." />
-            </label>
-            <label className="space-y-2">
-              <span className="text-sm font-bold text-muted-foreground">Mulai</span>
-              <input
-                className="w-full h-11 rounded-lg border border-input bg-card px-4 text-sm shadow-sm outline-none"
-                name="startTime"
-                type="time"
-                required
-              />
-            </label>
-            <label className="space-y-2">
-              <span className="text-sm font-bold text-muted-foreground">Selesai</span>
-              <input
-                className="w-full h-11 rounded-lg border border-input bg-card px-4 text-sm shadow-sm outline-none"
-                name="endTime"
-                type="time"
-                required
-              />
-            </label>
-          </div>
-          <div className="flex gap-3">
-            <Button disabled={submitting} type="submit">
-              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Simpan
-            </Button>
-            <Button onClick={() => setShowForm(false)} type="button" variant="outline">
-              Batal
-            </Button>
-          </div>
-        </form>
+        <SectionCard title="Tambah Jadwal">
+          <form className="max-w-lg space-y-4" onSubmit={handleCreate}>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="space-y-2">
+                <span className="text-sm font-bold text-muted-foreground">Tanggal</span>
+                <input
+                  className="w-full h-11 rounded-lg border border-input bg-card px-4 text-sm shadow-sm outline-none"
+                  name="date"
+                  type="date"
+                  required
+                />
+              </label>
+              <label className="space-y-2">
+                <span className="text-sm font-bold text-muted-foreground">Ruangan</span>
+                <EntityPicker entityType="exam-room" name="roomId" placeholder="Cari ruangan ujian..." />
+              </label>
+              <label className="space-y-2">
+                <span className="text-sm font-bold text-muted-foreground">Mulai</span>
+                <input
+                  className="w-full h-11 rounded-lg border border-input bg-card px-4 text-sm shadow-sm outline-none"
+                  name="startTime"
+                  type="time"
+                  required
+                />
+              </label>
+              <label className="space-y-2">
+                <span className="text-sm font-bold text-muted-foreground">Selesai</span>
+                <input
+                  className="w-full h-11 rounded-lg border border-input bg-card px-4 text-sm shadow-sm outline-none"
+                  name="endTime"
+                  type="time"
+                  required
+                />
+              </label>
+            </div>
+            <div className="flex gap-3">
+              <Button disabled={submitting} type="submit">
+                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Simpan
+              </Button>
+              <Button onClick={() => setShowForm(false)} type="button" variant="outline">
+                Batal
+              </Button>
+            </div>
+          </form>
+        </SectionCard>
       ) : null}
 
-      <DataTable
-        actions={(row) => (
-          <Button onClick={() => handleDelete(row.id)} size="sm" variant="ghost">
-            <Trash2 className="h-4 w-4" /> Hapus
-          </Button>
-        )}
-        columns={columns}
-        data={schedules}
-        emptyState={{ title: "Belum ada jadwal", description: "Tambah jadwal untuk ujian ini." }}
-        getRowId={(row) => row.id}
-        loading={loading}
-      />
+      <SectionCard
+        action={
+          <SearchFilterBar onSearchChange={setSearch} onSubmit={handleSearch} searchPlaceholder="Cari jadwal..." searchValue={search} />
+        }
+        description={
+          <>
+            Total: <strong>{schedules.length}</strong> jadwal
+          </>
+        }
+        title="Daftar Jadwal"
+      >
+        <DataTable
+          actions={(row) => (
+            <Button onClick={() => handleDelete(row.id)} size="sm" variant="ghost">
+              <Trash2 className="h-4 w-4" /> Hapus
+            </Button>
+          )}
+          columns={columns}
+          data={schedules}
+          emptyState={{ title: "Belum ada jadwal", description: "Tambah jadwal untuk ujian ini." }}
+          getRowId={(row) => row.id}
+          loading={loading}
+        />
+      </SectionCard>
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { FormEvent, useCallback, useMemo, useState } from "react";
 
 import type { ExamParticipantRecord } from "@nexsmsid/api-client";
-import { Button, DataTable, ErrorState, FormModal, Input, PageHeader } from "@nexsmsid/ui";
+import { Button, DataTable, ErrorState, FormModal, Input, PageHeader, SearchFilterBar, SectionCard } from "@nexsmsid/ui";
 import type { DataTableColumn } from "@nexsmsid/ui";
 
 import { EntityPicker } from "@/components/entity-picker";
@@ -23,14 +23,22 @@ export default function ExamParticipantsPage() {
   const [gradeOpen, setGradeOpen] = useState(false);
   const [gradingParticipant, setGradingParticipant] = useState<ExamParticipantRecord | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [search, setSearch] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
 
   const loadParticipants = useCallback(async () => {
-    const res = await client.listExamParticipants(id);
+    const res = await client.listExamParticipants(id, { search: appliedSearch || undefined });
     return res.data;
-  }, [client, id]);
+  }, [client, id, appliedSearch]);
 
-  const { data, error, loading, refetch, setError } = useApiQuery<ExamParticipantRecord[]>(loadParticipants, [client, id]);
+  const { data, error, loading, refetch, setError } = useApiQuery<ExamParticipantRecord[]>(loadParticipants, [client, id, appliedSearch]);
   const participants = data ?? [];
+
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAppliedSearch(search);
+    await refetch();
+  }
 
   async function handleAdd() {
     if (!studentId.trim()) return;
@@ -130,54 +138,68 @@ export default function ExamParticipantsPage() {
 
       {error ? <ErrorState message={error} title="Gagal" /> : null}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="flex items-end gap-3">
-          <label className="flex-1 space-y-2">
-            <span className="text-sm font-bold text-muted-foreground">Siswa</span>
-            <EntityPicker entityType="student" onChange={setStudentId} placeholder="Cari siswa..." value={studentId} />
-          </label>
-          <Button disabled={adding || !studentId.trim()} onClick={() => void handleAdd()}>
-            {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />} Tambah
-          </Button>
+      <SectionCard description="Tambah peserta satu per satu atau sekaligus per kelas." title="Tambah Peserta">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="flex items-end gap-3">
+            <label className="flex-1 space-y-2">
+              <span className="text-sm font-bold text-muted-foreground">Siswa</span>
+              <EntityPicker entityType="student" onChange={setStudentId} placeholder="Cari siswa..." value={studentId} />
+            </label>
+            <Button disabled={adding || !studentId.trim()} onClick={() => void handleAdd()}>
+              {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />} Tambah
+            </Button>
+          </div>
+          <div className="flex items-end gap-3">
+            <label className="flex-1 space-y-2">
+              <span className="text-sm font-bold text-muted-foreground">Tambah per Kelas</span>
+              <EntityPicker entityType="classroom" onChange={setClassroomId} placeholder="Pilih kelas..." value={classroomId} />
+            </label>
+            <Button disabled={bulkAdding || !classroomId.trim()} onClick={() => void handleBulkAdd()} variant="outline">
+              {bulkAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Users className="h-4 w-4" />} Tambah Kelas
+            </Button>
+          </div>
         </div>
-        <div className="flex items-end gap-3">
-          <label className="flex-1 space-y-2">
-            <span className="text-sm font-bold text-muted-foreground">Tambah per Kelas</span>
-            <EntityPicker entityType="classroom" onChange={setClassroomId} placeholder="Pilih kelas..." value={classroomId} />
-          </label>
-          <Button disabled={bulkAdding || !classroomId.trim()} onClick={() => void handleBulkAdd()} variant="outline">
-            {bulkAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Users className="h-4 w-4" />} Tambah Kelas
-          </Button>
-        </div>
-      </div>
+      </SectionCard>
 
-      <DataTable
-        actions={(row) => (
+      <SectionCard
+        action={
+          <SearchFilterBar onSearchChange={setSearch} onSubmit={handleSearch} searchPlaceholder="Cari peserta..." searchValue={search} />
+        }
+        description={
           <>
-            <Button
-              onClick={() => {
-                setGradingParticipant(row);
-                setGradeOpen(true);
-              }}
-              size="sm"
-              variant="soft"
-            >
-              Nilai
-            </Button>
-            <Button onClick={() => void handlePrintCard(row.id)} size="sm" variant="outline">
-              <Printer className="h-4 w-4" /> Cetak
-            </Button>
-            <Button onClick={() => void handleRemove(row.id)} size="sm" variant="ghost">
-              <Trash2 className="h-4 w-4" /> Hapus
-            </Button>
+            Total: <strong>{participants.length}</strong> peserta
           </>
-        )}
-        columns={columns}
-        data={participants}
-        emptyState={{ title: "Belum ada peserta", description: "Tambah peserta satu per satu atau per kelas." }}
-        getRowId={(row) => row.id}
-        loading={loading}
-      />
+        }
+        title="Daftar Peserta"
+      >
+        <DataTable
+          actions={(row) => (
+            <>
+              <Button
+                onClick={() => {
+                  setGradingParticipant(row);
+                  setGradeOpen(true);
+                }}
+                size="sm"
+                variant="soft"
+              >
+                Nilai
+              </Button>
+              <Button onClick={() => void handlePrintCard(row.id)} size="sm" variant="outline">
+                <Printer className="h-4 w-4" /> Cetak
+              </Button>
+              <Button onClick={() => void handleRemove(row.id)} size="sm" variant="ghost">
+                <Trash2 className="h-4 w-4" /> Hapus
+              </Button>
+            </>
+          )}
+          columns={columns}
+          data={participants}
+          emptyState={{ title: "Belum ada peserta", description: "Tambah peserta satu per satu atau per kelas." }}
+          getRowId={(row) => row.id}
+          loading={loading}
+        />
+      </SectionCard>
 
       <FormModal
         onClose={() => {
