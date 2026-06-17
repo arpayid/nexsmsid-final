@@ -6,10 +6,13 @@ import { useParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
 import type { AssessmentDetail } from "@nexsmsid/api-client";
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle, ErrorState, Input, PageHeader } from "@nexsmsid/ui";
+import { Badge, Button, DataTable, ErrorState, Input, PageHeader, SectionCard } from "@nexsmsid/ui";
+import type { DataTableColumn } from "@nexsmsid/ui";
 
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
+
+type GradeRow = AssessmentDetail["grades"][number];
 
 export default function TeacherGradeDetailPage() {
   const params = useParams<{ id: string }>();
@@ -42,6 +45,30 @@ export default function TeacherGradeDetailPage() {
 
   const error = actionError ?? fetchError;
 
+  const columns = useMemo<DataTableColumn<GradeRow>[]>(() => {
+    if (!assessment) return [];
+    return [
+      {
+        header: "Siswa",
+        key: "student",
+        cell: (row) => row.student?.name ?? row.studentId,
+      },
+      {
+        header: "Nilai",
+        key: "score",
+        cell: (row) => (
+          <Input
+            max={assessment.maxScore}
+            min={0}
+            onChange={(event) => setScoreOverrides((prev) => ({ ...prev, [row.studentId]: Number(event.target.value) || 0 }))}
+            type="number"
+            value={scoreOverrides[row.studentId] ?? row.score}
+          />
+        ),
+      },
+    ];
+  }, [assessment, scoreOverrides]);
+
   if (loading) {
     return (
       <div className="grid min-h-[60vh] place-items-center">
@@ -71,54 +98,22 @@ export default function TeacherGradeDetailPage() {
 
       {actionError ? <ErrorState message={actionError} title="Terjadi kesalahan" /> : null}
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between gap-4">
-          <div>
-            <CardTitle>{assessment.name}</CardTitle>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {assessment.teachingAssignment?.subject?.name ?? "-"} • {assessment.teachingAssignment?.classroom?.name ?? "-"}
-            </p>
-          </div>
-          <div className="flex gap-2">
+      <SectionCard
+        action={
+          <div className="flex flex-wrap items-center gap-2">
             <Badge variant="secondary">Max {assessment.maxScore}</Badge>
             <Badge variant="outline">{assessment.type}</Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[520px] text-left text-sm">
-              <thead>
-                <tr className="border-b text-xs uppercase tracking-wide text-muted-foreground">
-                  <th className="px-3 py-2">Siswa</th>
-                  <th className="px-3 py-2">Nilai</th>
-                </tr>
-              </thead>
-              <tbody>
-                {assessment.grades.map((grade) => (
-                  <tr className="border-b" key={grade.studentId}>
-                    <td className="px-3 py-3 font-medium">{grade.student?.name ?? grade.studentId}</td>
-                    <td className="px-3 py-3">
-                      <Input
-                        max={assessment.maxScore}
-                        min={0}
-                        onChange={(event) => setScoreOverrides((prev) => ({ ...prev, [grade.studentId]: Number(event.target.value) || 0 }))}
-                        type="number"
-                        value={scoreOverrides[grade.studentId] ?? grade.score}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="flex justify-end">
-            <Button disabled={saving} onClick={() => void handleSave()}>
+            <Button disabled={saving} onClick={() => void handleSave()} size="sm">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Simpan Nilai
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        }
+        description={`${assessment.teachingAssignment?.subject?.name ?? "-"} • ${assessment.teachingAssignment?.classroom?.name ?? "-"}`}
+        title={assessment.name}
+      >
+        <DataTable columns={columns} data={assessment.grades} getRowId={(row) => row.studentId} minWidth="min-w-[520px]" />
+      </SectionCard>
     </div>
   );
 }

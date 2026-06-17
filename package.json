@@ -26,6 +26,7 @@
     "backup": "bash scripts/backup-postgres.sh",
     "restore": "bash scripts/restore-postgres.sh",
     "health": "bash scripts/staging-healthcheck.sh",
+    "prod:smoke": "bash scripts/prod-smoke.sh",
     "validate:prod-env": "bash scripts/validate-prod-env.sh"
   },
   "pnpm": {

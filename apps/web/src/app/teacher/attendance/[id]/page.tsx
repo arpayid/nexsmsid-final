@@ -6,7 +6,8 @@ import { useParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
 import type { AttendanceSessionDetail } from "@nexsmsid/api-client";
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle, ErrorState, PageHeader } from "@nexsmsid/ui";
+import { Badge, Button, DataTable, ErrorState, PageHeader, SectionCard } from "@nexsmsid/ui";
+import type { DataTableColumn } from "@nexsmsid/ui";
 
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
@@ -18,6 +19,8 @@ const STATUS_OPTIONS = [
   { value: "ABSENT", label: "Alpa" },
   { value: "LATE", label: "Terlambat" },
 ];
+
+type RecordRow = AttendanceSessionDetail["records"][number];
 
 export default function TeacherAttendanceDetailPage() {
   const params = useParams<{ id: string }>();
@@ -49,6 +52,34 @@ export default function TeacherAttendanceDetailPage() {
     }
   }
 
+  const columns = useMemo<DataTableColumn<RecordRow>[]>(
+    () => [
+      {
+        header: "Siswa",
+        key: "student",
+        cell: (row) => row.student?.name ?? row.studentId,
+      },
+      {
+        header: "Status",
+        key: "status",
+        cell: (row) => (
+          <select
+            className="h-10 w-full min-w-[140px] rounded-lg border border-border bg-card px-3 text-sm"
+            onChange={(event) => setStatusOverrides((prev) => ({ ...prev, [row.studentId]: event.target.value }))}
+            value={statusOverrides[row.studentId] ?? row.status}
+          >
+            {STATUS_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        ),
+      },
+    ],
+    [statusOverrides],
+  );
+
   const error = actionError ?? fetchError;
 
   if (loading) {
@@ -61,6 +92,8 @@ export default function TeacherAttendanceDetailPage() {
 
   if (error && !session) return <ErrorState message={error} title="Gagal memuat presensi" />;
   if (!session) return <ErrorState message="Sesi tidak ditemukan" title="Tidak ditemukan" />;
+
+  const sessionTitle = `${session.schedule.teachingAssignment.subject.name} • ${session.schedule.teachingAssignment.classroom.name}`;
 
   return (
     <div className="space-y-6">
@@ -80,58 +113,21 @@ export default function TeacherAttendanceDetailPage() {
 
       {actionError ? <ErrorState message={actionError} title="Terjadi kesalahan" /> : null}
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between gap-4">
-          <div>
-            <CardTitle>
-              {session.schedule.teachingAssignment.subject.name} • {session.schedule.teachingAssignment.classroom.name}
-            </CardTitle>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {new Date(session.date).toLocaleDateString("id-ID")} • {session.schedule.lessonHour.startTime}–
-              {session.schedule.lessonHour.endTime}
-            </p>
-          </div>
-          <Badge variant="secondary">{session.records.length} siswa</Badge>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[520px] text-left text-sm">
-              <thead>
-                <tr className="border-b text-xs uppercase tracking-wide text-muted-foreground">
-                  <th className="px-3 py-2">Siswa</th>
-                  <th className="px-3 py-2">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {session.records.map((record) => (
-                  <tr className="border-b" key={record.studentId}>
-                    <td className="px-3 py-3 font-medium">{record.student?.name ?? record.studentId}</td>
-                    <td className="px-3 py-3">
-                      <select
-                        className="h-10 rounded-lg border border-border bg-card px-3 text-sm"
-                        onChange={(event) => setStatusOverrides((prev) => ({ ...prev, [record.studentId]: event.target.value }))}
-                        value={statusOverrides[record.studentId] ?? record.status}
-                      >
-                        {STATUS_OPTIONS.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="flex justify-end">
-            <Button disabled={saving} onClick={() => void handleSave()}>
+      <SectionCard
+        action={
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="secondary">{session.records.length} siswa</Badge>
+            <Button disabled={saving} onClick={() => void handleSave()} size="sm">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Simpan Presensi
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        }
+        description={`${new Date(session.date).toLocaleDateString("id-ID")} • ${session.schedule.lessonHour.startTime}–${session.schedule.lessonHour.endTime}`}
+        title={sessionTitle}
+      >
+        <DataTable columns={columns} data={session.records} getRowId={(row) => row.studentId} minWidth="min-w-[520px]" />
+      </SectionCard>
     </div>
   );
 }

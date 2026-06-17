@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { Loader2, Users } from "lucide-react";
 
-import { Badge, Card, CardContent, CardHeader, CardTitle, EmptyState, ErrorState, PageHeader, SectionCard } from "@nexsmsid/ui";
+import { Badge, EmptyState, ErrorState, PageHeader, SectionCard, cn } from "@nexsmsid/ui";
 
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
@@ -70,36 +70,34 @@ export default function GuardianChildrenPage() {
           const isActive = resolvedSelected === c.id;
           return (
             <button key={c.id} onClick={() => selectChild(c.id)} className="text-left" type="button">
-              <Card className={isActive ? "ring-2 ring-primary" : undefined}>
-                <CardHeader>
-                  <div className="flex items-center justify-between gap-2">
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="h-4 w-4 text-primary" /> {c.name}
-                    </CardTitle>
+              <SectionCard
+                className={cn("transition-shadow hover:shadow-elevated", isActive && "ring-2 ring-primary")}
+                title={
+                  <span className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-primary" /> {c.name}
                     {c.isPrimary ? <Badge variant="success">Wali Utama</Badge> : null}
+                  </span>
+                }
+              >
+                <div className="grid gap-2 text-sm sm:grid-cols-2">
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground">NIS</p>
+                    <p className="font-semibold">{c.nis}</p>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-2 text-sm sm:grid-cols-2">
-                    <div>
-                      <p className="text-xs uppercase tracking-widest text-muted-foreground">NIS</p>
-                      <p className="font-semibold">{c.nis}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-widest text-muted-foreground">NISN</p>
-                      <p className="font-semibold">{c.nisn ?? "-"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-widest text-muted-foreground">Kelas</p>
-                      <p className="font-semibold">{c.classroom?.name ?? "-"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-widest text-muted-foreground">Kompetensi</p>
-                      <p className="font-semibold">{c.classroom?.competency?.name ?? "-"}</p>
-                    </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground">NISN</p>
+                    <p className="font-semibold">{c.nisn ?? "-"}</p>
                   </div>
-                </CardContent>
-              </Card>
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground">Kelas</p>
+                    <p className="font-semibold">{c.classroom?.name ?? "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground">Kompetensi</p>
+                    <p className="font-semibold">{c.classroom?.competency?.name ?? "-"}</p>
+                  </div>
+                </div>
+              </SectionCard>
             </button>
           );
         })}

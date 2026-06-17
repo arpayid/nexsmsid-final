@@ -91,12 +91,12 @@ Setiap perubahan kode mengikuti **D→P→I→V→R** — lihat [WORKFLOW.md](WO
 | Task | Next step |
 |------|-----------|
 | UI Enterprise 2026 | ✅ S1–S7 + rollout admin (#18–#24); smoke prod ✅ otomatis |
-| ResourceCrudPage batch 2 | ✅ library categories/shelves, hr/positions, payroll/components (PR UI-5p) |
-| Fase 4 go-live | HTTPS domain + `validate:prod-env` + backup dry-run |
+| UI-S8 | Portal polish + prod smoke + HTTPS scripts | 🔧 PR UI-S8 |
+| Fase 4 go-live | HTTPS domain nyata + certbot (saat DNS siap) |
 
 ## Log singkat
 
 | Tanggal | Event |
 |---------|-------|
 | 2026-06-16 | Program UI Enterprise 2026 + workflow A→P→E→V→PR→M documented |
-| 2026-06-17 | UI-5 rollout selesai (#18–#24); smoke prod QA otomatis lulus |
+| 2026-06-17 | UI-5p ResourceCrudPage batch 2 (#25); UI-S8 portal polish in progress |

@@ -48,6 +48,11 @@ backups/*
 # Generated docs / scratch
 prompt-cleanup-v2.md
 
+# TLS (self-signed / staging — never commit private keys)
+docker/nginx/ssl/**/*.pem
+docker/nginx/conf.d/https-selfsigned.conf
+docker/nginx/conf.d/https.conf
+
 # Redis local artifacts
 dump.rdb
 appendonlydir/
