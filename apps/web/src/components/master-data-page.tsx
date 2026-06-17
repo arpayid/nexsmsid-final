@@ -86,6 +86,7 @@ export function MasterDataPage({ description, fields, resource, title }: MasterD
   );
   const { data: listData, error, loading, refetch, setError } = useApiQuery(loadList, [appliedSearch, client, resource]);
   const items = listData?.data ?? [];
+  const total = items.length;
   async function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (appliedSearch === search) {
@@ -207,7 +208,10 @@ export function MasterDataPage({ description, fields, resource, title }: MasterD
     {
       cell: (item) => (
         <StatusBadge
-          map={{ Active: { label: "Active", variant: "success" }, Inactive: { label: "Inactive", variant: "outline" } }}
+          map={{
+            Active: { label: "Aktif", variant: "success" },
+            Inactive: { label: "Nonaktif", variant: "outline" },
+          }}
           value={item.isActive === false ? "Inactive" : "Active"}
         />
       ),
@@ -217,7 +221,7 @@ export function MasterDataPage({ description, fields, resource, title }: MasterD
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <PageHeader
         actions={
           <>
@@ -251,8 +255,19 @@ export function MasterDataPage({ description, fields, resource, title }: MasterD
       {error ? <ErrorState message={error} title="Gagal memproses master data" /> : null}
 
       <SectionCard
-        action={<SearchFilterBar onSearchChange={setSearch} onSubmit={handleSearch} searchValue={search} />}
-        description="Search, create, update, dan soft delete data master."
+        action={
+          <SearchFilterBar
+            onSearchChange={setSearch}
+            onSubmit={handleSearch}
+            searchPlaceholder={`Cari ${title.toLowerCase()}...`}
+            searchValue={search}
+          />
+        }
+        description={
+          <>
+            Cari, tambah, ubah, dan hapus data master. Total: <strong>{total}</strong> data.
+          </>
+        }
         title={`Data ${title}`}
       >
         <DataTable
@@ -279,7 +294,7 @@ export function MasterDataPage({ description, fields, resource, title }: MasterD
           }}
           getRowId={(item) => item.id}
           loading={loading}
-          minWidth="min-w-[720px]"
+          minWidth="min-w-[820px]"
         />
       </SectionCard>
 
@@ -331,11 +346,11 @@ export function MasterDataPage({ description, fields, resource, title }: MasterD
               />
             </label>
             {importResult ? (
-              <div className="rounded-lg border border-border bg-surface-muted p-4 text-sm text-muted-foreground">
-                <p>
-                  Total baris: <strong>{importResult.totalRows}</strong> | Berhasil:{" "}
-                  <strong className="text-emerald-600">{importResult.successRows}</strong> | Gagal:{" "}
-                  <strong className="text-rose-600">{importResult.failedRows}</strong>
+              <div className="dashboard-mini-metric flex-col items-start gap-2 sm:flex-row sm:items-center">
+                <p className="text-sm text-muted-foreground">
+                  Total baris: <strong className="text-foreground">{importResult.totalRows}</strong> | Berhasil:{" "}
+                  <strong className="text-emerald-600 dark:text-emerald-400">{importResult.successRows}</strong> | Gagal:{" "}
+                  <strong className="text-rose-600 dark:text-rose-400">{importResult.failedRows}</strong>
                 </p>
                 {importResult.errors.length > 0 ? (
                   <ul className="mt-2 list-disc pl-5 text-xs">
@@ -372,8 +387,13 @@ function FieldInput({ field, item }: { field: MasterDataField; item: MasterDataR
 
   if (type === "checkbox") {
     return (
-      <label className="flex items-center gap-3 rounded-lg border bg-card px-4 py-3 text-sm font-bold text-muted-foreground">
-        <input defaultChecked={value !== false} name={field.name} type="checkbox" />
+      <label className="flex items-center gap-3 rounded-xl border border-border/70 bg-muted/10 px-4 py-3 text-sm font-medium text-foreground">
+        <input
+          className="h-4 w-4 rounded border-input text-primary focus-visible:ring-2 focus-visible:ring-ring"
+          defaultChecked={value !== false}
+          name={field.name}
+          type="checkbox"
+        />
         {field.label}
       </label>
     );
@@ -382,9 +402,9 @@ function FieldInput({ field, item }: { field: MasterDataField; item: MasterDataR
   if (type === "textarea") {
     return (
       <label className="space-y-2 md:col-span-2">
-        <span className="text-sm font-bold text-muted-foreground">{field.label}</span>
+        <span className="text-sm font-semibold text-foreground">{field.label}</span>
         <textarea
-          className="min-h-28 w-full rounded-lg border border-input bg-card px-4 py-3 text-sm shadow-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
+          className="min-h-28 w-full rounded-xl border border-input bg-card px-4 py-3 text-sm shadow-sm outline-none transition-all focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           defaultValue={defaultValue}
           name={field.name}
           placeholder={field.placeholder}
@@ -397,7 +417,7 @@ function FieldInput({ field, item }: { field: MasterDataField; item: MasterDataR
   if (type === "entity" && field.entityType) {
     return (
       <label className="space-y-2">
-        <span className="text-sm font-bold text-muted-foreground">{field.label}</span>
+        <span className="text-sm font-semibold text-foreground">{field.label}</span>
         <EntityPicker
           defaultValue={defaultValue}
           entityType={field.entityType}
@@ -411,7 +431,7 @@ function FieldInput({ field, item }: { field: MasterDataField; item: MasterDataR
 
   return (
     <label className="space-y-2">
-      <span className="text-sm font-bold text-muted-foreground">{field.label}</span>
+      <span className="text-sm font-semibold text-foreground">{field.label}</span>
       <Input defaultValue={defaultValue} name={field.name} placeholder={field.placeholder} required={field.required} type={type} />
     </label>
   );
