@@ -3,7 +3,19 @@
 import { type FormEvent, useCallback, useMemo, useState } from "react";
 import { Archive, Bell, Check, CheckCheck, Loader2, Plus, RefreshCcw } from "lucide-react";
 
-import { Badge, Button, EmptyState, ErrorState, FormModal, Input, LoadingState, PageHeader, SectionCard, cn } from "@nexsmsid/ui";
+import {
+  Badge,
+  Button,
+  EmptyState,
+  ErrorState,
+  FormModal,
+  Input,
+  LoadingState,
+  PageHeader,
+  SearchFilterBar,
+  SectionCard,
+  cn,
+} from "@nexsmsid/ui";
 
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
@@ -40,14 +52,23 @@ export function NotificationCenter({
   const [markAllLoading, setMarkAllLoading] = useState(false);
   const [submittingCreate, setSubmittingCreate] = useState(false);
   const [workingId, setWorkingId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
   const loadNotifications = useCallback(async () => {
     const response = await api.listNotifications({ limit: 50 });
     return response.items as NotificationItem[];
   }, [api]);
   const { data, error: queryError, loading, refetch } = useApiQuery(loadNotifications, [api]);
-  const items = data ?? [];
+  const items = (data ?? []).filter((item) => {
+    if (!search.trim()) return true;
+    const needle = search.toLowerCase();
+    return item.title.toLowerCase().includes(needle) || item.body.toLowerCase().includes(needle);
+  });
   const error = actionError ?? queryError;
   const unreadTotal = items.filter((item) => item.status === "UNREAD").length;
+
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+  }
 
   async function markRead(id: string) {
     setWorkingId(id);
@@ -112,7 +133,7 @@ export function NotificationCenter({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <PageHeader
         actions={
           <>
@@ -139,6 +160,9 @@ export function NotificationCenter({
       {error ? <ErrorState message={error} title="Gagal memproses notifikasi" /> : null}
 
       <SectionCard
+        action={
+          <SearchFilterBar onSearchChange={setSearch} onSubmit={handleSearch} searchPlaceholder="Cari notifikasi..." searchValue={search} />
+        }
         description={
           <span>
             <strong>{unreadTotal}</strong> belum dibaca dari <strong>{items.length}</strong> notifikasi terbaru.

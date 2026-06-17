@@ -6,7 +6,7 @@ export default function TeacherNotificationsPage() {
   return (
     <NotificationCenter
       breadcrumb={["Portal Guru", "Notifikasi"]}
-      description="Pemberitahuan terbaru untuk Anda"
+      description="Pantau pemberitahuan terbaru untuk Anda sebagai guru."
       eyebrow="Portal Guru"
       title="Notifikasi"
     />

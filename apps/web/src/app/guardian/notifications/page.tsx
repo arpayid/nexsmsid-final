@@ -6,7 +6,7 @@ export default function GuardianNotificationsPage() {
   return (
     <NotificationCenter
       breadcrumb={["Portal Wali", "Notifikasi"]}
-      description="Pemberitahuan untuk Anda"
+      description="Pantau pemberitahuan terkait anak dan informasi sekolah."
       eyebrow="Portal Wali"
       title="Notifikasi"
     />

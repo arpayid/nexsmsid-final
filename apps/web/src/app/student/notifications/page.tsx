@@ -6,7 +6,7 @@ export default function StudentNotificationsPage() {
   return (
     <NotificationCenter
       breadcrumb={["Portal Siswa", "Notifikasi"]}
-      description="Pemberitahuan untuk Anda"
+      description="Pantau pemberitahuan akademik dan informasi sekolah untuk Anda."
       eyebrow="Portal Siswa"
       title="Notifikasi"
     />
