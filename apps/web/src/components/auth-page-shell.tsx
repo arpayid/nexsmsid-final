@@ -6,6 +6,8 @@ import type { ReactNode } from "react";
 
 import { Badge } from "@nexsmsid/ui";
 
+import { SkipToContent } from "@/components/skip-to-content";
+
 type AuthPageShellProps = {
   badge?: string;
   children: ReactNode;
@@ -31,7 +33,9 @@ export function AuthPageShell({
       : "dashboard-hero-banner relative hidden flex-col justify-between overflow-hidden p-10 text-white lg:flex";
 
   return (
-    <main className="grid min-h-screen bg-background lg:grid-cols-2">
+    <>
+      <SkipToContent />
+      <main className="grid min-h-screen bg-background lg:grid-cols-2">
       <div className={heroClass}>
         <div className="relative z-10">
           <div className="flex items-center gap-3">
@@ -61,7 +65,7 @@ export function AuthPageShell({
         <p className="relative z-10 text-xs text-white/70">NexAdmin © NexSMSID</p>
       </div>
 
-      <div className="relative grid place-items-center px-4 py-10 sm:px-6 lg:px-8">
+      <div className="relative grid place-items-center px-4 py-10 sm:px-6 lg:px-8" id="main-content" tabIndex={-1}>
         <div className="absolute inset-0 -z-10 bg-grid-soft opacity-20 lg:left-1/2" aria-hidden="true" />
         <div className="w-full max-w-md animate-fade-up">
           <Link className="mx-auto mb-8 flex w-max items-center gap-3 lg:hidden" href="/">
@@ -77,5 +81,6 @@ export function AuthPageShell({
         </div>
       </div>
     </main>
+    </>
   );
 }
