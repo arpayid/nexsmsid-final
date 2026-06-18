@@ -139,7 +139,7 @@ pnpm audit --audit-level high
 
 ### 4. Audit (jika diminta)
 
-Jalankan `nexsmsid-project-audit` → output ke `.cursor/audit/REPORT-*.md` + `ROADMAP.md`
+Jalankan `nexsmsid-project-audit` → perbarui `.cursor/audit/ROADMAP.md` (+ `STATUS.md` jika fase berubah)
 
 ### 5. Deploy staging/prod
 
@@ -179,8 +179,8 @@ Prioritas review manual:
 
 | File | Isi |
 |------|-----|
-| `.cursor/audit/REPORT-*.md` | Temuan audit terbaru |
-| `.cursor/audit/ROADMAP.md` | Fase 1–4 prioritas |
+| `.cursor/audit/ROADMAP.md` | Fase, risiko, prioritas (sumber kebenaran audit) |
+| `.cursor/workflow/STATUS.md` | Fase aktif & backlog |
 | `.cursor/audit/ONBOARDING.md` | Onboarding (jika dibuat) |
 
 **Verdict saat ini (2026-06-15):** CI hijau, build/test pass, belum dev-ready (no `.env`, no smoke test).

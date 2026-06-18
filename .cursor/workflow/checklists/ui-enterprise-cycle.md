@@ -9,12 +9,12 @@ Copy checklist ini per sprint. Centang sebelum lanjut ke langkah berikutnya.
 ## A — Audit
 
 - [ ] Baca `STATUS.md` + sprint aktif di `UI-PLAN.md`
-- [ ] Buka referensi `bug/UI refaktor.png` (jika relevan)
+- [ ] Bandingkan dengan pola UI Enterprise di `packages/ui` / shell admin (jika relevan)
 - [ ] Inventaris file/komponen terdampak
 - [ ] Catat gap vs target Enterprise 2026 (visual, UX, konsistensi)
 - [ ] Tentukan **out of scope** sprint ini
 
-**Output:** catatan audit (update `UI-AUDIT-*.md` atau section sprint di plan)
+**Output:** catatan audit (update section sprint di `UI-PLAN.md` atau `ROADMAP.md`)
 
 ---
 

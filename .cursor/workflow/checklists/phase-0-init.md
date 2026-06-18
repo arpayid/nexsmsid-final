@@ -18,8 +18,7 @@
 
 ## Audit baseline
 
-- [x] `.cursor/audit/REPORT-2026-06-15.md`
-- [x] `.cursor/audit/ROADMAP.md`
+- [x] `.cursor/audit/ROADMAP.md` (laporan audit bertanggal diarsipkan saat repo cleanup 2026-06-18)
 
 ## Exit
 

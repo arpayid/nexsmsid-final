@@ -2,7 +2,7 @@
 
 **Tujuan:** NexSMSID V4 terlihat dan terasa seperti produk **SaaS enterprise 2026** (clean, konsisten, data-dense tapi readable).
 
-**Referensi visual:** `bug/UI refaktor.png` (north star — design-in-code, bukan Figma wajib).
+**Referensi visual:** design-in-code (UI Enterprise S1–S20 selesai; mockup PNG tidak lagi di repo).
 
 **Prinsip:** Satu sprint = satu PR reviewable. Tidak loncat sprint. Tidak merge sebelum CI hijau.
 
@@ -90,7 +90,7 @@ Scope **full** (sentuh API): tambah `pnpm --filter @nexsmsid/api test` + `pnpm v
 
 ## Sprint map (UI keseluruhan)
 
-Detail acceptance: [UI-PLAN.md](UI-PLAN.md) · Audit baseline: [../audit/UI-AUDIT-2026-06-16.md](../audit/UI-AUDIT-2026-06-16.md)
+Detail acceptance: [UI-PLAN.md](UI-PLAN.md) · Status: [STATUS.md](STATUS.md) · Roadmap: [../audit/ROADMAP.md](../audit/ROADMAP.md)
 
 | Sprint | Area | Status |
 |--------|------|--------|

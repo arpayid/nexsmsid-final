@@ -72,7 +72,7 @@ Ikuti **D → P → I → V → R** — detail di [checklists/task-cycle.md](che
 |----|------|--------|--------|
 | P0-01 | Install skill lokal (nexsmsid-v4, audit, workflow) | ✅ | `.cursor/skills/` |
 | P0-02 | Install skill eksternal via skills.sh | ✅ | `.agents/skills/` (9 skill) |
-| P0-03 | Audit baseline | ✅ | `REPORT-2026-06-15.md` |
+| P0-03 | Audit baseline | ✅ | `ROADMAP.md` |
 | P0-04 | Roadmap audit | ✅ | `ROADMAP.md` |
 | P0-05 | Workflow + STATUS + checklists | ✅ | `.cursor/workflow/` |
 | P0-06 | CI decouple v3 → v4 | ✅ | Runner `nexsmsid-v4-ci-01` |
@@ -565,7 +565,6 @@ gh run list --repo arpayid/nexsmsid-v4 --branch main --limit 5
 | Workflow utama | [WORKFLOW.md](WORKFLOW.md) |
 | Status terkini | [STATUS.md](STATUS.md) |
 | Checklists per fase | [checklists/](checklists/) |
-| Audit report | [../audit/REPORT-2026-06-15.md](../audit/REPORT-2026-06-15.md) |
-| Roadmap audit | [../audit/ROADMAP.md](../audit/ROADMAP.md) |
+| Audit roadmap | [../audit/ROADMAP.md](../audit/ROADMAP.md) |
 | Skill workflow | [../skills/nexsmsid-v4-workflow/SKILL.md](../skills/nexsmsid-v4-workflow/SKILL.md) |
 | Skill develop | [../skills/nexsmsid-v4/SKILL.md](../skills/nexsmsid-v4/SKILL.md) |

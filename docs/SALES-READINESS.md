@@ -41,7 +41,7 @@ Dokumen pendukung: [DEPLOY-PER-CUSTOMER.md](DEPLOY-PER-CUSTOMER.md) · [OPERATIO
 | Bukti | Lokasi |
 |-------|--------|
 | UI Enterprise rollout S1–S20 | `.cursor/workflow/UI-PLAN.md`, `STATUS.md` |
-| QA browser pilot (dark, mobile, a11y) | `bug/PROD-QA-2026-06-18.md` |
+| QA browser pilot (dark, mobile, a11y) | `pnpm prod:smoke`, UI-S7/S20 sign-off di `STATUS.md` |
 | Modul admin + portal (akademik, keuangan, PPDB, dll.) | `apps/web`, `apps/api` |
 
 ### 2. Stabilitas teknis (pilot) — 10/10
@@ -51,7 +51,7 @@ Dokumen pendukung: [DEPLOY-PER-CUSTOMER.md](DEPLOY-PER-CUSTOMER.md) · [OPERATIO
 | Quality gate (typecheck, lint, unit, build) | `pnpm validate` |
 | Integration tests | `pnpm validate:integration` |
 | Smoke produksi (health, auth, modul kunci) | `pnpm prod:smoke` |
-| Pilot prod diverifikasi | `.cursor/audit/REPORT-2026-06-18.md` |
+| Pilot prod diverifikasi | `.cursor/audit/ROADMAP.md`, `pnpm prod:smoke` |
 
 ### 3. Kemudahan jual ulang (domain) — 10/10
 

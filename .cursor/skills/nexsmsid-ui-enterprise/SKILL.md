@@ -7,13 +7,13 @@ compatibility: Requires .cursor/workflow/UI-ENTERPRISE-2026.md and STATUS.md UI 
 # NexSMSID UI Enterprise 2026
 
 **Tujuan:** Seluruh UI terlihat seperti SaaS enterprise 2026.  
-**Referensi:** `bug/UI refaktor.png` (design-in-code).
+**Referensi:** design-in-code (UI Enterprise S1–S20 selesai).
 
 ## Sebelum mulai
 
 1. Baca `.cursor/workflow/STATUS.md` — sprint UI aktif
 2. Baca `.cursor/workflow/UI-PLAN.md` — scope sprint
-3. Baca `.cursor/audit/UI-AUDIT-2026-06-16.md` jika perlu gap baseline
+3. Baca `.cursor/audit/ROADMAP.md` jika perlu konteks risiko/hardening
 
 ## Siklus wajib (A→P→E→V→PR→M)
 
@@ -63,4 +63,4 @@ pnpm format:check && pnpm lint && pnpm typecheck && pnpm build
 
 - Workflow: `.cursor/workflow/UI-ENTERPRISE-2026.md`
 - Plan: `.cursor/workflow/UI-PLAN.md`
-- Audit: `.cursor/audit/UI-AUDIT-2026-06-16.md`
+- Roadmap: `.cursor/audit/ROADMAP.md`

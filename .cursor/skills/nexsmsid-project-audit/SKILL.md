@@ -10,8 +10,7 @@ compatibility: Requires pnpm, docker, gh CLI, postgres/redis for integration tes
 
 Setelah audit, tulis ke `.cursor/audit/`:
 
-1. `REPORT-YYYY-MM-DD.md` — temuan per fase + risk register
-2. `ROADMAP.md` — fase 1–4 dengan exit criteria
+1. `ROADMAP.md` — fase, risiko, exit criteria (sumber kebenaran; laporan harian opsional lokal, tidak di-commit)
 
 ## Urutan eksekusi
 
@@ -96,5 +95,4 @@ Pola dari [awesome-cursor-skills/auditing-security](https://github.com/spencerpa
 
 ## Referensi audit terakhir
 
-- [../../audit/REPORT-2026-06-15.md](../../audit/REPORT-2026-06-15.md)
 - [../../audit/ROADMAP.md](../../audit/ROADMAP.md)

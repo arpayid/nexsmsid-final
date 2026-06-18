@@ -82,7 +82,6 @@
 
 ## Referensi
 
-- [REPORT-2026-06-18.md](./REPORT-2026-06-18.md) — audit penuh hari ini
-- [REPORT-2026-06-15.md](./REPORT-2026-06-15.md) — audit awal
-- [UI-AUDIT-2026-06-16.md](./UI-AUDIT-2026-06-16.md) — UI Enterprise
-- [../workflow/STATUS.md](../workflow/STATUS.md) — status operasional
+- [../workflow/STATUS.md](../workflow/STATUS.md) — status operasional (sumber kebenaran fase)
+- [../../docs/SALES-READINESS.md](../../docs/SALES-READINESS.md) — kesiapan jual 10/10
+- Laporan audit bertanggal (2026-06-15 s/d 18) dihapus saat repo cleanup; ringkasan tetap di dokumen ini.

@@ -18,7 +18,7 @@ Terakhir diperbarui: **2026-06-18**
 
 ## UI Enterprise 2026 (program aktif)
 
-**Workflow:** [UI-ENTERPRISE-2026.md](UI-ENTERPRISE-2026.md) · **Plan:** [UI-PLAN.md](UI-PLAN.md) · **Audit:** [../audit/UI-AUDIT-2026-06-16.md](../audit/UI-AUDIT-2026-06-16.md)
+**Workflow:** [UI-ENTERPRISE-2026.md](UI-ENTERPRISE-2026.md) · **Plan:** [UI-PLAN.md](UI-PLAN.md) · **Roadmap:** [../audit/ROADMAP.md](../audit/ROADMAP.md)
 
 **Siklus per sprint:** Plan → Desain → Build → Review → PR → **Merge jika CI hijau**
 
@@ -46,7 +46,7 @@ Terakhir diperbarui: **2026-06-18**
 | UI-S19 | Public brand enterprise | ✅ | #38 |
 | UI-S20 | QA sign-off 100% | ✅ | #37 |
 
-**Referensi visual:** `bug/UI refaktor.png`
+**Referensi visual:** design-in-code (UI Enterprise S1–S20 ✅ — mockup PNG dihapus dari repo)
 
 ---
 

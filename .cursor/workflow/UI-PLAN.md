@@ -1,6 +1,6 @@
 # UI Enterprise 2026 — Execution Plan
 
-**Workflow:** [UI-ENTERPRISE-2026.md](UI-ENTERPRISE-2026.md) · **Audit:** [UI-AUDIT-2026-06-16.md](../audit/UI-AUDIT-2026-06-16.md)
+**Workflow:** [UI-ENTERPRISE-2026.md](UI-ENTERPRISE-2026.md) · **Status:** [STATUS.md](STATUS.md) · **Roadmap:** [../audit/ROADMAP.md](../audit/ROADMAP.md)
 
 Setiap baris = **1 PR** → validasi → merge jika CI hijau.
 

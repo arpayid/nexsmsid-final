@@ -27,7 +27,8 @@ Sections: Quick Start, Architecture, Data Models, API, Auth, Deployment, Key Fil
 ### 3. For NexSMSID V4
 
 Use existing artifacts instead of re-exploring from scratch when available:
-- `.cursor/audit/REPORT-*.md`
+- `.cursor/audit/ROADMAP.md`
+- `.cursor/workflow/STATUS.md`
 - `.cursor/skills/nexsmsid-v4/modules.md`
 - `README.md`, `.github/SELF_HOSTED_RUNNER.md`
 

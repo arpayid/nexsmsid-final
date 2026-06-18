@@ -48,6 +48,20 @@ backups/*
 # Generated docs / scratch
 prompt-cleanup-v2.md
 
+# Design mockups (not shipped; UI S1–S20 design-in-code)
+ui-enterprise-saas-premium.png
+bug/*.png
+
+# Workflow export bundles (duplicate of markdown sources)
+.cursor/workflow/download/
+
+# Dated audit / QA snapshots (canonical: ROADMAP.md + STATUS.md)
+.cursor/audit/REPORT-*.md
+.cursor/audit/SMOKE-TEST-*.md
+.cursor/audit/SECURITY-REVIEW-*.md
+.cursor/audit/UI-AUDIT-*.md
+bug/PROD-QA-*.md
+
 # TLS (self-signed / staging — never commit private keys)
 docker/nginx/ssl/**/*.pem
 docker/nginx/conf.d/https-selfsigned.conf

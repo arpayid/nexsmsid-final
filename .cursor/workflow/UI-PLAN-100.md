@@ -1,6 +1,6 @@
 # UI Enterprise 2026 — Plan 100% Mockup Parity
 
-**Referensi:** `bug/UI refaktor.png` · `ui-enterprise-saas-premium.png`  
+**Referensi:** design-in-code (UI Enterprise S1–S20 ✅)  
 **Baseline:** S1–S8 selesai (#11–#17, #18–#26) · ~**65%** keseluruhan · ~**55%** admin CRUD  
 **Target:** **100%** — seluruh surface selaras mockup + pola enterprise konsisten  
 **Workflow:** A→P→E→V→PR→M · satu PR per sprint · CI hijau sebelum merge
@@ -352,9 +352,8 @@ pnpm prod:smoke
 
 **Dokumen**
 
-- [ ] Update `UI-AUDIT-2026-06-16.md` skor → 10/10 area
-- [ ] Update `STATUS.md` → UI Enterprise **100% ✅**
-- [ ] `bug/PROD-QA-*.md` section UI sign-off
+- [x] Update `STATUS.md` → UI Enterprise **100% ✅**
+- [x] `pnpm prod:smoke` + browser QA (UI-S7/S20)
 
 ---
 
