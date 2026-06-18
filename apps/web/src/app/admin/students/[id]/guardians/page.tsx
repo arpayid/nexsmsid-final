@@ -41,8 +41,8 @@ export default function StudentGuardiansPage() {
 
   const { data, error: fetchError, loading, refetch } = useApiQuery<GuardiansPageData>(loadData, [client, studentId]);
   const studentName = data?.studentName ?? "";
-  const items = data?.items ?? [];
   const filteredItems = useMemo(() => {
+    const items = data?.items ?? [];
     const query = appliedSearch.trim().toLowerCase();
     if (!query) return items;
     return items.filter((item) => {
@@ -50,7 +50,7 @@ export default function StudentGuardiansPage() {
       const phone = item.guardian?.phone?.toLowerCase() ?? "";
       return name.includes(query) || phone.includes(query);
     });
-  }, [appliedSearch, items]);
+  }, [appliedSearch, data?.items]);
   const error = actionError ?? fetchError;
 
   async function handleSearch(event: FormEvent<HTMLFormElement>) {
