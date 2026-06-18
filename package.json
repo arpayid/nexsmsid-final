@@ -21,7 +21,7 @@
     "docker:prod:build": "docker compose --env-file .env.production -f docker-compose.prod.yml build",
     "docker:prod:up": "docker compose --env-file .env.production -f docker-compose.prod.yml up -d",
     "docker:prod:down": "docker compose --env-file .env.production -f docker-compose.prod.yml down",
-    "db:migrate:prod": "pnpm --filter @nexsmsid/api prisma migrate deploy",
+    "db:migrate:prod": "bash scripts/db-migrate-prod.sh",
     "db:seed:prod": "pnpm --filter @nexsmsid/api prisma db seed",
     "backup": "bash scripts/backup-postgres.sh",
     "restore": "bash scripts/restore-postgres.sh",

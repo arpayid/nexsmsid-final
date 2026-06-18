@@ -1,121 +1,88 @@
-# Roadmap — NexSMSID V4 (post-audit 2026-06-15)
+# NexSMSID V4 — Audit Roadmap
 
-> **Update 2026-06-16:** Fase 1–3 ✅ · Fase 4 prod pilot jalan · backlog & fase aktif → [STATUS.md](../workflow/STATUS.md)
-
-Berdasarkan [REPORT-2026-06-15.md](REPORT-2026-06-15.md).
-
-```mermaid
-gantt
-    title Roadmap NexSMSID V4
-    dateFormat YYYY-MM-DD
-    section Fase1_DevReady
-    Setup_env_migrate_seed    :f1, 2026-06-16, 1d
-    Pnpm_dev_smoke_login      :f2, after f1, 1d
-    section Fase2_Quality
-    Smoke_test_5_domains      :f3, 2026-06-17, 2d
-    Upgrade_GHA_node24        :f4, 2026-06-17, 1d
-    section Fase3_Hardening
-    Docker_HEALTHCHECK        :f5, 2026-06-19, 1d
-    Security_PPDB_upload      :f6, after f5, 1d
-    section Fase4_Production
-    Staging_deploy_test       :f7, 2026-06-22, 2d
-```
+**Diperbarui:** 2026-06-18 (post-audit penuh)  
+**Verdict saat ini:** Fase 4 Production Pilot ✅ — go-live pilot IP; HTTPS domain opsional
 
 ---
 
-## Fase 1 — Dev Ready (Hari 1–2) — **PRIORITAS SEKARANG**
+## Fase 0 — Init ✅
 
-**Tujuan:** Developer bisa login dan navigasi dasar.
+- [x] Monorepo pnpm + Turborepo
+- [x] Prisma schema + migrations
+- [x] CI workflow + self-hosted runner
 
-```bash
-cp .env.example .env
-# Isi JWT_ACCESS_SECRET & JWT_REFRESH_SECRET (openssl rand -base64 64)
-docker compose up -d                    # project: nexsmsid-v4
-pnpm --filter @nexsmsid/api prisma migrate dev
-pnpm --filter @nexsmsid/api prisma db seed
-pnpm dev
-```
+## Fase 1 — Dev Ready ✅
 
-**Exit criteria:**
-- [ ] `GET /api/v1/health` → 200
-- [ ] Login `superadmin@nexsmsid.dev` / `ChangeMe123!`
-- [ ] Dashboard `/admin` tampil
+- [x] `.env` + migrate + seed
+- [x] Build + unit test + typecheck
+- [x] Login superadmin seed
+- [x] Compiled API/web run path documented (`AGENTS.md`)
 
----
+**Exit criteria:** CI hijau + build pass → **met**
 
-## Fase 2 — Quality & Coverage (Hari 3–5)
+## Fase 2 — Quality ✅
 
-**Tujuan:** Validasi bisnis end-to-end.
+- [x] Integration tests (37) — Postgres + Redis
+- [x] PPDB integration + provision tests
+- [x] ESLint + Prettier gate
+- [x] UI Enterprise program S1–S20
 
-| Domain | Halaman uji | Alur |
-|--------|-------------|------|
-| Master data | `/admin/master-data/departments` | CRUD 1 record |
-| People | `/admin/students` | Create → list |
-| Akademik | `/admin/academic/schedules` | View jadwal |
-| Keuangan | `/admin/finance/invoices` | List tagihan |
-| PPDB | `/ppdb/register` + `/admin/ppdb` | Daftar → verifikasi |
-| Portal | `/teacher`, `/student`, `/guardian` | Login per role |
+**Exit criteria:** integration pass + smoke domain → **met**
 
-**Paralel — CI maintenance:**
-- [ ] Upgrade `actions/checkout`, `setup-node`, `pnpm/action-setup` ke versi Node 24-ready
-- [ ] Fix moderate npm vulnerability jika tersedia patch
+## Fase 3 — Hardening ✅
 
-**Exit criteria:**
-- [ ] 5 domain lolos smoke test
-- [ ] Tidak ada bug blocker di alur login/CRUD
+- [x] Dockerfile HEALTHCHECK
+- [x] Non-root API container
+- [x] JWT secret validation production
+- [x] Rate limit + Turnstile PPDB public
+- [x] multer >=2.2.0 override (#40)
+- [x] RBAC migration students.provision-portal
 
----
+**Exit criteria:** docker audit PASS + audit high clean → **met**
 
-## Fase 3 — Hardening (Hari 6–8)
+## Fase 4 — Production Pilot (AKTIF — hampir selesai)
 
-**Tujuan:** Production readiness.
+- [x] `docker-compose.prod.yml` healthy
+- [x] nginx reverse proxy :80
+- [x] `pnpm prod:smoke` 17/17
+- [x] Backup/restore scripts
+- [x] PPDB portal auto-provision (#39)
+- [x] Public PPDB register fix (publicCompetencies)
+- [x] Rebuild prod post-#39/#40 (2026-06-18)
+- [ ] HTTPS domain nyata + certbot (saat DNS siap)
+- [ ] QA manual browser residual
 
-| Task | File | Detail |
-|------|------|--------|
-| Dockerfile HEALTHCHECK | `Dockerfile.api`, `Dockerfile.web` | Tambah instruction setara compose healthcheck |
-| PPDB upload review | `apps/api/src/public-ppdb/` | MIME, size, path sandbox |
-| Deprecated cleanup | `apps/web/src/lib/auth-storage.ts` | Hapus fungsi legacy |
-| Staging healthcheck | `scripts/staging-healthcheck.sh` | Jalankan setelah deploy lokal prod compose |
-
-**Exit criteria:**
-- [ ] `docker-audit.sh` → 0 FAIL, minimal WARN
-- [ ] Security review PPDB selesai tanpa critical
+**Exit criteria go-live pilot:** prod smoke + health + backup tested → **met untuk IP pilot**
 
 ---
 
-## Fase 4 — Production Pilot (Hari 9–12)
+## Fase 5 — Post-Pilot (backlog)
 
-```bash
-# .env production lengkap (Turnstile wajib)
-pnpm docker:prod:build
-pnpm docker:prod:up
-pnpm db:migrate:prod
-pnpm health
-```
-
-**Exit criteria:**
-- [ ] Stack prod jalan (postgres, redis, api, web, nginx)
-- [ ] HTTPS/nginx dikonfigurasi domain
-- [ ] Backup `pnpm backup` teruji
+| Prioritas | Task | Estimasi |
+|-----------|------|----------|
+| P1 | Rebuild prod Docker + migrate prod | 30 menit |
+| P2 | js-yaml override (swagger transitive) | 1 jam |
+| P2 | Fix 2 ESLint react-hooks warnings | 1 jam |
+| P2 | QA manual: dark mode, mobile, a11y | 2–4 jam |
+| P2 | HTTPS + domain production | saat DNS ready |
+| P3 | Enable PR auto-merge di GitHub settings | 15 menit |
+| P3 | Repair `pnpm dev` / Turbopack edge bundler | 4–8 jam |
 
 ---
 
-## Prioritas cepat (jika waktu terbatas)
+## CI / GitHub Status (2026-06-18)
 
-```
-1. Setup .env + pnpm dev + login          ← hari ini
-2. Smoke test admin + 1 modul             ← besok
-3. Upgrade GitHub Actions (Node 24)       ← minggu ini
-4. Docker HEALTHCHECK + staging deploy    ← minggu depan
-```
+| Item | Status |
+|------|--------|
+| `main` latest CI | ✅ SUCCESS (`c2bde98`) |
+| Open PRs | 0 |
+| Merged recent | #39 PPDB provision, #40 multer, docs commit |
 
 ---
 
-## Skill yang mendukung roadmap
+## Referensi
 
-| Skill lokal | Dipakai di fase |
-|-------------|-----------------|
-| `nexsmsid-v4-workflow` | Semua fase — workflow & STATUS |
-| `fullstack-project-audit` | Audit ulang kapan saja |
-| `docker-compose-audit` | Fase 3 hardening |
-| `nexsmsid-v4` | Semua development fitur |
+- [REPORT-2026-06-18.md](./REPORT-2026-06-18.md) — audit penuh hari ini
+- [REPORT-2026-06-15.md](./REPORT-2026-06-15.md) — audit awal
+- [UI-AUDIT-2026-06-16.md](./UI-AUDIT-2026-06-16.md) — UI Enterprise
+- [../workflow/STATUS.md](../workflow/STATUS.md) — status operasional
