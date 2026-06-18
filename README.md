@@ -83,7 +83,7 @@ User seed memakai `forceChangePassword=true` — login pertama akan diminta gant
 
 Stack production: **PostgreSQL + Redis + API + Web + Nginx** via `docker-compose.prod.yml` (project Docker: `nexsmsid-v4-prod`).
 
-**Penjualan ke banyak sekolah (ganti domain tanpa ubah kode):** lihat [docs/DEPLOY-PER-CUSTOMER.md](docs/DEPLOY-PER-CUSTOMER.md).
+**Penjualan ke banyak sekolah (ganti domain tanpa ubah kode):** lihat [docs/DEPLOY-PER-CUSTOMER.md](docs/DEPLOY-PER-CUSTOMER.md). **Skor kesiapan jual (10 poin):** [docs/SALES-READINESS.md](docs/SALES-READINESS.md).
 
 ### 1. Siapkan environment
 

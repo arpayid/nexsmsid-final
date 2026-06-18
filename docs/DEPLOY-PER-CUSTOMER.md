@@ -3,7 +3,7 @@
 Panduan standar saat produk dijual ke sekolah baru: **satu instalasi = satu sekolah = satu domain**.  
 Tidak perlu fork atau ubah kode aplikasi — cukup konfigurasi environment, nginx, dan DNS di sisi pelanggan.
 
-Lihat juga: [README.md](../README.md) (deploy umum) · [bug/PILOT-HARDENING.md](../bug/PILOT-HARDENING.md) (checklist hardening)
+Lihat juga: [README.md](../README.md) (deploy umum) · [SALES-READINESS.md](SALES-READINESS.md) (skor kesiapan jual) · [OPERATIONS.md](OPERATIONS.md) (runbook L1) · [bug/PILOT-HARDENING.md](../bug/PILOT-HARDENING.md) (checklist hardening)
 
 ---
 
@@ -46,6 +46,16 @@ Validasi sebelum deploy:
 ```bash
 pnpm validate:prod-env
 ```
+
+Deploy lengkap (build → up → migrate → smoke):
+
+```bash
+pnpm deploy:customer
+# atau: pnpm deploy:customer https://sms.smkcontoh.sch.id
+# dengan nginx HTTPS: DOMAIN=sms.smkcontoh.sch.id pnpm deploy:customer
+```
+
+Lihat [OPERATIONS.md](OPERATIONS.md) untuk cron health, backup, dan update rilis.
 
 ---
 
