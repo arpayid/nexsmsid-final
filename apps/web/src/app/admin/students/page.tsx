@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 
 import type { ClassroomReference, MasterDataRecord, PortalAccountCredentials } from "@nexsmsid/api-client";
 import { Button, ConfirmDialog, ErrorState, SectionCard } from "@nexsmsid/ui";
 
 import { PeoplePage, type PeopleField } from "@/components/people-page";
+import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
 
 const fields: PeopleField[] = [
@@ -48,32 +49,25 @@ const fields: PeopleField[] = [
 
 export default function StudentsPage() {
   const api = useMemo(() => createBrowserApiClient(), []);
-  const [classrooms, setClassrooms] = useState<ClassroomReference[]>([]);
-  const [classroomError, setClassroomError] = useState<string | null>(null);
+  const loadClassrooms = useCallback(async () => {
+    const response = await api.masterDataList("classrooms", { limit: 100 });
+    return (response.data as unknown as Array<Record<string, unknown>>).map((item) => ({
+      id: String(item.id),
+      code: String(item.code ?? ""),
+      name: String(item.name ?? ""),
+      level: Number(item.level ?? 0),
+    }));
+  }, [api]);
+  const {
+    data: classroomsData,
+    error: classroomError,
+    refetch: reloadClassrooms,
+  } = useApiQuery<ClassroomReference[]>(loadClassrooms, [api]);
+  const classrooms = classroomsData ?? [];
   const [portalCredentials, setPortalCredentials] = useState<PortalAccountCredentials | null>(null);
   const [portalActionError, setPortalActionError] = useState<string | null>(null);
   const [portalBusyId, setPortalBusyId] = useState<string | null>(null);
   const [listVersion, setListVersion] = useState(0);
-
-  const loadClassrooms = useCallback(async () => {
-    setClassroomError(null);
-    try {
-      const response = await api.masterDataList("classrooms", { limit: 100 });
-      const items = (response.data as unknown as Array<Record<string, unknown>>).map((item) => ({
-        id: String(item.id),
-        code: String(item.code ?? ""),
-        name: String(item.name ?? ""),
-        level: Number(item.level ?? 0),
-      }));
-      setClassrooms(items);
-    } catch (loadError) {
-      setClassroomError(loadError instanceof Error ? loadError.message : "Gagal memuat classroom");
-    }
-  }, [api]);
-
-  useEffect(() => {
-    void loadClassrooms();
-  }, [loadClassrooms]);
 
   const resource = useMemo(
     () => ({
@@ -136,7 +130,7 @@ export default function StudentsPage() {
   return (
     <div className="space-y-6">
       {classroomError ? (
-        <ErrorState message={classroomError} onRetry={() => void loadClassrooms()} title="Gagal memuat referensi kelas" />
+        <ErrorState message={classroomError} onRetry={() => void reloadClassrooms()} title="Gagal memuat referensi kelas" />
       ) : null}
 
       <ClassroomSummary classrooms={classrooms} />
