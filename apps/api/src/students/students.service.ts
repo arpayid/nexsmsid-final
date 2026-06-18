@@ -1,15 +1,23 @@
-import { ConflictException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 import { AuditService } from "../audit/audit.service";
 import { AuthenticatedUser, RequestMeta } from "../auth/auth.types";
 import { parseWithSchema } from "../common/validation";
 import { PrismaService } from "../database/prisma.service";
 import { BasePeopleService } from "../people/base-people.service";
+import { PortalProvisioningService } from "../portal-provisioning/portal-provisioning.service";
+import { provisionStudentPortalSchema } from "../portal-provisioning/portal-provisioning.dto";
 import { createStudentSchema, linkStudentGuardianSchema, updateStudentGuardianSchema, updateStudentSchema } from "./students.dto";
 
 @Injectable()
 export class StudentsService extends BasePeopleService<typeof createStudentSchema, typeof updateStudentSchema> {
-  constructor(@Inject(PrismaService) prisma: PrismaService, @Inject(AuditService) auditService: AuditService) {
+  constructor(
+    @Inject(PrismaService) prisma: PrismaService,
+    @Inject(AuditService) auditService: AuditService,
+    @Inject(PortalProvisioningService) private readonly portalProvisioning: PortalProvisioningService,
+    @Inject(ConfigService) private readonly configService: ConfigService,
+  ) {
     super(prisma, auditService, {
       auditEntity: "student",
       createSchema: createStudentSchema,
@@ -20,6 +28,37 @@ export class StudentsService extends BasePeopleService<typeof createStudentSchem
       updateSchema: updateStudentSchema,
       useSoftDelete: true,
     });
+  }
+
+  async provisionPortalAccount(studentId: string, input: unknown, actor: AuthenticatedUser, meta: RequestMeta) {
+    const student = await this.findById(studentId);
+    const data = parseWithSchema(provisionStudentPortalSchema, input ?? {});
+    const email = this.portalProvisioning.resolveStudentEmail({
+      registrationEmail: typeof student.email === "string" ? student.email : null,
+      overrideEmail: data.email,
+      nis: typeof student.nis === "string" ? student.nis : undefined,
+    });
+
+    if (!email) {
+      throw new BadRequestException("Email wajib untuk membuat akun portal siswa");
+    }
+
+    const sendWelcomeEmail = data.sendWelcomeEmail ?? Boolean(this.configService.get<string>("SMTP_HOST")?.trim());
+
+    return this.portalProvisioning.provisionStudentPortal({
+      studentId,
+      email,
+      name: String(student.name),
+      actorId: actor.id,
+      meta,
+      source: "manual",
+      sendWelcomeEmail,
+    });
+  }
+
+  async resetPortalPassword(studentId: string, actor: AuthenticatedUser, meta: RequestMeta) {
+    await this.findById(studentId);
+    return this.portalProvisioning.resetStudentPortalPassword(studentId, actor.id, meta);
   }
 
   async findClassroomIdByCode(code: string): Promise<string | null> {

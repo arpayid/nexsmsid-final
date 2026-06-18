@@ -4,18 +4,53 @@ import { FormEvent, Suspense, useCallback, useMemo, useState } from "react";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
-import type { MasterDataRecord, PpdbPeriodRecord } from "@nexsmsid/api-client";
+import type { PpdbPeriodRecord, PublicCompetency } from "@nexsmsid/api-client";
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Input } from "@nexsmsid/ui";
 
 import { useApiQuery } from "@/hooks/use-api-query";
 import { createBrowserApiClient } from "@/lib/api-client";
 import { TurnstileField } from "@/components/turnstile-field";
 
+type PpdbDepartmentOption = {
+  id: string;
+  code: string;
+  name: string;
+};
+
+type PpdbCompetencyOption = {
+  id: string;
+  name: string;
+  departmentId: string;
+};
+
 type ReferenceData = {
   period: PpdbPeriodRecord;
-  departments: MasterDataRecord[];
-  competencies: MasterDataRecord[];
+  departments: PpdbDepartmentOption[];
+  competencies: PpdbCompetencyOption[];
 };
+
+function mapPublicCompetencies(competencies: PublicCompetency[]): Pick<ReferenceData, "departments" | "competencies"> {
+  const departments = new Map<string, PpdbDepartmentOption>();
+  const competencyOptions: PpdbCompetencyOption[] = [];
+
+  for (const competency of competencies) {
+    departments.set(competency.department.id, {
+      id: competency.department.id,
+      code: competency.department.code,
+      name: competency.department.name,
+    });
+    competencyOptions.push({
+      id: competency.id,
+      name: competency.name,
+      departmentId: competency.department.id,
+    });
+  }
+
+  return {
+    departments: Array.from(departments.values()).sort((a, b) => a.name.localeCompare(b.name, "id")),
+    competencies: competencyOptions,
+  };
+}
 
 function PpdbRegisterForm() {
   const searchParams = useSearchParams();
@@ -29,15 +64,11 @@ function PpdbRegisterForm() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const loadReferenceData = useCallback(async () => {
-    const [periodRes, deptRes, compRes] = await Promise.all([
-      api.getActivePpdbPeriod(),
-      api.masterDataList("departments", { limit: 100 }),
-      api.masterDataList("competencies", { limit: 100 }),
-    ]);
+    const [period, competencies] = await Promise.all([api.getActivePpdbPeriod(), api.publicCompetencies()]);
+    const mapped = mapPublicCompetencies(competencies);
     return {
-      period: periodRes as unknown as PpdbPeriodRecord,
-      departments: deptRes.data,
-      competencies: compRes.data,
+      period: period as unknown as PpdbPeriodRecord,
+      ...mapped,
     };
   }, [api]);
   const { data, error: fetchError, loading } = useApiQuery<ReferenceData>(loadReferenceData, [api]);

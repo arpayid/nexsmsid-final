@@ -34,6 +34,7 @@ const permissions = [
   "students.delete",
   "students.import",
   "students.export",
+  "students.provision-portal",
   "guardians.view",
   "guardians.create",
   "guardians.update",
@@ -364,6 +365,7 @@ const rolePermissionMap: Record<string, string[]> = {
     "students.view",
     "students.create",
     "students.update",
+    "students.provision-portal",
     "guardians.view",
     "guardians.create",
     "guardians.update",
@@ -547,6 +549,7 @@ const rolePermissionMap: Record<string, string[]> = {
     "ppdb.convert",
     "ppdb.export",
     "ppdb.print",
+    "students.provision-portal",
   ],
   "pembimbing-pkl": [
     "dashboard.view",

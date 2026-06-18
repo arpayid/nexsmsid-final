@@ -20,7 +20,7 @@ import {
   XCircle,
 } from "lucide-react";
 
-import type { PpdbRegistrationRecord } from "@nexsmsid/api-client";
+import type { PortalAccountCredentials, PpdbRegistrationRecord } from "@nexsmsid/api-client";
 import { Badge, Button, ConfirmDialog, EmptyState, ErrorState, Input, PageHeader, SearchFilterBar, SectionCard } from "@nexsmsid/ui";
 
 import { useApiQuery } from "@/hooks/use-api-query";
@@ -84,6 +84,10 @@ export default function PpdbRegistrationsPage() {
   const [rejectingRegistrationId, setRejectingRegistrationId] = useState<string | null>(null);
   const [rejectRegistrationReason, setRejectRegistrationReason] = useState("");
   const [pendingConvertId, setPendingConvertId] = useState<string | null>(null);
+  const [convertEmail, setConvertEmail] = useState("");
+  const [provisionPortalAccount, setProvisionPortalAccount] = useState(true);
+  const [sendWelcomeEmail, setSendWelcomeEmail] = useState(false);
+  const [portalCredentials, setPortalCredentials] = useState<PortalAccountCredentials | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
   const loadRegistrations = useCallback(async () => {
@@ -214,11 +218,25 @@ export default function PpdbRegistrationsPage() {
     }
   }
 
+  function openConvertDialog(id: string, email?: string | null) {
+    setPendingConvertId(id);
+    setConvertEmail(email ?? "");
+    setProvisionPortalAccount(true);
+    setSendWelcomeEmail(false);
+  }
+
   async function confirmConvert() {
     if (!pendingConvertId) return;
     try {
-      await api.convertPpdbRegistration(pendingConvertId);
+      const result = await api.convertPpdbRegistration(pendingConvertId, {
+        email: convertEmail.trim() || undefined,
+        provisionPortalAccount,
+        sendWelcomeEmail,
+      });
       setPendingConvertId(null);
+      if (result.portalAccount) {
+        setPortalCredentials(result.portalAccount);
+      }
       await refetchList();
       if (expandedId === pendingConvertId) await refetchDetail();
     } catch (err) {
@@ -230,6 +248,7 @@ export default function PpdbRegistrationsPage() {
   const documents = (detailData?.documents as Array<Record<string, unknown>>) ?? [];
   const statusHistory = (detailData?.statusHistory as Array<Record<string, unknown>>) ?? [];
   const status = (detailData?.status as string) ?? "";
+  const convertedStudent = (detailData?.convertedStudent as Record<string, unknown> | null) ?? null;
 
   return (
     <div className="space-y-6">
@@ -542,9 +561,21 @@ export default function PpdbRegistrationsPage() {
                   </Button>
                 ) : null}
                 {status === "ACCEPTED" ? (
-                  <Button onClick={() => setPendingConvertId(expandedId)}>
+                  <Button onClick={() => openConvertDialog(expandedId, (detailData?.email as string) ?? null)}>
                     <UserPlus className="h-4 w-4" /> Konversi ke Siswa
                   </Button>
+                ) : null}
+                {status === "CONVERTED" && convertedStudent ? (
+                  <div className="w-full rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
+                    <p className="font-semibold text-foreground">Siswa terkonversi</p>
+                    <p className="mt-1 text-muted-foreground">
+                      NIS: <span className="font-mono">{String(convertedStudent.nis ?? "-")}</span>
+                    </p>
+                    <p className="text-muted-foreground">
+                      Akun portal:{" "}
+                      {convertedStudent.userId ? <Badge variant="success">Aktif</Badge> : <Badge variant="warning">Belum dibuat</Badge>}
+                    </p>
+                  </div>
                 ) : null}
               </div>
             </div>
@@ -553,11 +584,68 @@ export default function PpdbRegistrationsPage() {
       ) : null}
 
       <ConfirmDialog
-        description="Konversi pendaftar ini menjadi siswa?"
+        description={
+          <div className="space-y-4 text-left">
+            <p>Konversi pendaftar ini menjadi siswa dan opsional buat akun portal.</p>
+            <div className="space-y-2">
+              <label className="text-sm font-medium" htmlFor="convert-email">
+                Email login portal
+              </label>
+              <Input
+                id="convert-email"
+                onChange={(event) => setConvertEmail(event.target.value)}
+                placeholder="email.siswa@example.com"
+                type="email"
+                value={convertEmail}
+              />
+            </div>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                checked={provisionPortalAccount}
+                onChange={(event) => setProvisionPortalAccount(event.target.checked)}
+                type="checkbox"
+              />
+              Buat akun portal siswa otomatis
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input checked={sendWelcomeEmail} onChange={(event) => setSendWelcomeEmail(event.target.checked)} type="checkbox" />
+              Kirim email welcome (jika SMTP aktif)
+            </label>
+          </div>
+        }
         onCancel={() => setPendingConvertId(null)}
         onConfirm={() => void confirmConvert()}
         open={Boolean(pendingConvertId)}
         title="Konfirmasi konversi"
+      />
+
+      <ConfirmDialog
+        cancelLabel="Tutup"
+        confirmLabel="Salin password"
+        description={
+          portalCredentials ? (
+            <div className="space-y-3 text-left text-sm">
+              <p className="text-muted-foreground">Kredensial hanya ditampilkan sekali. Serahkan ke siswa melalui kanal resmi sekolah.</p>
+              <div>
+                <p className="font-medium">Email login</p>
+                <p className="font-mono text-foreground">{portalCredentials.email}</p>
+              </div>
+              <div>
+                <p className="font-medium">Password sementara</p>
+                <p className="font-mono text-foreground">{portalCredentials.temporaryPassword}</p>
+              </div>
+            </div>
+          ) : null
+        }
+        onCancel={() => setPortalCredentials(null)}
+        onConfirm={() => {
+          if (portalCredentials) {
+            void navigator.clipboard.writeText(`Email: ${portalCredentials.email}\nPassword: ${portalCredentials.temporaryPassword}`);
+          }
+          setPortalCredentials(null);
+        }}
+        open={Boolean(portalCredentials)}
+        title="Akun portal siswa dibuat"
       />
     </div>
   );

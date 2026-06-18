@@ -26,6 +26,9 @@ const envSchema = z.object({
   REPORT_STORAGE_PATH: z.string().default("./storage/reports"),
   TURNSTILE_SECRET_KEY: z.string().optional(),
   PPDB_LEGACY_PIN_GRACE_END: z.string().datetime().optional(),
+  PPDB_AUTO_PROVISION_STUDENT_ACCOUNT: z.enum(["true", "false"]).default("true"),
+  PPDB_PROVISION_EMAIL_REQUIRED: z.enum(["true", "false"]).default("true"),
+  PPDB_PROVISION_EMAIL_DOMAIN: z.string().optional(),
 });
 
 export type EnvironmentVariables = z.infer<typeof envSchema>;

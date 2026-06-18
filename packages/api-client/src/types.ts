@@ -183,6 +183,7 @@ export type StudentRecord = {
   id: string;
   nis: string;
   nisn: string | null;
+  userId: string | null;
   name: string;
   gender: Gender;
   birthPlace: string | null;
@@ -511,6 +512,18 @@ export type PpdbRegistrationRecord = {
   documents?: Array<{ id: string; name: string; status: string }>;
   createdAt: string;
   updatedAt: string;
+};
+
+export type PortalAccountCredentials = {
+  userId: string;
+  email: string;
+  temporaryPassword: string;
+  forceChangePassword: true;
+};
+
+export type PpdbConvertResult = {
+  registration: PpdbRegistrationRecord;
+  portalAccount: PortalAccountCredentials | null;
 };
 
 export type IndustryPartnerRecord = {

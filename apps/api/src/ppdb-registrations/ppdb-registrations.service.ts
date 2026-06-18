@@ -9,6 +9,9 @@ import { parseWithSchema } from "../common/validation";
 import { PrismaService } from "../database/prisma.service";
 import { listQuerySchema } from "../master-data/base-master-data.service";
 import { NotificationEventService } from "../notifications/notification-event.service";
+import { convertPpdbRegistrationSchema } from "../portal-provisioning/portal-provisioning.dto";
+import { PortalProvisioningService } from "../portal-provisioning/portal-provisioning.service";
+import type { PortalAccountCredentials } from "../portal-provisioning/portal-provisioning.types";
 import { contentTypeForPpdbFilename, resolvePpdbAbsolutePath } from "../public-ppdb/ppdb-file.util";
 import {
   createPpdbDocumentSchema,
@@ -25,7 +28,8 @@ export class PpdbRegistrationsService {
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(AuditService) private readonly auditService: AuditService,
     @Inject(NotificationEventService) private readonly notificationEvents: NotificationEventService,
-    @Inject(ConfigService) configService: ConfigService,
+    @Inject(PortalProvisioningService) private readonly portalProvisioning: PortalProvisioningService,
+    @Inject(ConfigService) private readonly configService: ConfigService,
   ) {
     this.storagePath = configService.get<string>("STORAGE_PATH") ?? "./storage";
   }
@@ -231,36 +235,89 @@ export class PpdbRegistrationsService {
     return result;
   }
 
-  async convertToStudent(id: string, actor: AuthenticatedUser, meta: RequestMeta) {
+  async convertToStudent(id: string, input: unknown, actor: AuthenticatedUser, meta: RequestMeta) {
+    const options = parseWithSchema(convertPpdbRegistrationSchema, input ?? {});
     const existing = await this.findById(id);
     if (existing.convertedStudentId) throw new ConflictException("Registration has already been converted to a student");
     if (existing.status !== "ACCEPTED") throw new BadRequestException("Only ACCEPTED registrations can be converted to student");
 
+    const shouldProvision = options.provisionPortalAccount ?? this.portalProvisioning.isAutoProvisionEnabled();
     const nis = `PPDB-${existing.registrationNumber.slice(-8)}`;
-    const student = await this.prisma.student.create({
-      data: {
-        nis,
-        name: existing.name,
-        gender: existing.gender,
-        birthPlace: existing.birthPlace,
-        birthDate: existing.birthDate,
-        address: existing.address,
-        phone: existing.phone,
-        email: existing.email,
-        status: "ACTIVE",
-        enrolledAt: new Date(),
-      },
+    const email = this.portalProvisioning.resolveStudentEmail({
+      registrationEmail: existing.email,
+      overrideEmail: options.email,
+      nis,
     });
 
-    const registration = await this.prisma.ppdbRegistration.update({
-      where: { id },
-      data: { status: "CONVERTED", convertedStudentId: student.id },
-      include: { period: true, convertedStudent: true },
+    if (shouldProvision && !email && this.portalProvisioning.isEmailRequired()) {
+      throw new BadRequestException("Email wajib untuk membuat akun portal siswa");
+    }
+
+    const sendWelcomeEmail = options.sendWelcomeEmail ?? Boolean(this.configService.get<string>("SMTP_HOST")?.trim());
+
+    const { registration, student, portalAccount } = await this.prisma.$transaction(async (tx) => {
+      const student = await tx.student.create({
+        data: {
+          nis,
+          name: existing.name,
+          gender: existing.gender,
+          birthPlace: existing.birthPlace,
+          birthDate: existing.birthDate,
+          address: existing.address,
+          phone: existing.phone,
+          email: existing.email,
+          status: "ACTIVE",
+          enrolledAt: new Date(),
+        },
+      });
+
+      const registration = await tx.ppdbRegistration.update({
+        where: { id },
+        data: { status: "CONVERTED", convertedStudentId: student.id },
+        include: { period: true, convertedStudent: true },
+      });
+
+      await tx.ppdbStatusHistory.create({
+        data: { registrationId: id, fromStatus: "ACCEPTED", toStatus: "CONVERTED", changedById: actor.id },
+      });
+
+      let provisionedAccount: PortalAccountCredentials | null = null;
+      if (shouldProvision && email) {
+        provisionedAccount = await this.portalProvisioning.provisionStudentPortal(
+          {
+            studentId: student.id,
+            email,
+            name: existing.name,
+            actorId: actor.id,
+            meta,
+            source: "ppdb-convert",
+            sendWelcomeEmail,
+          },
+          tx,
+        );
+      }
+
+      return { registration, student, portalAccount: provisionedAccount };
     });
 
-    await this.prisma.ppdbStatusHistory.create({
-      data: { registrationId: id, fromStatus: "ACCEPTED", toStatus: "CONVERTED", changedById: actor.id },
-    });
+    if (portalAccount) {
+      await this.auditService.record({
+        ...meta,
+        actorId: actor.id,
+        action: "portal.provision.student",
+        entity: "student",
+        entityId: student.id,
+        metadata: {
+          userId: portalAccount.userId,
+          email: portalAccount.email,
+          source: "ppdb-convert",
+        },
+      });
+
+      if (sendWelcomeEmail) {
+        await this.portalProvisioning.sendStudentWelcomeEmail(portalAccount.email, existing.name);
+      }
+    }
 
     await this.auditService.record({
       ...meta,
@@ -268,9 +325,14 @@ export class PpdbRegistrationsService {
       action: "ppdb.convert",
       entity: "ppdb_registration",
       entityId: id,
-      metadata: { studentId: student.id, nis },
+      metadata: { studentId: student.id, nis, provisioned: Boolean(portalAccount) },
     });
-    return registration;
+
+    if (portalAccount) {
+      await this.notificationEvents.ppdbStatusChanged(registration, actor, meta);
+    }
+
+    return { registration, portalAccount };
   }
 
   async listDocuments(registrationId: string) {

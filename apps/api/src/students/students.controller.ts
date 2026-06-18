@@ -16,6 +16,7 @@ import {
   UseInterceptors,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { Throttle } from "@nestjs/throttler";
 
 import { excelFileInterceptorOptions } from "../common/upload";
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody, ApiParam, ApiResponse } from "@nestjs/swagger";
@@ -38,6 +39,7 @@ import {
   updateStudentGuardianSchema,
   updateStudentSchema,
 } from "./students.dto";
+import { provisionStudentPortalSchema } from "../portal-provisioning/portal-provisioning.dto";
 import { getStudentsImportConfig } from "./students.excel";
 import { StudentsService } from "./students.service";
 
@@ -229,5 +231,36 @@ export class StudentsController {
   @RequirePermissions("students.delete")
   async delete(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser, @Req() request: RequestWithUser) {
     return apiSuccess("Student deleted", await this.studentsService.delete(id, user, getRequestMeta(request)));
+  }
+
+  @ApiOperation({ summary: "Provision student portal account" })
+  @ApiParam({ name: "id", type: String })
+  @ApiResponse({ status: 200, description: "Student portal account provisioned" })
+  @Post(":id/provision-portal")
+  @RequirePermissions("students.provision-portal")
+  async provisionPortal(
+    @Param("id", ParseCuidPipe) id: string,
+    @Body(new ZodValidationPipe(provisionStudentPortalSchema.strict())) body: z.infer<typeof provisionStudentPortalSchema>,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() request: RequestWithUser,
+  ) {
+    return apiSuccess(
+      "Student portal account provisioned",
+      await this.studentsService.provisionPortalAccount(id, body, user, getRequestMeta(request)),
+    );
+  }
+
+  @ApiOperation({ summary: "Reset student portal password" })
+  @ApiParam({ name: "id", type: String })
+  @ApiResponse({ status: 200, description: "Student portal password reset" })
+  @Post(":id/reset-portal-password")
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @RequirePermissions("students.provision-portal")
+  async resetPortalPassword(
+    @Param("id", ParseCuidPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() request: RequestWithUser,
+  ) {
+    return apiSuccess("Student portal password reset", await this.studentsService.resetPortalPassword(id, user, getRequestMeta(request)));
   }
 }

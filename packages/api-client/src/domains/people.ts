@@ -1,5 +1,13 @@
 import type { ApiClientCore } from "../client";
-import type { PeopleListOptions, StudentRecord, GuardianRecord, TeacherRecord, StaffRecord, ImportResult } from "../types";
+import type {
+  PeopleListOptions,
+  PortalAccountCredentials,
+  StudentRecord,
+  GuardianRecord,
+  TeacherRecord,
+  StaffRecord,
+  ImportResult,
+} from "../types";
 
 export function createPeopleApi({ request, downloadFile, uploadFile, triggerBrowserDownload }: ApiClientCore) {
   return {
@@ -37,6 +45,20 @@ export function createPeopleApi({ request, downloadFile, uploadFile, triggerBrow
     async deleteStudent(id: string) {
       const response = await request<{ deleted: boolean; id: string }>(`/students/${id}`, {
         method: "DELETE",
+      });
+      return response.data;
+    },
+    async provisionStudentPortal(id: string, input: { email?: string; sendWelcomeEmail?: boolean } = {}) {
+      const response = await request<PortalAccountCredentials>(`/students/${id}/provision-portal`, {
+        method: "POST",
+        body: JSON.stringify(input),
+      });
+      return response.data;
+    },
+    async resetStudentPortalPassword(id: string) {
+      const response = await request<PortalAccountCredentials>(`/students/${id}/reset-portal-password`, {
+        method: "POST",
+        body: JSON.stringify({}),
       });
       return response.data;
     },

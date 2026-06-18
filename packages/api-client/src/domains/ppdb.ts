@@ -1,5 +1,5 @@
 import type { ApiClientCore } from "../client";
-import type { PpdbPeriodRecord, PpdbRegistrationRecord } from "../types";
+import type { PpdbConvertResult, PpdbPeriodRecord, PpdbRegistrationRecord } from "../types";
 
 export function createPpdbApi({ request, downloadFile }: ApiClientCore) {
   return {
@@ -64,8 +64,18 @@ export function createPpdbApi({ request, downloadFile }: ApiClientCore) {
       });
       return response.data;
     },
-    async convertPpdbRegistration(id: string) {
-      const response = await request<PpdbRegistrationRecord>(`/ppdb/registrations/${id}/convert-to-student`, { method: "POST" });
+    async convertPpdbRegistration(
+      id: string,
+      input: {
+        email?: string;
+        provisionPortalAccount?: boolean;
+        sendWelcomeEmail?: boolean;
+      } = {},
+    ) {
+      const response = await request<PpdbConvertResult>(`/ppdb/registrations/${id}/convert-to-student`, {
+        method: "POST",
+        body: JSON.stringify(input),
+      });
       return response.data;
     },
     async getPpdbSummary() {

@@ -13,6 +13,7 @@ import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { PermissionGuard } from "../auth/guards/permission.guard";
 import { apiSuccess } from "../common/api-response";
 import { PrintDocumentService } from "../pdf/print-document.service";
+import { convertPpdbRegistrationSchema } from "../portal-provisioning/portal-provisioning.dto";
 import {
   adminCreatePpdbRegistrationSchema,
   createPpdbDocumentSchema,
@@ -142,8 +143,14 @@ export class PpdbRegistrationsController {
   @ApiResponse({ status: 401, description: "Unauthorized" })
   @Post(":id/convert-to-student")
   @RequirePermissions("ppdb.convert")
-  async convertToStudent(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser, @Req() request: RequestWithUser) {
-    return apiSuccess("PPDB registration converted to student", await this.service.convertToStudent(id, user, getRequestMeta(request)));
+  async convertToStudent(
+    @Param("id", ParseCuidPipe) id: string,
+    @Body(new ZodValidationPipe(convertPpdbRegistrationSchema.strict())) body: z.infer<typeof convertPpdbRegistrationSchema>,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() request: RequestWithUser,
+  ) {
+    const result = await this.service.convertToStudent(id, body, user, getRequestMeta(request));
+    return apiSuccess("PPDB registration converted to student", result);
   }
 
   @ApiOperation({ summary: "List Documents" })

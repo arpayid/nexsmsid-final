@@ -43,8 +43,8 @@ Terakhir diperbarui: **2026-06-17**
 | UI-S16 | Users + roles polish | ✅ | #35 |
 | UI-S17 | Portal notifications 100% | ✅ | #31 |
 | UI-S18 | Auth & account polish | ✅ | #36 |
-| UI-S19 | Public brand (opsional) | ⏳ | — |
-| UI-S20 | QA sign-off 100% | ✅ | TBD |
+| UI-S19 | Public brand enterprise | ✅ | #38 |
+| UI-S20 | QA sign-off 100% | ✅ | #37 |
 
 **Referensi visual:** `bug/UI refaktor.png`
 
@@ -109,12 +109,14 @@ Setiap perubahan kode mengikuti **D→P→I→V→R** — lihat [WORKFLOW.md](WO
 | #34 | UI-S15 ResourceCrudPage batch 3 |
 | #35 | UI-S16 users & roles polish |
 | #36 | UI-S18 auth & account polish |
+| #37 | UI-S20 enterprise sign-off |
+| #38 | UI-S19 public site brand |
 
 ## Backlog lokal
 
 | Task | Next step |
 |------|-----------|
-| UI Enterprise 2026 | ✅ **100% admin mockup** (S1–S18 + S20); S19 public opsional |
+| UI Enterprise 2026 | ✅ **100%** (S1–S20); prod rebuild post-S19 ✅ |
 | Fase 4 go-live | HTTPS domain nyata + certbot (saat DNS siap) |
 | QA manual browser | Dark mode, mobile nav, skip link (disarankan) |
 
@@ -126,3 +128,4 @@ Setiap perubahan kode mengikuti **D→P→I→V→R** — lihat [WORKFLOW.md](WO
 | 2026-06-17 | UI-S8 merged (#26); prod rebuild + `pnpm prod:smoke` 17/17; HTTPS staging OK |
 | 2026-06-17 | Sesi workflow Plan→Desain→Build→Review→PR→Merge: S13–S18 merged (#32–#36) |
 | 2026-06-17 | UI-S20 sign-off: audit 10/10, `prod:smoke` 17/17, program admin mockup 100% ✅ |
+| 2026-06-17 | UI-S19 public brand (#38); prod rebuild + smoke 17/17 post-merge |
