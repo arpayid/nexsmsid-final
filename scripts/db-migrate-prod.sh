@@ -9,7 +9,7 @@ cd "$ROOT_DIR"
 
 COMPOSE=(docker compose --env-file .env.production -f docker-compose.prod.yml)
 
-if ! "${COMPOSE[@]}" ps --status running api 2>/dev/null | grep -qx api; then
+if ! "${COMPOSE[@]}" ps --status running --services api 2>/dev/null | grep -qx api; then
   echo "Error: prod API container is not running. Run: pnpm docker:prod:up" >&2
   exit 1
 fi
