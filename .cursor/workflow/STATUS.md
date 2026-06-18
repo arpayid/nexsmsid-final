@@ -121,7 +121,7 @@ Setiap perubahan kode mengikuti **D→P→I→V→R** — lihat [WORKFLOW.md](WO
 | UI Enterprise 2026 | ✅ **100%** (S1–S20); prod rebuild post-S19 ✅ |
 | Fase 4 go-live | HTTPS domain nyata + certbot (saat DNS siap) |
 | Rebuild prod Docker | ✅ Sync image post-#39/#40 (2026-06-18) |
-| QA manual browser | Dark mode, mobile nav, skip link (disarankan) |
+| QA manual browser | ✅ Dark mode, mobile nav, skip link (P2 2026-06-18) |
 
 ## Log singkat
 
@@ -135,3 +135,4 @@ Setiap perubahan kode mengikuti **D→P→I→V→R** — lihat [WORKFLOW.md](WO
 | 2026-06-18 | Audit penuh: quality gates ✅, prod smoke 17/17, docker 14/14 PASS |
 | 2026-06-18 | PPDB portal provision (#39) + multer fix (#40) merged; permission OK prod |
 | 2026-06-18 | P1 prod sync: rebuild Docker, migrate via API container, smoke 17/17 |
+| 2026-06-18 | P2 browser QA: dark mode, mobile nav, skip link; AuthPageShell a11y |
