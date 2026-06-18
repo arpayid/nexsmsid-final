@@ -1,6 +1,6 @@
 # Project Status — NexSMSID V4
 
-Terakhir diperbarui: **2026-06-17**
+Terakhir diperbarui: **2026-06-18**
 
 ## Fase aktif
 
@@ -111,6 +111,8 @@ Setiap perubahan kode mengikuti **D→P→I→V→R** — lihat [WORKFLOW.md](WO
 | #36 | UI-S18 auth & account polish |
 | #37 | UI-S20 enterprise sign-off |
 | #38 | UI-S19 public site brand |
+| #39 | PPDB portal auto-provision + RBAC migration |
+| #40 | multer >=2.2.0 CI audit gate |
 
 ## Backlog lokal
 
@@ -118,6 +120,7 @@ Setiap perubahan kode mengikuti **D→P→I→V→R** — lihat [WORKFLOW.md](WO
 |------|-----------|
 | UI Enterprise 2026 | ✅ **100%** (S1–S20); prod rebuild post-S19 ✅ |
 | Fase 4 go-live | HTTPS domain nyata + certbot (saat DNS siap) |
+| Rebuild prod Docker | ✅ Sync image post-#39/#40 (2026-06-18) |
 | QA manual browser | Dark mode, mobile nav, skip link (disarankan) |
 
 ## Log singkat
@@ -129,3 +132,6 @@ Setiap perubahan kode mengikuti **D→P→I→V→R** — lihat [WORKFLOW.md](WO
 | 2026-06-17 | Sesi workflow Plan→Desain→Build→Review→PR→Merge: S13–S18 merged (#32–#36) |
 | 2026-06-17 | UI-S20 sign-off: audit 10/10, `prod:smoke` 17/17, program admin mockup 100% ✅ |
 | 2026-06-17 | UI-S19 public brand (#38); prod rebuild + smoke 17/17 post-merge |
+| 2026-06-18 | Audit penuh: quality gates ✅, prod smoke 17/17, docker 14/14 PASS |
+| 2026-06-18 | PPDB portal provision (#39) + multer fix (#40) merged; permission OK prod |
+| 2026-06-18 | P1 prod sync: rebuild Docker, migrate via API container, smoke 17/17 |
