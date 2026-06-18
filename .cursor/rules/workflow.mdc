@@ -1,0 +1,42 @@
+---
+description: Ikuti workflow project NexSMSID V4 sebelum dan selama pengerjaan — baca STATUS.md dan skill nexsmsid-v4-workflow
+alwaysApply: true
+---
+
+# Workflow Wajib
+
+Sebelum mengerjakan project ini:
+
+1. Baca `.cursor/workflow/STATUS.md` untuk fase aktif, blocker, dan backlog
+2. Ikuti skill `nexsmsid-v4-workflow` (`.cursor/skills/nexsmsid-v4-workflow/SKILL.md`)
+3. Setiap task kode: siklus **D→P→I→V→R** (Discover → Plan → Implement → Verify → Report)
+4. Quality gate harus mirror CI sebelum menyatakan task selesai
+5. Commit dan push **hanya** jika user minta eksplisit
+
+**Fase aktif saat ini:** Fase 4 — Production Pilot · **Program UI:** UI Enterprise 2026 (lihat `STATUS.md`).
+
+## UI Enterprise 2026
+
+Task visual/UI **wajib** skill `nexsmsid-ui-enterprise`:
+
+**Audit → Plan → Eksekusi → Validasi → PR → Merge (CI hijau)**
+
+Dokumen: `.cursor/workflow/UI-ENTERPRISE-2026.md` · Plan: `UI-PLAN.md`
+
+## D→P→I→V→R (ringkas)
+
+| Langkah | Wajib |
+|---------|-------|
+| **D** | Scope jelas; baca STATUS + route skill; jangan coding dulu |
+| **P** | Daftar file; task besar → konfirmasi user |
+| **I** | Minimal diff; pola `nexsmsid-v4` |
+| **V** | Tier verify sesuai scope (web/API/full) — lihat WORKFLOW.md |
+| **R** | Laporkan hasil; update STATUS jika fase/blocker berubah |
+
+## Dev vs production pilot
+
+- **Preview / develop UI:** native dev atau `pnpm dev` → `:3000`
+- **Deploy pilot:** `pnpm docker:prod:build` + `docker:prod:up` → nginx `:80`
+- Jangan anggap perubahan di `:3000` otomatis muncul di Docker prod
+
+Fitur baru (Fase 5+) diperbolehkan setelah Fase 1 ✅; ikuti tetap D→P→I→V→R dan tier verify.
