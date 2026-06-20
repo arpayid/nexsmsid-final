@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, ServiceUnavailableException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 import { PrismaService } from "../database/prisma.service";
@@ -10,11 +10,16 @@ export class HealthService {
     @Inject(PrismaService) private readonly prisma: PrismaService,
   ) {}
 
-  getBasicHealth() {
-    return {
-      status: "ok" as const,
-      timestamp: new Date().toISOString(),
-    };
+  async getBasicHealth() {
+    try {
+      await this.prisma.$queryRaw`SELECT 1`;
+      return {
+        status: "ok" as const,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      throw new ServiceUnavailableException("Database connection failed");
+    }
   }
 
   async getDetailedHealth() {

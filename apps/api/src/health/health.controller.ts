@@ -15,16 +15,16 @@ export class HealthController {
   @ApiResponse({ status: 200, description: "Health get root health" })
   @Public()
   @Get("health")
-  getRootHealth() {
-    return apiSuccess("Health check OK", this.healthService.getBasicHealth());
+  async getRootHealth() {
+    return apiSuccess("Health check OK", await this.healthService.getBasicHealth());
   }
 
   @ApiOperation({ summary: "Get Prefixed Health" })
   @ApiResponse({ status: 200, description: "Health get prefixed health" })
   @Public()
   @Get("api/v1/health")
-  getPrefixedHealth() {
-    return apiSuccess("Health check OK", this.healthService.getBasicHealth());
+  async getPrefixedHealth() {
+    return apiSuccess("Health check OK", await this.healthService.getBasicHealth());
   }
 
   @ApiOperation({ summary: "Get Detailed Root Health" })

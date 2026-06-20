@@ -336,14 +336,14 @@ export class InventoryService {
         },
       });
 
-      let newQty = item.quantity;
+      const updateData: Prisma.InventoryItemUncheckedUpdateInput = {};
+      
       if (dto.type === "IN" || dto.type === "RETURN") {
-        newQty += dto.quantity;
+        updateData.quantity = { increment: dto.quantity };
       } else if (dto.type === "OUT" || dto.type === "BORROW" || dto.type === "DISPOSAL") {
-        newQty -= dto.quantity;
+        updateData.quantity = { decrement: dto.quantity };
       }
 
-      const updateData: Prisma.InventoryItemUncheckedUpdateInput = { quantity: newQty };
       if (dto.type === "TRANSFER") {
         updateData.locationId = dto.toLocationId;
       }

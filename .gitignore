@@ -71,3 +71,4 @@ docker/nginx/conf.d/https.conf
 dump.rdb
 appendonlydir/
 apps/web/tsconfig.tsbuildinfo
+railway-config/

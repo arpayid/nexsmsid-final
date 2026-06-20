@@ -2,16 +2,15 @@
 
 import { Globe } from "lucide-react";
 import { Button } from "@nexsmsid/ui";
-import { getStoredLocale } from "../lib/use-translations";
+import { useTranslations } from "../lib/use-translations";
 import type { Locale } from "../i18n";
 
 export function LocaleSwitcher() {
-  const current: Locale = getStoredLocale();
+  const { locale: current, setLocale } = useTranslations();
 
   function toggle() {
     const next: Locale = current === "id" ? "en" : "id";
-    localStorage.setItem("nexsmsid.locale", next);
-    window.location.reload();
+    setLocale(next);
   }
 
   return (

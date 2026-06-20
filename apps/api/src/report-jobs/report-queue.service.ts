@@ -52,10 +52,9 @@ export class ReportQueueService implements OnModuleInit, OnModuleDestroy {
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown queue error";
       this.logger.warn(`Unable to enqueue report job ${reportJobId}: ${message}. Processing directly.`);
+      // Process directly as fallback if queue fails
+      await this.processReportJob(reportJobId);
     }
-
-    // Still process directly if queue fails or for sync behavior in dev
-    await this.processReportJob(reportJobId);
   }
 
   async removeReportJob(reportJobId: string) {

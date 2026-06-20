@@ -45,14 +45,13 @@ jobs:
       - name: Ensure PostgreSQL and Redis
         run: chmod +x ./scripts/ci-services.sh && ./scripts/ci-services.sh start
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Set up Node.js 24
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: pnpm
+
+      - name: Enable Corepack and Install pnpm
+        run: corepack enable pnpm
 
       - name: Prepare cache directories
         run: |
