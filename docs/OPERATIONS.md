@@ -9,11 +9,11 @@ Lihat juga: [DEPLOY-PER-CUSTOMER.md](DEPLOY-PER-CUSTOMER.md) · [SALES-READINESS
 
 ## Peran & eskalasi
 
-| Tingkat | Siapa | Tugas |
-|---------|-------|--------|
-| **L1** | Admin sekolah / helpdesk Anda | Login gagal, reset password, isi profil sekolah, cek URL/domain |
-| **L2** | Teknis deploy (Anda / mitra) | Restart container, backup/restore, update versi, nginx/SSL |
-| **L3** | Pengembang produk | Bug aplikasi, migrasi DB kompleks, patch keamanan |
+| Tingkat | Siapa                         | Tugas                                                           |
+| ------- | ----------------------------- | --------------------------------------------------------------- |
+| **L1**  | Admin sekolah / helpdesk Anda | Login gagal, reset password, isi profil sekolah, cek URL/domain |
+| **L2**  | Teknis deploy (Anda / mitra)  | Restart container, backup/restore, update versi, nginx/SSL      |
+| **L3**  | Pengembang produk             | Bug aplikasi, migrasi DB kompleks, patch keamanan               |
 
 **Batas L1:** jangan berikan akses root server ke admin sekolah kecuali disepakati.
 
@@ -101,13 +101,13 @@ pnpm db:seed:prod
 
 ## Pemulihan cepat
 
-| Gejala | Tindakan |
-|--------|----------|
-| Situs tidak bisa diakses | `docker compose -f docker-compose.prod.yml ps` → `pnpm docker:prod:up` |
-| API 502 | Cek log API: `docker compose -f docker-compose.prod.yml logs api --tail 100` |
-| Login 401 massal | Cek `WEB_ORIGIN` / `CORS_ORIGIN` cocok dengan URL browser |
-| DB penuh / corrupt | Stop traffic, `pnpm restore` dari backup terakhir |
-| Disk penuh | Bersihkan log Docker / rotasi backup lama |
+| Gejala                   | Tindakan                                                                     |
+| ------------------------ | ---------------------------------------------------------------------------- |
+| Situs tidak bisa diakses | `docker compose -f docker-compose.prod.yml ps` → `pnpm docker:prod:up`       |
+| API 502                  | Cek log API: `docker compose -f docker-compose.prod.yml logs api --tail 100` |
+| Login 401 massal         | Cek `WEB_ORIGIN` / `CORS_ORIGIN` cocok dengan URL browser                    |
+| DB penuh / corrupt       | Stop traffic, `pnpm restore` dari backup terakhir                            |
+| Disk penuh               | Bersihkan log Docker / rotasi backup lama                                    |
 
 ---
 
@@ -130,4 +130,4 @@ pnpm db:seed:prod
 
 ---
 
-*Runbook ini melengkapi skor operasional 10/10 di [SALES-READINESS.md](SALES-READINESS.md).*
+_Runbook ini melengkapi skor operasional 10/10 di [SALES-READINESS.md](SALES-READINESS.md)._

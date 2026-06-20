@@ -7,11 +7,11 @@ description: Develop, debug, and extend NexSMSID V4 — enterprise school manage
 
 ## Stack (jangan improvisasi stack lain)
 
-| Layer | Path | Tech |
-|-------|------|------|
-| API | `apps/api` | NestJS 11, Prisma 6, PostgreSQL 16, Redis 7, BullMQ |
-| Web | `apps/web` | Next.js 15 App Router, React 19, Tailwind, `@nexsmsid/ui` |
-| Shared | `packages/types`, `packages/api-client`, `packages/ui` | pnpm workspace |
+| Layer  | Path                                                   | Tech                                                      |
+| ------ | ------------------------------------------------------ | --------------------------------------------------------- |
+| API    | `apps/api`                                             | NestJS 11, Prisma 6, PostgreSQL 16, Redis 7, BullMQ       |
+| Web    | `apps/web`                                             | Next.js 15 App Router, React 19, Tailwind, `@nexsmsid/ui` |
+| Shared | `packages/types`, `packages/api-client`, `packages/ui` | pnpm workspace                                            |
 
 API prefix: `/api/v1` · Dev ports: API `4000`, Web `3000`
 
@@ -92,35 +92,35 @@ Checklist minimal:
 
 ## Portals & routing
 
-| Portal | Path prefix | Claim JWT `portal` |
-|--------|-------------|-------------------|
-| Admin | `/admin` | `admin` |
-| Teacher | `/teacher` | `teacher` |
-| Student | `/student` | `student` |
-| Guardian | `/guardian` | `guardian` |
-| Public | `/`, `/ppdb`, `/login` | — |
+| Portal   | Path prefix            | Claim JWT `portal` |
+| -------- | ---------------------- | ------------------ |
+| Admin    | `/admin`               | `admin`            |
+| Teacher  | `/teacher`             | `teacher`          |
+| Student  | `/student`             | `student`          |
+| Guardian | `/guardian`            | `guardian`         |
+| Public   | `/`, `/ppdb`, `/login` | —                  |
 
 Portal helpers: `packages/types` → `portalHomePath`, `resolvePortalForUser`.
 
 ## Infra naming (v4 only)
 
-| Context | Docker compose project |
-|---------|------------------------|
-| Local dev | `nexsmsid-v4` |
-| CI | `nexsmsid-v4-ci` |
-| Production | `nexsmsid-v4-prod` |
+| Context    | Docker compose project |
+| ---------- | ---------------------- |
+| Local dev  | `nexsmsid-v4`          |
+| CI         | `nexsmsid-v4-ci`       |
+| Production | `nexsmsid-v4-prod`     |
 
 Jangan pakai `nexsmsid-ci` atau referensi repo v3.
 
 ## Kapan buat file baru vs reuse
 
-| Kebutuhan | Gunakan |
-|-----------|---------|
+| Kebutuhan        | Gunakan                                                             |
+| ---------------- | ------------------------------------------------------------------- |
 | CRUD master data | `BaseMasterDataService` + `MasterDataController` + `MasterDataPage` |
-| CRUD orang | `BasePeopleService` + `PeoplePage` |
-| Laporan/export | `report-engine/`, `report-jobs/` (BullMQ + Redis) |
-| Notifikasi | `notifications/` (email, WhatsApp opsional) |
-| PPDB publik | `public-ppdb/` + captcha |
+| CRUD orang       | `BasePeopleService` + `PeoplePage`                                  |
+| Laporan/export   | `report-engine/`, `report-jobs/` (BullMQ + Redis)                   |
+| Notifikasi       | `notifications/` (email, WhatsApp opsional)                         |
+| PPDB publik      | `public-ppdb/` + captcha                                            |
 
 ## Referensi detail
 

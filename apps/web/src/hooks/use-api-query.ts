@@ -19,7 +19,12 @@ export function useApiQuery<T>(queryFn: () => Promise<T>, deps: unknown[] = [], 
     return await queryFn();
   };
 
-  const { data, error: swrError, isLoading: loading, mutate } = useSWR<T>(key, fetcher, {
+  const {
+    data,
+    error: swrError,
+    isLoading: loading,
+    mutate,
+  } = useSWR<T>(key, fetcher, {
     revalidateOnFocus: false, // Prevents aggressive refetching unless specifically requested
   });
 
@@ -34,19 +39,22 @@ export function useApiQuery<T>(queryFn: () => Promise<T>, deps: unknown[] = [], 
   }, [mutate]);
 
   // Provide a way to manually overwrite data locally if required by some components
-  const setData = useCallback((newData: T | null) => {
-    setLocalData(newData);
-    if (newData !== null) {
-      void mutate(newData, false);
-    }
-  }, [mutate]);
+  const setData = useCallback(
+    (newData: T | null) => {
+      setLocalData(newData);
+      if (newData !== null) {
+        void mutate(newData, false);
+      }
+    },
+    [mutate],
+  );
 
   const setError = useCallback((newError: string | null) => {
     // Cannot easily set SWR error manually, but backwards compatibility might not strictly need manual errors
   }, []);
 
   return {
-    data: localData !== null ? localData : data ?? null,
+    data: localData !== null ? localData : (data ?? null),
     error,
     loading,
     refetch,

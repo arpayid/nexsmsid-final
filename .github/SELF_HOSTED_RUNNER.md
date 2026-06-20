@@ -4,14 +4,14 @@ Workflow CI memakai **self-hosted runner** dengan label `self-hosted`, `linux`, 
 
 ## Prasyarat di mesin runner
 
-| Komponen | Versi minimum |
-|----------|----------------|
-| OS | Linux (Ubuntu 22.04+ disarankan) |
-| Node.js | 22.x |
-| Docker Engine + Compose plugin | Terbaru stabil |
+| Komponen                         | Versi minimum                       |
+| -------------------------------- | ----------------------------------- |
+| OS                               | Linux (Ubuntu 22.04+ disarankan)    |
+| Node.js                          | 22.x                                |
+| Docker Engine + Compose plugin   | Terbaru stabil                      |
 | PostgreSQL client (`pg_isready`) | Disarankan — mempercepat warm start |
-| Redis tools (`redis-cli`) | Disarankan — mempercepat warm start |
-| Git | 2.x |
+| Redis tools (`redis-cli`)        | Disarankan — mempercepat warm start |
+| Git                              | 2.x                                 |
 
 Port **5432** (PostgreSQL) dan **6379** (Redis) harus bebas saat job CI berjalan.
 
@@ -60,14 +60,14 @@ Project Compose terisolasi: `nexsmsid-v4-ci` (terpisah dari dev `nexsmsid-v4`).
 
 ### Percepatan CI (disarankan di VPS)
 
-| Optimasi | Efek |
-|----------|------|
-| `CI_KEEP_SERVICES=1` (default di workflow) | Postgres/Redis tetap hidup antar job |
-| Warm start (`pg_isready` + `redis-cli`) | Lewati `docker compose up` jika layanan sudah sehat |
-| `pnpm install --prefer-offline` + cache pnpm | Install lebih cepat dari store lokal |
-| `TURBO_CACHE_DIR` di `$HOME/.cache/turbo` | Rebuild Turbo cache hit antar job |
-| Paralel: format + lint + API unit tests | 3 langkah berjalan bersamaan |
-| `concurrency: cancel-in-progress` | Batalkan run lama saat push baru |
+| Optimasi                                     | Efek                                                |
+| -------------------------------------------- | --------------------------------------------------- |
+| `CI_KEEP_SERVICES=1` (default di workflow)   | Postgres/Redis tetap hidup antar job                |
+| Warm start (`pg_isready` + `redis-cli`)      | Lewati `docker compose up` jika layanan sudah sehat |
+| `pnpm install --prefer-offline` + cache pnpm | Install lebih cepat dari store lokal                |
+| `TURBO_CACHE_DIR` di `$HOME/.cache/turbo`    | Rebuild Turbo cache hit antar job                   |
+| Paralel: format + lint + API unit tests      | 3 langkah berjalan bersamaan                        |
+| `concurrency: cancel-in-progress`            | Batalkan run lama saat push baru                    |
 
 Pasang client health-check:
 
@@ -98,10 +98,10 @@ pnpm --filter @nexsmsid/api test
 
 ## 5. Troubleshooting
 
-| Gejala | Solusi |
-|--------|--------|
-| Job stuck di queue | Runner offline atau label tidak cocok (`nexsmsid-v4`) |
-| Port 5432/6379 in use | Hentikan stack Docker lain atau ubah port |
-| `docker compose` not found | Pasang [Compose plugin](https://docs.docker.com/compose/install/linux/) |
-| Permission denied Docker | `sudo usermod -aG docker <user>` lalu restart service runner |
-| Migrasi gagal | Pastikan `./scripts/ci-services.sh start` sukses dan `DATABASE_URL` ke `nexsmsid_test` |
+| Gejala                     | Solusi                                                                                 |
+| -------------------------- | -------------------------------------------------------------------------------------- |
+| Job stuck di queue         | Runner offline atau label tidak cocok (`nexsmsid-v4`)                                  |
+| Port 5432/6379 in use      | Hentikan stack Docker lain atau ubah port                                              |
+| `docker compose` not found | Pasang [Compose plugin](https://docs.docker.com/compose/install/linux/)                |
+| Permission denied Docker   | `sudo usermod -aG docker <user>` lalu restart service runner                           |
+| Migrasi gagal              | Pastikan `./scripts/ci-services.sh start` sukses dan `DATABASE_URL` ke `nexsmsid_test` |

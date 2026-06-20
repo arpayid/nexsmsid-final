@@ -4,16 +4,16 @@
 
 ## Smoke test per domain
 
-| Domain | URL | Alur | Status |
-|--------|-----|------|--------|
-| Master data | `/admin/master-data/departments` | CRUD 1 record | [ ] |
-| People | `/admin/students` | Create → list | [ ] |
-| Akademik | `/admin/academic/schedules` | View jadwal | [ ] |
-| Keuangan | `/admin/finance/invoices` | List tagihan | [ ] |
-| PPDB | `/ppdb/register` + `/admin/ppdb` | Daftar → verifikasi | [ ] |
-| Portal teacher | `/teacher` | Login guru | [ ] |
-| Portal student | `/student` | Login siswa | [ ] |
-| Portal guardian | `/guardian` | Login wali | [ ] |
+| Domain          | URL                              | Alur                | Status |
+| --------------- | -------------------------------- | ------------------- | ------ |
+| Master data     | `/admin/master-data/departments` | CRUD 1 record       | [ ]    |
+| People          | `/admin/students`                | Create → list       | [ ]    |
+| Akademik        | `/admin/academic/schedules`      | View jadwal         | [ ]    |
+| Keuangan        | `/admin/finance/invoices`        | List tagihan        | [ ]    |
+| PPDB            | `/ppdb/register` + `/admin/ppdb` | Daftar → verifikasi | [ ]    |
+| Portal teacher  | `/teacher`                       | Login guru          | [ ]    |
+| Portal student  | `/student`                       | Login siswa         | [ ]    |
+| Portal guardian | `/guardian`                      | Login wali          | [ ]    |
 
 ## CI maintenance (paralel)
 

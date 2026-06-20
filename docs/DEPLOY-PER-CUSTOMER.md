@@ -9,12 +9,12 @@ Lihat juga: [README.md](../README.md) (deploy umum) · [SALES-READINESS.md](SALE
 
 ## Model penjualan
 
-| Aspek | Pola |
-|-------|------|
+| Aspek                              | Pola                                                    |
+| ---------------------------------- | ------------------------------------------------------- |
 | Multi-tenant satu DB banyak domain | **Tidak** — setiap pelanggan punya stack Docker sendiri |
-| Ganti domain | **Ya** — lewat `.env.production` + nginx |
-| Ganti nama/logo sekolah | **Ya** — Admin → Profil Sekolah (database) |
-| Brand produk (NexAdmin / NexSMSID) | Tetap di UI; bukan domain pelanggan |
+| Ganti domain                       | **Ya** — lewat `.env.production` + nginx                |
+| Ganti nama/logo sekolah            | **Ya** — Admin → Profil Sekolah (database)              |
+| Brand produk (NexAdmin / NexSMSID) | Tetap di UI; bukan domain pelanggan                     |
 
 ---
 
@@ -22,24 +22,24 @@ Lihat juga: [README.md](../README.md) (deploy umum) · [SALES-READINESS.md](SALE
 
 Salin `.env.production.example` → `.env.production` di server pelanggan.
 
-| Variabel | Contoh | Catatan |
-|----------|--------|---------|
-| `WEB_ORIGIN` | `https://sms.smkcontoh.sch.id` | **Harus persis** URL yang dibuka user (skema + host) |
-| `CORS_ORIGIN` | sama dengan `WEB_ORIGIN` | Dipakai CORS API & cookie auth |
-| `NEXT_PUBLIC_APP_URL` | sama dengan `WEB_ORIGIN` | Sitemap / robots |
-| `NEXT_PUBLIC_API_URL` | `/api/v1` | Tetap relatif jika di belakang nginx |
-| `JWT_ACCESS_SECRET` | `openssl rand -base64 64` | Unik per instalasi, ≥64 karakter |
-| `JWT_REFRESH_SECRET` | `openssl rand -base64 64` | Beda dari access secret |
-| `POSTGRES_PASSWORD` | strong random | Update juga di `DATABASE_URL` |
-| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | dari Cloudflare Turnstile | Hostname harus domain pelanggan |
-| `TURNSTILE_SECRET_KEY` | pasangan site key | Wajib di `NODE_ENV=production` |
+| Variabel                         | Contoh                         | Catatan                                              |
+| -------------------------------- | ------------------------------ | ---------------------------------------------------- |
+| `WEB_ORIGIN`                     | `https://sms.smkcontoh.sch.id` | **Harus persis** URL yang dibuka user (skema + host) |
+| `CORS_ORIGIN`                    | sama dengan `WEB_ORIGIN`       | Dipakai CORS API & cookie auth                       |
+| `NEXT_PUBLIC_APP_URL`            | sama dengan `WEB_ORIGIN`       | Sitemap / robots                                     |
+| `NEXT_PUBLIC_API_URL`            | `/api/v1`                      | Tetap relatif jika di belakang nginx                 |
+| `JWT_ACCESS_SECRET`              | `openssl rand -base64 64`      | Unik per instalasi, ≥64 karakter                     |
+| `JWT_REFRESH_SECRET`             | `openssl rand -base64 64`      | Beda dari access secret                              |
+| `POSTGRES_PASSWORD`              | strong random                  | Update juga di `DATABASE_URL`                        |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | dari Cloudflare Turnstile      | Hostname harus domain pelanggan                      |
+| `TURNSTILE_SECRET_KEY`           | pasangan site key              | Wajib di `NODE_ENV=production`                       |
 
 **Opsional:**
 
-| Variabel | Kapan |
-|----------|--------|
+| Variabel                      | Kapan                                                            |
+| ----------------------------- | ---------------------------------------------------------------- |
 | `PPDB_PROVISION_EMAIL_DOMAIN` | Domain email default akun portal siswa (mis. `smkcontoh.sch.id`) |
-| `SMTP_*` | Email welcome / notifikasi |
+| `SMTP_*`                      | Email welcome / notifikasi                                       |
 
 Validasi sebelum deploy:
 
@@ -142,12 +142,12 @@ Data PostgreSQL **tidak** perlu di-reset hanya karena ganti domain.
 
 ## Smoke test minimum
 
-| Check | Perintah / aksi |
-|-------|------------------|
-| Health | `curl -f https://<domain>/api/v1/health` |
-| Otomatis | `pnpm prod:smoke https://<domain>` → target 17/17 |
-| Manual | Login superadmin, dashboard admin, `/ppdb/register` publik |
-| Portal | Login guru/siswa/wali (setelah ganti password seed) |
+| Check    | Perintah / aksi                                            |
+| -------- | ---------------------------------------------------------- |
+| Health   | `curl -f https://<domain>/api/v1/health`                   |
+| Otomatis | `pnpm prod:smoke https://<domain>` → target 17/17          |
+| Manual   | Login superadmin, dashboard admin, `/ppdb/register` publik |
+| Portal   | Login guru/siswa/wali (setelah ganti password seed)        |
 
 ---
 
@@ -162,24 +162,24 @@ Data PostgreSQL **tidak** perlu di-reset hanya karena ganti domain.
 
 ## Troubleshooting singkat
 
-| Gejala | Penyebab umum |
-|--------|----------------|
-| Login gagal / cookie tidak tersimpan | `WEB_ORIGIN` tidak sama dengan URL di address bar |
-| CORS error | `CORS_ORIGIN` / `WEB_ORIGIN` salah skema (`http` vs `https`) |
-| Turnstile gagal | Site key tidak mencakup hostname domain production |
-| `db:migrate:prod` gagal dari host | Gunakan `pnpm db:migrate:prod` (jalan di dalam container API) |
-| Redirect loop HTTPS | `server_name` nginx tidak cocok dengan domain |
+| Gejala                               | Penyebab umum                                                 |
+| ------------------------------------ | ------------------------------------------------------------- |
+| Login gagal / cookie tidak tersimpan | `WEB_ORIGIN` tidak sama dengan URL di address bar             |
+| CORS error                           | `CORS_ORIGIN` / `WEB_ORIGIN` salah skema (`http` vs `https`)  |
+| Turnstile gagal                      | Site key tidak mencakup hostname domain production            |
+| `db:migrate:prod` gagal dari host    | Gunakan `pnpm db:migrate:prod` (jalan di dalam container API) |
+| Redirect loop HTTPS                  | `server_name` nginx tidak cocok dengan domain                 |
 
 ---
 
 ## Referensi skrip
 
-| Skrip | Fungsi |
-|-------|--------|
-| `pnpm validate:prod-env` | Validasi `.env.production` |
-| `pnpm docker:prod:build` / `up` | Stack production |
-| `pnpm db:migrate:prod` | Prisma migrate di container API |
-| `pnpm db:seed:prod` | Seed first deploy |
-| `pnpm prod:smoke [URL]` | Smoke test HTTP/API |
-| `pnpm backup` / `pnpm restore` | Operasional database |
+| Skrip                           | Fungsi                            |
+| ------------------------------- | --------------------------------- |
+| `pnpm validate:prod-env`        | Validasi `.env.production`        |
+| `pnpm docker:prod:build` / `up` | Stack production                  |
+| `pnpm db:migrate:prod`          | Prisma migrate di container API   |
+| `pnpm db:seed:prod`             | Seed first deploy                 |
+| `pnpm prod:smoke [URL]`         | Smoke test HTTP/API               |
+| `pnpm backup` / `pnpm restore`  | Operasional database              |
 | `scripts/setup-https-domain.sh` | Generate `https.conf` dari domain |

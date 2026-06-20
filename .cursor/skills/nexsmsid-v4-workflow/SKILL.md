@@ -16,12 +16,12 @@ compatibility: Requires .cursor/workflow/STATUS.md and WORKFLOW.md
 
 ## Fase project
 
-| Fase | Nama | Checklist |
-|------|------|-----------|
-| 0 | Inisialisasi | `checklists/phase-0-init.md` ✅ |
-| 1 | Dev Ready | `checklists/phase-1-dev-ready.md` ✅ |
-| 2 | Quality | `checklists/phase-2-quality.md` ✅ |
-| 3 | Hardening | `checklists/phase-3-hardening.md` ✅ |
+| Fase  | Nama                 | Checklist                                      |
+| ----- | -------------------- | ---------------------------------------------- |
+| 0     | Inisialisasi         | `checklists/phase-0-init.md` ✅                |
+| 1     | Dev Ready            | `checklists/phase-1-dev-ready.md` ✅           |
+| 2     | Quality              | `checklists/phase-2-quality.md` ✅             |
+| 3     | Hardening            | `checklists/phase-3-hardening.md` ✅           |
 | **4** | **Production Pilot** | `checklists/phase-4-production.md` ← **AKTIF** |
 
 **Blocker saat ini:** HTTPS domain (opsional untuk pilot lokal) — lihat `STATUS.md`.
@@ -49,16 +49,19 @@ Discover → Plan → Implement → Verify → Report
 Detail: `.cursor/workflow/checklists/task-cycle.md`
 
 ### Discover
+
 - Route skill via `nexsmsid-v4-master`
 - Cek `nexsmsid-v4/modules.md` untuk domain terkait
 - Scope harus jelas sebelum edit file
 
 ### Plan
+
 - Minimal file list
 - Cek: migration, permission, api-client, web page
 - Task besar: plan ke user dulu
 
 ### Implement
+
 - Ikuti `nexsmsid-v4` skill — BaseMasterDataService, `@RequirePermissions`, `apiSuccess()`
 - Minimal diff
 
@@ -75,27 +78,28 @@ pnpm audit --audit-level high
 Tier minimum per scope — lihat `.cursor/workflow/WORKFLOW.md`.
 
 ### Report
+
 - Ringkas ke user
 - Update `STATUS.md` jika fase/blocker/backlog berubah
 - **Commit/PR hanya jika user minta eksplisit**
 
 ## Dev vs Docker
 
-| Tujuan | Perintah | URL |
-|--------|----------|-----|
-| Preview UI | `pnpm dev` atau `next dev -p 3000` | `:3000` |
+| Tujuan           | Perintah                                        | URL         |
+| ---------------- | ----------------------------------------------- | ----------- |
+| Preview UI       | `pnpm dev` atau `next dev -p 3000`              | `:3000`     |
 | Production pilot | `pnpm docker:prod:build && pnpm docker:prod:up` | nginx `:80` |
 
 Setelah merge PR web: rebuild prod images agar pilot dapat UI terbaru.
 
 ## Git & CI
 
-| Aturan | Nilai |
-|--------|-------|
-| Base | `main` |
-| Branch | `feat/`, `fix/`, `chore/`, `cursor/` |
-| CI | Self-hosted `nexsmsid-v4`, compose `nexsmsid-v4-ci` |
-| Force push main | Dilarang |
+| Aturan          | Nilai                                               |
+| --------------- | --------------------------------------------------- |
+| Base            | `main`                                              |
+| Branch          | `feat/`, `fix/`, `chore/`, `cursor/`                |
+| CI              | Self-hosted `nexsmsid-v4`, compose `nexsmsid-v4-ci` |
+| Force push main | Dilarang                                            |
 
 ## Bootstrap Fase 1 (jalankan jika diminta)
 

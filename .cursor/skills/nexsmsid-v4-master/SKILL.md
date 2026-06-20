@@ -37,12 +37,12 @@ nexsmsid-v4/
 └── .cursor/skills/               skill lokal (tidak di-commit)
 ```
 
-| Layer | Path | Port / prefix |
-|-------|------|---------------|
-| API | `apps/api` | `:4000`, `/api/v1` |
-| Web | `apps/web` | `:3000` |
-| DB | Docker postgres | `:5432` |
-| Queue | Docker redis + BullMQ | `:6379` |
+| Layer | Path                  | Port / prefix      |
+| ----- | --------------------- | ------------------ |
+| API   | `apps/api`            | `:4000`, `/api/v1` |
+| Web   | `apps/web`            | `:3000`            |
+| DB    | Docker postgres       | `:5432`            |
+| Queue | Docker redis + BullMQ | `:6379`            |
 
 Package scope: `@nexsmsid/*` · Package manager: `pnpm@10` · Build: Turbo
 
@@ -52,32 +52,32 @@ Package scope: `@nexsmsid/*` · Package manager: `pnpm@10` · Build: Turbo
 
 ### Lokal (`.cursor/skills/`)
 
-| Skill | Path | Gunakan saat |
-|-------|------|--------------|
-| **nexsmsid-v4-workflow** | `nexsmsid-v4-workflow/` | Fase project, D→P→I→V→R, quality gate |
-| **nexsmsid-v4** | `nexsmsid-v4/` | Develop fitur, debug, konvensi kode |
-| **nexsmsid-v4-master** | `nexsmsid-v4-master/` | Orchestrasi & routing skill (ini) |
-| **nexsmsid-project-audit** | `nexsmsid-project-audit/` | Audit end-to-end + roadmap |
-| **fullstack-project-audit** | `fullstack-project-audit/` | Framework audit 7 fase umum |
-| **docker-compose-audit** | `docker-compose-audit/` | Hardening container/compose |
-| **auditing-security** | `auditing-security/` | Security review OWASP (vendored awesome-cursor-skills) |
-| **codebase-onboarding** | `codebase-onboarding/` | Generate onboarding doc |
+| Skill                       | Path                       | Gunakan saat                                           |
+| --------------------------- | -------------------------- | ------------------------------------------------------ |
+| **nexsmsid-v4-workflow**    | `nexsmsid-v4-workflow/`    | Fase project, D→P→I→V→R, quality gate                  |
+| **nexsmsid-v4**             | `nexsmsid-v4/`             | Develop fitur, debug, konvensi kode                    |
+| **nexsmsid-v4-master**      | `nexsmsid-v4-master/`      | Orchestrasi & routing skill (ini)                      |
+| **nexsmsid-project-audit**  | `nexsmsid-project-audit/`  | Audit end-to-end + roadmap                             |
+| **fullstack-project-audit** | `fullstack-project-audit/` | Framework audit 7 fase umum                            |
+| **docker-compose-audit**    | `docker-compose-audit/`    | Hardening container/compose                            |
+| **auditing-security**       | `auditing-security/`       | Security review OWASP (vendored awesome-cursor-skills) |
+| **codebase-onboarding**     | `codebase-onboarding/`     | Generate onboarding doc                                |
 
 Detail modul API: `nexsmsid-v4/modules.md`
 
 ### Eksternal (`.agents/skills/` — via skills.sh)
 
-| Skill | Sumber | Gunakan saat |
-|-------|--------|--------------|
-| **nestjs-best-practices** | kadajett/agent-nestjs-skills | Module/guard/DI, API patterns |
-| **nextjs-app-router-patterns** | wshobson/agents | App Router, RSC, layouts |
-| **prisma-database-setup** | prisma/skills | Schema, migrate, seed |
-| **prisma-client-api** | prisma/skills | Query, transaction, middleware |
-| **turborepo** | vercel/turborepo | Monorepo task, cache, pipeline |
-| **docker-expert** | sickn33/antigravity-awesome-skills | Dockerfile, networking |
-| **docker-patterns** | affaan-m/everything-claude-code | ECC Docker best practices |
-| **vitest** | antfu/skills | Unit/integration test patterns |
-| **github-actions** | dalestudy/skills | CI workflow, self-hosted runner |
+| Skill                          | Sumber                             | Gunakan saat                    |
+| ------------------------------ | ---------------------------------- | ------------------------------- |
+| **nestjs-best-practices**      | kadajett/agent-nestjs-skills       | Module/guard/DI, API patterns   |
+| **nextjs-app-router-patterns** | wshobson/agents                    | App Router, RSC, layouts        |
+| **prisma-database-setup**      | prisma/skills                      | Schema, migrate, seed           |
+| **prisma-client-api**          | prisma/skills                      | Query, transaction, middleware  |
+| **turborepo**                  | vercel/turborepo                   | Monorepo task, cache, pipeline  |
+| **docker-expert**              | sickn33/antigravity-awesome-skills | Dockerfile, networking          |
+| **docker-patterns**            | affaan-m/everything-claude-code    | ECC Docker best practices       |
+| **vitest**                     | antfu/skills                       | Unit/integration test patterns  |
+| **github-actions**             | dalestudy/skills                   | CI workflow, self-hosted runner |
 
 Install tambahan: `npx skills add <owner/repo@skill> -a cursor -y`
 
@@ -85,21 +85,21 @@ Install tambahan: `npx skills add <owner/repo@skill> -a cursor -y`
 
 ## Routing: task → skill
 
-| User intent | Baca skill |
-|-------------|------------|
-| Mulai sesi / fase project / planning | `nexsmsid-v4-workflow` |
-| Tambah/edit fitur API | `nexsmsid-v4` + `nestjs-best-practices` |
-| Tambah halaman web / portal | `nexsmsid-v4` + `nextjs-app-router-patterns` |
-| Ubah schema / migration | `nexsmsid-v4` + `prisma-database-setup` + `prisma-client-api` |
-| Query Prisma kompleks | `prisma-client-api` |
-| Monorepo / turbo / cache | `turborepo` |
-| Dockerfile / compose prod | `docker-expert` + `docker-patterns` + `docker-compose-audit` |
-| CI / runner / workflow | `github-actions` + baca `.github/SELF_HOSTED_RUNNER.md` |
-| Unit / integration test | `vitest` + `nexsmsid-v4` (quality gate) |
-| Audit project | `nexsmsid-project-audit` (orchestrator) |
-| Security hardening | `auditing-security` |
-| Onboarding developer baru | `codebase-onboarding` |
-| Tidak jelas | **skill ini** → narrow down |
+| User intent                          | Baca skill                                                    |
+| ------------------------------------ | ------------------------------------------------------------- |
+| Mulai sesi / fase project / planning | `nexsmsid-v4-workflow`                                        |
+| Tambah/edit fitur API                | `nexsmsid-v4` + `nestjs-best-practices`                       |
+| Tambah halaman web / portal          | `nexsmsid-v4` + `nextjs-app-router-patterns`                  |
+| Ubah schema / migration              | `nexsmsid-v4` + `prisma-database-setup` + `prisma-client-api` |
+| Query Prisma kompleks                | `prisma-client-api`                                           |
+| Monorepo / turbo / cache             | `turborepo`                                                   |
+| Dockerfile / compose prod            | `docker-expert` + `docker-patterns` + `docker-compose-audit`  |
+| CI / runner / workflow               | `github-actions` + baca `.github/SELF_HOSTED_RUNNER.md`       |
+| Unit / integration test              | `vitest` + `nexsmsid-v4` (quality gate)                       |
+| Audit project                        | `nexsmsid-project-audit` (orchestrator)                       |
+| Security hardening                   | `auditing-security`                                           |
+| Onboarding developer baru            | `codebase-onboarding`                                         |
+| Tidak jelas                          | **skill ini** → narrow down                                   |
 
 ---
 
@@ -108,6 +108,7 @@ Install tambahan: `npx skills add <owner/repo@skill> -a cursor -y`
 Detail lengkap: `.cursor/workflow/WORKFLOW.md` · Status: `.cursor/workflow/STATUS.md`
 
 ### 0. Cek fase (setiap sesi)
+
 Baca `STATUS.md` → jalankan checklist fase aktif sebelum fitur baru.
 
 ### 1. Bootstrap dev (Fase 1)
@@ -177,11 +178,11 @@ Prioritas review manual:
 
 ## Artefak audit & roadmap
 
-| File | Isi |
-|------|-----|
-| `.cursor/audit/ROADMAP.md` | Fase, risiko, prioritas (sumber kebenaran audit) |
-| `.cursor/workflow/STATUS.md` | Fase aktif & backlog |
-| `.cursor/audit/ONBOARDING.md` | Onboarding (jika dibuat) |
+| File                          | Isi                                              |
+| ----------------------------- | ------------------------------------------------ |
+| `.cursor/audit/ROADMAP.md`    | Fase, risiko, prioritas (sumber kebenaran audit) |
+| `.cursor/workflow/STATUS.md`  | Fase aktif & backlog                             |
+| `.cursor/audit/ONBOARDING.md` | Onboarding (jika dibuat)                         |
 
 **Verdict saat ini (2026-06-15):** CI hijau, build/test pass, belum dev-ready (no `.env`, no smoke test).
 

@@ -17,14 +17,14 @@ compatibility: Requires .cursor/workflow/UI-ENTERPRISE-2026.md and STATUS.md UI 
 
 ## Siklus wajib (A→P→E→V→PR→M)
 
-| Langkah | Aksi |
-|---------|------|
-| **A Audit** | Gap + file list → update audit/plan jika perlu |
-| **P Plan** | Acceptance criteria + tier verify |
-| **E Eksekusi** | Branch `feat/ui-sN-*`, minimal diff |
+| Langkah        | Aksi                                                    |
+| -------------- | ------------------------------------------------------- |
+| **A Audit**    | Gap + file list → update audit/plan jika perlu          |
+| **P Plan**     | Acceptance criteria + tier verify                       |
+| **E Eksekusi** | Branch `feat/ui-sN-*`, minimal diff                     |
 | **V Validasi** | `format:check` + `lint` + `typecheck` + `build` + smoke |
-| **PR** | `gh pr create` dengan test plan |
-| **M Merge** | Hanya jika CI hijau; update STATUS |
+| **PR**         | `gh pr create` dengan test plan                         |
+| **M Merge**    | Hanya jika CI hijau; update STATUS                      |
 
 Checklist lengkap: `.cursor/workflow/checklists/ui-enterprise-cycle.md`
 

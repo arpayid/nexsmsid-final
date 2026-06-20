@@ -2,28 +2,28 @@
 
 ## API domain modules (`apps/api/src/modules/`)
 
-| Module | Folder terkait | Catatan |
-|--------|----------------|---------|
-| Identity | `auth/`, `users/`, `roles/`, `permissions/`, `modules/identity/` | JWT, sessions, RBAC |
-| School | `school-profile/`, `modules/school/` | Profil sekolah |
-| People | `students/`, `teachers/`, `guardians/`, `staffs/`, `people/` | Excel import, soft delete |
-| Academic | `schedules/`, `grades/`, `attendance/`, `subjects/`, `classrooms/` | Jadwal, nilai, absensi |
-| Finance | `invoices/`, `payments/`, `expenses/`, `payment-categories/` | Tagihan & pembayaran |
-| PPDB | `ppdb-periods/`, `ppdb-registrations/`, `public-ppdb/` | Kuota, upload dokumen |
-| Communication | `announcements/`, `notifications/`, `internal-messages/` | Notif multi-channel |
-| Operations | `inventory/`, `library/`, `letters/` | Inventaris, perpustakaan, surat |
-| Reporting | `report-center/`, `report-jobs/`, `report-engine/` | Async jobs via BullMQ |
-| Finance HR | `payroll/`, `hr/` patterns | Gaji, kehadiran staff |
+| Module        | Folder terkait                                                     | Catatan                         |
+| ------------- | ------------------------------------------------------------------ | ------------------------------- |
+| Identity      | `auth/`, `users/`, `roles/`, `permissions/`, `modules/identity/`   | JWT, sessions, RBAC             |
+| School        | `school-profile/`, `modules/school/`                               | Profil sekolah                  |
+| People        | `students/`, `teachers/`, `guardians/`, `staffs/`, `people/`       | Excel import, soft delete       |
+| Academic      | `schedules/`, `grades/`, `attendance/`, `subjects/`, `classrooms/` | Jadwal, nilai, absensi          |
+| Finance       | `invoices/`, `payments/`, `expenses/`, `payment-categories/`       | Tagihan & pembayaran            |
+| PPDB          | `ppdb-periods/`, `ppdb-registrations/`, `public-ppdb/`             | Kuota, upload dokumen           |
+| Communication | `announcements/`, `notifications/`, `internal-messages/`           | Notif multi-channel             |
+| Operations    | `inventory/`, `library/`, `letters/`                               | Inventaris, perpustakaan, surat |
+| Reporting     | `report-center/`, `report-jobs/`, `report-engine/`                 | Async jobs via BullMQ           |
+| Finance HR    | `payroll/`, `hr/` patterns                                         | Gaji, kehadiran staff           |
 
 ## Portal controllers
 
-| Portal | Controller prefix |
-|--------|-------------------|
-| Admin dashboard | `dashboard/` |
-| Teacher | `teacher-portal/` |
-| Student | `student-portal/` |
-| Guardian | `guardian-portal/` |
-| Public site | `public-ppdb/public.controller.ts` |
+| Portal          | Controller prefix                  |
+| --------------- | ---------------------------------- |
+| Admin dashboard | `dashboard/`                       |
+| Teacher         | `teacher-portal/`                  |
+| Student         | `student-portal/`                  |
+| Guardian        | `guardian-portal/`                 |
+| Public site     | `public-ppdb/public.controller.ts` |
 
 ## api-client domains (`packages/api-client/src/domains/`)
 
@@ -62,10 +62,10 @@ Admin pages: gunakan komponen `@nexsmsid/ui` (`PageHeader`, `DataTable`, `FormMo
 
 ## Testing locations
 
-| Type | Path |
-|------|------|
-| Unit (API) | `apps/api/src/**/*.spec.ts` |
+| Type        | Path                                  |
+| ----------- | ------------------------------------- |
+| Unit (API)  | `apps/api/src/**/*.spec.ts`           |
 | Integration | `apps/api/test/integration/*.spec.ts` |
-| Web unit | `apps/web/src/**/*.spec.ts` |
+| Web unit    | `apps/web/src/**/*.spec.ts`           |
 
 Integration tests butuh `DATABASE_URL` ke `nexsmsid_test` dan Redis di localhost.

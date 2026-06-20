@@ -146,7 +146,7 @@ export class BaseMasterDataService<TCreate extends z.ZodType, TUpdate extends z.
 
         if (activeRelations.length > 0) {
           throw new ConflictException(
-            `Cannot delete ${this.config.auditEntity} because it is referenced by active records in: ${activeRelations.join(", ")}`
+            `Cannot delete ${this.config.auditEntity} because it is referenced by active records in: ${activeRelations.join(", ")}`,
           );
         }
       }

@@ -15,11 +15,11 @@ export function useTranslations() {
   const { data: locale = "id" } = useSWR<Locale>("locale", getStoredLocale, {
     fallbackData: typeof window === "undefined" ? "id" : getStoredLocale(),
   });
-  
+
   const messages = getMessages(locale);
 
   const t = useCallback((key: string) => getNestedValue(messages, key), [messages]);
-  
+
   const setLocale = useCallback((newLocale: Locale) => {
     localStorage.setItem(STORAGE_KEY, newLocale);
     void mutate("locale", newLocale, false);

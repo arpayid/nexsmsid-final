@@ -11,15 +11,15 @@
 
 100% **bukan** pixel-perfect screenshot identik (data real ≠ mockup demo), melainkan:
 
-| Kriteria | Wajib |
-|----------|-------|
-| **Mockup checklist** | Semua elemen visual mockup ada di implementasi (atau variasi produk terdokumentasi) |
+| Kriteria              | Wajib                                                                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **Mockup checklist**  | Semua elemen visual mockup ada di implementasi (atau variasi produk terdokumentasi)                                                  |
 | **Admin 104 halaman** | Setiap halaman memakai pola enterprise **atau** wrapper resmi (`PeoplePage`, `MasterDataPage`, `ResourceCrudPage`, dashboard khusus) |
-| **Portal 23 halaman** | `SectionCard` + `PageHeader`/`portal-shell` konsisten |
-| **Shell** | Sidebar, header, mobile nav selaras mockup (termasuk opsi sidebar gelap teal) |
-| **Dashboard** | Hero, 4 KPI, 2 chart sesuai mockup (metrik + tipe chart) |
-| **Design tokens** | `#10B981`, radius, shadow, typography — tidak ada halaman legacy `Card` mentah |
-| **QA sign-off** | Checklist manual + `pnpm prod:smoke` + tier Web lulus |
+| **Portal 23 halaman** | `SectionCard` + `PageHeader`/`portal-shell` konsisten                                                                                |
+| **Shell**             | Sidebar, header, mobile nav selaras mockup (termasuk opsi sidebar gelap teal)                                                        |
+| **Dashboard**         | Hero, 4 KPI, 2 chart sesuai mockup (metrik + tipe chart)                                                                             |
+| **Design tokens**     | `#10B981`, radius, shadow, typography — tidak ada halaman legacy `Card` mentah                                                       |
+| **QA sign-off**       | Checklist manual + `pnpm prod:smoke` + tier Web lulus                                                                                |
 
 **Di luar scope 100% admin mockup (tier opsional S19):** situs publik marketing — brand selaras, layout boleh berbeda.
 
@@ -27,14 +27,14 @@
 
 ## Gap saat ini (2026-06-17)
 
-| Layer | Total | Sudah enterprise | Gap |
-|-------|-------|------------------|-----|
-| Admin `page.tsx` | 104 | ~56 PageHeader · ~39 DataTable · ~18 SearchFilterBar | ~48 halaman belum pola penuh |
-| Portal | 23 | 20 SectionCard | 3 notifications |
-| Public | 14 | brand dasar | polish enterprise opsional |
-| Account | 3 | login ✅ | change-password/security polish |
-| Mockup dashboard | — | hero ✅ · KPI/chart **beda konten** | selaraskan mockup |
-| Mockup shell | — | nav ✅ · mobile ✅ | sidebar gelap teal, date picker header |
+| Layer            | Total | Sudah enterprise                                     | Gap                                    |
+| ---------------- | ----- | ---------------------------------------------------- | -------------------------------------- |
+| Admin `page.tsx` | 104   | ~56 PageHeader · ~39 DataTable · ~18 SearchFilterBar | ~48 halaman belum pola penuh           |
+| Portal           | 23    | 20 SectionCard                                       | 3 notifications                        |
+| Public           | 14    | brand dasar                                          | polish enterprise opsional             |
+| Account          | 3     | login ✅                                             | change-password/security polish        |
+| Mockup dashboard | —     | hero ✅ · KPI/chart **beda konten**                  | selaraskan mockup                      |
+| Mockup shell     | —     | nav ✅ · mobile ✅                                   | sidebar gelap teal, date picker header |
 
 ### Halaman admin prioritas tinggi (belum PageHeader / pola penuh)
 
@@ -79,13 +79,13 @@ flowchart TB
 
 ### Scope
 
-| Mockup | Aksi |
-|--------|------|
-| Hero copy + ilustrasi gedung | Selaraskan teks mockup + SVG gedung mockup |
+| Mockup                                              | Aksi                                                            |
+| --------------------------------------------------- | --------------------------------------------------------------- |
+| Hero copy + ilustrasi gedung                        | Selaraskan teks mockup + SVG gedung mockup                      |
 | KPI 4: Siswa, Guru, **Kelas**, **Total Pembayaran** | Ganti KPI 3–4; tambah badge % vs bulan lalu (API atau computed) |
-| Chart: **Tren Kehadiran Siswa** (line) | Endpoint `dashboardAcademicSummary` / data attendance monthly |
-| Chart: **Perbandingan Siswa & Guru** (grouped bar) | Data people summary monthly |
-| Filter “6 Bulan Terakhir” | Dropdown di ChartCard action |
+| Chart: **Tren Kehadiran Siswa** (line)              | Endpoint `dashboardAcademicSummary` / data attendance monthly   |
+| Chart: **Perbandingan Siswa & Guru** (grouped bar)  | Data people summary monthly                                     |
+| Filter “6 Bulan Terakhir”                           | Dropdown di ChartCard action                                    |
 
 ### File
 
@@ -110,15 +110,15 @@ flowchart TB
 
 ### Scope
 
-| Mockup | Aksi |
-|--------|------|
-| Sidebar gelap teal | Token `--sidebar` light mode → teal gelap mockup; active item highlight |
-| Logo “NexAdmin School Management” | Selaraskan branding header sidebar |
-| Search sidebar “Cari menu…” + ⌘K | Placeholder + shortcut hint (optional: command palette) |
-| Header search “Cari apapun…” | Lebar penuh + placeholder mockup |
-| Date picker header | Komponen date display/filter (context dashboard atau global) |
-| Bell badge merah “3” | Style badge mockup (count dari API notifications) |
-| “Sembunyikan Menu” | Label toggle sidebar selaras mockup |
+| Mockup                            | Aksi                                                                    |
+| --------------------------------- | ----------------------------------------------------------------------- |
+| Sidebar gelap teal                | Token `--sidebar` light mode → teal gelap mockup; active item highlight |
+| Logo “NexAdmin School Management” | Selaraskan branding header sidebar                                      |
+| Search sidebar “Cari menu…” + ⌘K  | Placeholder + shortcut hint (optional: command palette)                 |
+| Header search “Cari apapun…”      | Lebar penuh + placeholder mockup                                        |
+| Date picker header                | Komponen date display/filter (context dashboard atau global)            |
+| Bell badge merah “3”              | Style badge mockup (count dari API notifications)                       |
+| “Sembunyikan Menu”                | Label toggle sidebar selaras mockup                                     |
 
 ### File
 
@@ -143,12 +143,12 @@ flowchart TB
 
 Upgrade `PeoplePage` wrapper **atau** migrasi ke pola penuh:
 
-| Halaman | File |
-|---------|------|
-| Siswa | `admin/students/page.tsx` |
-| Guru | `admin/teachers/page.tsx` |
-| Staff | `admin/staffs/page.tsx` |
-| Wali | `admin/guardians/page.tsx` |
+| Halaman        | File                                     |
+| -------------- | ---------------------------------------- |
+| Siswa          | `admin/students/page.tsx`                |
+| Guru           | `admin/teachers/page.tsx`                |
+| Staff          | `admin/staffs/page.tsx`                  |
+| Wali           | `admin/guardians/page.tsx`               |
 | Wali per siswa | `admin/students/[id]/guardians/page.tsx` |
 
 ### Pattern wajib
@@ -361,20 +361,20 @@ pnpm prod:smoke
 
 Centang per sprint selesai + PR merged:
 
-| Sprint | PR | Admin pages | Portal | Mockup element |
-|--------|-----|-------------|--------|----------------|
-| S9 | | | | Dashboard |
-| S10 | | | | Shell |
-| S11 | | +5 | | |
-| S12 | | +8 | | |
-| S13 | | +10 | | |
-| S14 | | +9 | | |
-| S15 | | +15 | | |
-| S16 | | +8 | | |
-| S17 | | | +3 | |
-| S18 | | | | Auth |
-| S19 | | | | Public (opsional) |
-| S20 | | sign-off | sign-off | All |
+| Sprint | PR  | Admin pages | Portal   | Mockup element    |
+| ------ | --- | ----------- | -------- | ----------------- |
+| S9     |     |             |          | Dashboard         |
+| S10    |     |             |          | Shell             |
+| S11    |     | +5          |          |                   |
+| S12    |     | +8          |          |                   |
+| S13    |     | +10         |          |                   |
+| S14    |     | +9          |          |                   |
+| S15    |     | +15         |          |                   |
+| S16    |     | +8          |          |                   |
+| S17    |     |             | +3       |                   |
+| S18    |     |             |          | Auth              |
+| S19    |     |             |          | Public (opsional) |
+| S20    |     | sign-off    | sign-off | All               |
 
 **Exit 100%:** semua baris S9–S18 ✅ + S20 ✅ (S19 jika scope penuh web).
 
@@ -389,12 +389,12 @@ Centang per sprint selesai + PR merged:
 
 ## Risiko & mitigasi
 
-| Risiko | Mitigasi |
-|--------|----------|
-| Dashboard butuh data API baru | Fallback mock/sparkline dari data existing; backend PR terpisah |
-| Scope creep 104 halaman | ResourceCrudPage + PeoplePage wrapper, bukan rewrite manual |
-| Regresi RBAC | `pnpm prod:smoke` setiap merge + login manual 1 modul |
-| Sidebar gelap vs preferensi user | Token CSS; dark mode sidebar sudah gelap |
+| Risiko                           | Mitigasi                                                        |
+| -------------------------------- | --------------------------------------------------------------- |
+| Dashboard butuh data API baru    | Fallback mock/sparkline dari data existing; backend PR terpisah |
+| Scope creep 104 halaman          | ResourceCrudPage + PeoplePage wrapper, bukan rewrite manual     |
+| Regresi RBAC                     | `pnpm prod:smoke` setiap merge + login manual 1 modul           |
+| Sidebar gelap vs preferensi user | Token CSS; dark mode sidebar sudah gelap                        |
 
 ---
 

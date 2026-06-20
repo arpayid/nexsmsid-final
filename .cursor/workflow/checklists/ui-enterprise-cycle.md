@@ -2,7 +2,7 @@
 
 Copy checklist ini per sprint. Centang sebelum lanjut ke langkah berikutnya.
 
-**Sprint ID:** `UI-S__` · **Judul:** _______________ · **Tanggal:** _______________
+**Sprint ID:** `UI-S__` · **Judul:** ******\_\_\_****** · **Tanggal:** ******\_\_\_******
 
 ---
 

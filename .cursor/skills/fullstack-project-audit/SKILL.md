@@ -73,15 +73,15 @@ Muat pola dari skill `docker-compose-audit` (secrets di image) dan checklist OWA
 
 Prioritas (adaptasi ke stack):
 
-| Area | Cek |
-|------|-----|
-| Auth | Token storage, refresh rotation, session invalidation |
+| Area          | Cek                                                        |
+| ------------- | ---------------------------------------------------------- |
+| Auth          | Token storage, refresh rotation, session invalidation      |
 | Authorization | Setiap endpoint protected punya guard/role check eksplisit |
-| Input | Validasi DTO/schema, SQL injection, XSS, path traversal |
-| Upload | MIME/size/path sandbox |
-| Config | Secret min length, production env validation |
-| Public routes | Rate limit, captcha, data leakage |
-| Frontend | Middleware/route guard, open redirect, CSRF |
+| Input         | Validasi DTO/schema, SQL injection, XSS, path traversal    |
+| Upload        | MIME/size/path sandbox                                     |
+| Config        | Secret min length, production env validation               |
+| Public routes | Rate limit, captcha, data leakage                          |
+| Frontend      | Middleware/route guard, open redirect, CSRF                |
 
 **Output:** temuan security dengan severity + file path.
 
@@ -119,24 +119,31 @@ Template laporan akhir:
 # Audit Report — [Project Name] — [Date]
 
 ## Executive summary
+
 [2–3 kalimat: siap/tidak siap dikerjakan/deploy]
 
 ## Environment
+
 | Service | Status | Notes |
 
 ## Automated checks
+
 | Step | Result |
 
 ## Security findings
+
 | ID | Area | Finding | Severity | Status |
 
 ## Smoke test
+
 | Flow | Result | Notes |
 
 ## Technical debt
+
 | Item | Priority |
 
 ## Recommended next steps
+
 1. [Blocker fixes]
 2. [Warnings]
 3. [Nice-to-have]
@@ -160,11 +167,11 @@ Template laporan akhir:
 
 ## Template kerja (3 hari)
 
-| Hari | Fokus |
-|------|-------|
-| 1 | Discovery + Infra + Automated |
-| 2 | Security + Smoke test admin/core |
-| 3 | Portal/role lain + debt + risk register |
+| Hari | Fokus                                   |
+| ---- | --------------------------------------- |
+| 1    | Discovery + Infra + Automated           |
+| 2    | Security + Smoke test admin/core        |
+| 3    | Portal/role lain + debt + risk register |
 
 ## Referensi
 

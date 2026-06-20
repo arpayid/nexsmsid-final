@@ -156,7 +156,8 @@ export class ReportDataService {
       };
     }
 
-    const grades = await this.prisma.grade.findMany({ take: Number(filters.limit || 5000),
+    const grades = await this.prisma.grade.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: {
         student: true,
@@ -206,7 +207,8 @@ export class ReportDataService {
       };
     }
 
-    const schedules = await this.prisma.schedule.findMany({ take: Number(filters.limit || 5000),
+    const schedules = await this.prisma.schedule.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: {
         teachingAssignment: {
@@ -244,11 +246,13 @@ export class ReportDataService {
     const endDate = filterDate(filters, "endDate");
 
     const [payments, expenses] = await Promise.all([
-      this.prisma.payment.findMany({ take: Number(filters.limit || 5000),
+      this.prisma.payment.findMany({
+        take: Number(filters.limit || 5000),
         where: { paidAt: { gte: startDate, lte: endDate }, status: "VERIFIED" },
         orderBy: { paidAt: "asc" },
       }),
-      this.prisma.expense.findMany({ take: Number(filters.limit || 5000),
+      this.prisma.expense.findMany({
+        take: Number(filters.limit || 5000),
         where: { date: { gte: startDate, lte: endDate }, status: "PAID" },
         orderBy: { date: "asc" },
       }),
@@ -288,7 +292,8 @@ export class ReportDataService {
       status: "CONVERTED",
     };
 
-    const regs = await this.prisma.ppdbRegistration.findMany({ take: Number(filters.limit || 5000),
+    const regs = await this.prisma.ppdbRegistration.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { convertedStudent: { include: { classroom: true } }, selectedDepartment: true },
       orderBy: { updatedAt: "desc" },
@@ -317,10 +322,7 @@ export class ReportDataService {
     const where: Prisma.IndustryPartnerWhereInput = { deletedAt: null };
     if (hasFilter(filters, "status")) where.status = filters.status as never;
 
-    const partners = await this.prisma.industryPartner.findMany({ take: Number(filters.limit || 5000),
-      where,
-      orderBy: { name: "asc" },
-    });
+    const partners = await this.prisma.industryPartner.findMany({ take: Number(filters.limit || 5000), where, orderBy: { name: "asc" } });
 
     return {
       title: "Industry Partner Recap",
@@ -347,7 +349,8 @@ export class ReportDataService {
     if (classroomId) where.classroomId = classroomId;
     if (hasFilter(filters, "status")) where.status = filters.status as never;
 
-    const students = await this.prisma.student.findMany({ take: Number(filters.limit || 5000),
+    const students = await this.prisma.student.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { classroom: true },
       orderBy: [{ classroom: { name: "asc" } }, { name: "asc" }],
@@ -383,7 +386,8 @@ export class ReportDataService {
       where.schedule = { teachingAssignment: { classroomId: filterString(filters, "classroomId") } };
     }
 
-    const sessions = await this.prisma.attendanceSession.findMany({ take: Number(filters.limit || 5000),
+    const sessions = await this.prisma.attendanceSession.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: {
         records: { include: { student: true } },
@@ -438,7 +442,8 @@ export class ReportDataService {
     if (hasFilter(filters, "status")) where.status = filters.status as never;
     if (filterString(filters, "studentId")) where.studentId = filterString(filters, "studentId");
 
-    const invoices = await this.prisma.invoice.findMany({ take: Number(filters.limit || 5000),
+    const invoices = await this.prisma.invoice.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { student: true },
       orderBy: { issueDate: "desc" },
@@ -475,7 +480,8 @@ export class ReportDataService {
     };
     if (filterString(filters, "studentId")) where.invoice = { studentId: filterString(filters, "studentId") };
 
-    const payments = await this.prisma.payment.findMany({ take: Number(filters.limit || 5000),
+    const payments = await this.prisma.payment.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { invoice: { include: { student: true } } },
       orderBy: { paidAt: "desc" },
@@ -511,7 +517,8 @@ export class ReportDataService {
     if (filterString(filters, "studentId")) where.studentId = filterString(filters, "studentId");
     if (filterString(filters, "academicYearId")) where.academicYearId = filterString(filters, "academicYearId");
 
-    const invoices = await this.prisma.invoice.findMany({ take: Number(filters.limit || 5000),
+    const invoices = await this.prisma.invoice.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { student: true, academicYear: true },
       orderBy: { issueDate: "asc" },
@@ -545,7 +552,8 @@ export class ReportDataService {
     if (hasFilter(filters, "status")) where.status = filters.status as never;
     if (filterString(filters, "departmentId")) where.selectedDepartmentId = filterString(filters, "departmentId");
 
-    const regs = await this.prisma.ppdbRegistration.findMany({ take: Number(filters.limit || 5000),
+    const regs = await this.prisma.ppdbRegistration.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { selectedDepartment: true, selectedCompetency: true },
       orderBy: { createdAt: "desc" },
@@ -575,7 +583,8 @@ export class ReportDataService {
   private async getPpdbStatusRecap(filters: ReportFilters): Promise<ReportDataResult> {
     const where: Prisma.PpdbRegistrationWhereInput = { period: { academicYearId: filterString(filters, "academicYearId") } };
 
-    const stats = await this.prisma.ppdbRegistration.groupBy({ take: Number(filters.limit || 5000),
+    const stats = await this.prisma.ppdbRegistration.groupBy({
+      take: Number(filters.limit || 5000),
       by: ["status"],
       orderBy: { status: "asc" },
       where,
@@ -605,10 +614,7 @@ export class ReportDataService {
     };
     if (hasFilter(filters, "status")) where.status = filters.status as never;
 
-    const expenses = await this.prisma.expense.findMany({ take: Number(filters.limit || 5000),
-      where,
-      orderBy: { date: "desc" },
-    });
+    const expenses = await this.prisma.expense.findMany({ take: Number(filters.limit || 5000), where, orderBy: { date: "desc" } });
 
     return {
       title: "Expense Recap",
@@ -640,7 +646,8 @@ export class ReportDataService {
     };
     if (hasFilter(filters, "status")) where.status = filters.status as never;
 
-    const internships = await this.prisma.internship.findMany({ take: Number(filters.limit || 5000),
+    const internships = await this.prisma.internship.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { student: true, industryPartner: true },
     });
@@ -670,10 +677,7 @@ export class ReportDataService {
     if (graduationYear !== undefined) where.graduationYear = graduationYear;
     if (hasFilter(filters, "status")) where.status = filters.status as never;
 
-    const alumni = await this.prisma.alumni.findMany({ take: Number(filters.limit || 5000),
-      where,
-      orderBy: { graduationYear: "desc" },
-    });
+    const alumni = await this.prisma.alumni.findMany({ take: Number(filters.limit || 5000), where, orderBy: { graduationYear: "desc" } });
 
     return {
       title: "Alumni Recap",
@@ -707,7 +711,8 @@ export class ReportDataService {
       };
     }
 
-    const violations = await this.prisma.disciplineViolation.findMany({ take: Number(filters.limit || 5000),
+    const violations = await this.prisma.disciplineViolation.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: {
         rule: true,
@@ -748,7 +753,8 @@ export class ReportDataService {
     if (filterString(filters, "studentId")) where.id = filterString(filters, "studentId");
     const classroomId = filterString(filters, "classroomId");
     if (classroomId) where.classroomId = classroomId;
-    const students = await this.prisma.student.findMany({ take: Number(filters.limit || 5000),
+    const students = await this.prisma.student.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { classroom: true },
       orderBy: [{ classroom: { name: "asc" } }, { name: "asc" }],
@@ -756,7 +762,8 @@ export class ReportDataService {
     const studentIds = students.map((student) => student.id);
     const [violations, achievements] = await Promise.all([
       studentIds.length
-        ? this.prisma.disciplineViolation.groupBy({ take: Number(filters.limit || 5000),
+        ? this.prisma.disciplineViolation.groupBy({
+            take: Number(filters.limit || 5000),
             by: ["studentId"],
             orderBy: { studentId: "asc" },
             where: { studentId: { in: studentIds }, status: "CONFIRMED", deletedAt: null },
@@ -765,7 +772,8 @@ export class ReportDataService {
           })
         : Promise.resolve([]),
       studentIds.length
-        ? this.prisma.studentAchievement.groupBy({ take: Number(filters.limit || 5000),
+        ? this.prisma.studentAchievement.groupBy({
+            take: Number(filters.limit || 5000),
             by: ["studentId"],
             orderBy: { studentId: "asc" },
             where: { studentId: { in: studentIds }, deletedAt: null },
@@ -819,7 +827,8 @@ export class ReportDataService {
         ...(hasFilter(filters, "endDate") ? { lte: filterDate(filters, "endDate") } : {}),
       };
     }
-    const cases = await this.prisma.counselingCase.findMany({ take: Number(filters.limit || 5000),
+    const cases = await this.prisma.counselingCase.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { student: { include: { classroom: true } }, counselor: { select: { name: true } }, createdBy: { select: { name: true } } },
       orderBy: { openedAt: "desc" },
@@ -870,7 +879,8 @@ export class ReportDataService {
       };
     }
 
-    const letters = await this.prisma.letter.findMany({ take: Number(filters.limit || 5000),
+    const letters = await this.prisma.letter.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { createdBy: { select: { name: true } }, approvedBy: { select: { name: true } } },
       orderBy: { createdAt: "desc" },
@@ -904,7 +914,8 @@ export class ReportDataService {
         ...(hasFilter(filters, "endDate") ? { lte: filterDate(filters, "endDate") } : {}),
       };
     }
-    const approvals = await this.prisma.letterApproval.findMany({ take: Number(filters.limit || 5000),
+    const approvals = await this.prisma.letterApproval.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: {
         approver: { select: { name: true } },
@@ -939,7 +950,8 @@ export class ReportDataService {
     };
     if (hasFilter(filters, "status")) where.status = filters.status as never;
 
-    const applications = await this.prisma.jobApplication.findMany({ take: Number(filters.limit || 5000),
+    const applications = await this.prisma.jobApplication.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { jobVacancy: true, alumni: true },
       orderBy: { createdAt: "desc" },
@@ -968,7 +980,8 @@ export class ReportDataService {
   }
 
   private async getTracerStudyRecap(filters: ReportFilters): Promise<ReportDataResult> {
-    const studies = await this.prisma.tracerStudy.findMany({ take: Number(filters.limit || 5000),
+    const studies = await this.prisma.tracerStudy.findMany({
+      take: Number(filters.limit || 5000),
       where: { year: filterNumber(filters, "year")! },
       include: { alumni: true },
       orderBy: { createdAt: "desc" },
@@ -1008,7 +1021,8 @@ export class ReportDataService {
     };
     if (hasFilter(filters, "status")) where.status = filters.status as never;
 
-    const announcements = await this.prisma.announcement.findMany({ take: Number(filters.limit || 5000),
+    const announcements = await this.prisma.announcement.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { createdBy: { select: { name: true } }, _count: { select: { recipients: true } } },
       orderBy: { createdAt: "desc" },
@@ -1046,7 +1060,8 @@ export class ReportDataService {
     if (hasFilter(filters, "status")) where.status = filters.status as never;
     if (hasFilter(filters, "channel")) where.channel = filters.channel as never;
 
-    const notifications = await this.prisma.notification.findMany({ take: Number(filters.limit || 5000),
+    const notifications = await this.prisma.notification.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { user: { select: { name: true, email: true } } },
       orderBy: { createdAt: "desc" },
@@ -1078,7 +1093,8 @@ export class ReportDataService {
     if (filterString(filters, "examTypeId")) where.examTypeId = filterString(filters, "examTypeId");
     if (filterString(filters, "academicYearId")) where.academicYearId = filterString(filters, "academicYearId");
 
-    const exams = await this.prisma.exam.findMany({ take: Number(filters.limit || 5000),
+    const exams = await this.prisma.exam.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: {
         examType: true,
@@ -1117,7 +1133,8 @@ export class ReportDataService {
     const where: Prisma.ExamParticipantWhereInput = { examId: filterString(filters, "examId"), deletedAt: null };
     if (hasFilter(filters, "status")) where.status = filters.status as never;
 
-    const participants = await this.prisma.examParticipant.findMany({ take: Number(filters.limit || 5000),
+    const participants = await this.prisma.examParticipant.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: {
         student: true,
@@ -1150,7 +1167,8 @@ export class ReportDataService {
   }
 
   private async getExamResultsRecap(filters: ReportFilters): Promise<ReportDataResult> {
-    const participants = await this.prisma.examParticipant.findMany({ take: Number(filters.limit || 5000),
+    const participants = await this.prisma.examParticipant.findMany({
+      take: Number(filters.limit || 5000),
       where: { examId: filterString(filters, "examId"), deletedAt: null },
       include: {
         student: true,
@@ -1202,7 +1220,8 @@ export class ReportDataService {
     if (hasFilter(filters, "status")) where.status = filters.status as never;
     if (hasFilter(filters, "condition")) where.condition = filters.condition as never;
 
-    const items = await this.prisma.inventoryItem.findMany({ take: Number(filters.limit || 5000),
+    const items = await this.prisma.inventoryItem.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { category: true, location: true },
       orderBy: { code: "asc" },
@@ -1244,7 +1263,8 @@ export class ReportDataService {
     if (filterString(filters, "fromLocationId")) where.fromLocationId = filterString(filters, "fromLocationId");
     if (filterString(filters, "toLocationId")) where.toLocationId = filterString(filters, "toLocationId");
 
-    const movements = await this.prisma.inventoryMovement.findMany({ take: Number(filters.limit || 5000),
+    const movements = await this.prisma.inventoryMovement.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { item: true, fromLocation: true, toLocation: true, performedBy: true },
       orderBy: { performedAt: "desc" },
@@ -1284,7 +1304,8 @@ export class ReportDataService {
     }
     if (hasFilter(filters, "status")) where.status = filters.status as never;
 
-    const maintenances = await this.prisma.inventoryMaintenance.findMany({ take: Number(filters.limit || 5000),
+    const maintenances = await this.prisma.inventoryMaintenance.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { item: true, handledBy: true },
       orderBy: { scheduledAt: "desc" },
@@ -1323,7 +1344,8 @@ export class ReportDataService {
     if (hasFilter(filters, "status")) where.status = filters.status as never;
     if (hasFilter(filters, "borrowerType")) where.borrowerType = filters.borrowerType as never;
 
-    const loans = await this.prisma.inventoryLoan.findMany({ take: Number(filters.limit || 5000),
+    const loans = await this.prisma.inventoryLoan.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { item: true },
       orderBy: { requestedAt: "desc" },
@@ -1356,7 +1378,8 @@ export class ReportDataService {
     if (filterString(filters, "categoryId")) where.categoryId = filterString(filters, "categoryId");
     if (filterString(filters, "locationId")) where.locationId = filterString(filters, "locationId");
 
-    const items = await this.prisma.inventoryItem.findMany({ take: Number(filters.limit || 5000),
+    const items = await this.prisma.inventoryItem.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { category: true, location: true },
       orderBy: { code: "asc" },
@@ -1389,7 +1412,8 @@ export class ReportDataService {
     const where: Prisma.LibraryBookWhereInput = { deletedAt: null };
     if (filterString(filters, "categoryId")) where.categoryId = filterString(filters, "categoryId");
 
-    const items = await this.prisma.libraryBook.findMany({ take: Number(filters.limit || 5000),
+    const items = await this.prisma.libraryBook.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { category: true },
       orderBy: { title: "asc" },
@@ -1424,7 +1448,8 @@ export class ReportDataService {
     const where: Prisma.LibraryBookCopyWhereInput = { deletedAt: null, book: { deletedAt: null } };
     if (hasFilter(filters, "status")) where.status = filters.status as never;
 
-    const items = await this.prisma.libraryBookCopy.findMany({ take: Number(filters.limit || 5000),
+    const items = await this.prisma.libraryBookCopy.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { book: true },
       orderBy: { copyCode: "asc" },
@@ -1455,7 +1480,8 @@ export class ReportDataService {
     const where: Prisma.LibraryLoanWhereInput = { deletedAt: null };
     if (hasFilter(filters, "status")) where.status = filters.status as never;
 
-    const items = await this.prisma.libraryLoan.findMany({ take: Number(filters.limit || 5000),
+    const items = await this.prisma.libraryLoan.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { member: true, copy: { include: { book: true } } },
       orderBy: { borrowedAt: "desc" },
@@ -1487,7 +1513,8 @@ export class ReportDataService {
   private async getLibraryOverdueLoanRecap(filters: ReportFilters): Promise<ReportDataResult> {
     const where: Prisma.LibraryLoanWhereInput = { deletedAt: null, status: "BORROWED", dueAt: { lt: new Date() } };
 
-    const items = await this.prisma.libraryLoan.findMany({ take: Number(filters.limit || 5000),
+    const items = await this.prisma.libraryLoan.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { member: true, copy: { include: { book: true } } },
       orderBy: { dueAt: "asc" },
@@ -1514,7 +1541,8 @@ export class ReportDataService {
     const where: Prisma.LibraryFineWhereInput = { deletedAt: null };
     if (hasFilter(filters, "status")) where.status = filters.status as never;
 
-    const items = await this.prisma.libraryFine.findMany({ take: Number(filters.limit || 5000),
+    const items = await this.prisma.libraryFine.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { member: true, loan: { include: { copy: { include: { book: true } } } } },
       orderBy: { createdAt: "desc" },
@@ -1544,7 +1572,8 @@ export class ReportDataService {
     if (hasFilter(filters, "type")) where.type = filters.type as never;
     if (hasFilter(filters, "status")) where.status = filters.status as never;
 
-    const items = await this.prisma.libraryMember.findMany({ take: Number(filters.limit || 5000),
+    const items = await this.prisma.libraryMember.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { user: true, student: true, teacher: true, staff: true },
       orderBy: { memberCode: "asc" },
@@ -1584,7 +1613,8 @@ export class ReportDataService {
       loanWhere.borrowedAt = { lte: filterDate(filters, "endDate") };
     }
 
-    const loans = await this.prisma.libraryLoan.findMany({ take: Number(filters.limit || 5000),
+    const loans = await this.prisma.libraryLoan.findMany({
+      take: Number(filters.limit || 5000),
       where: loanWhere,
       include: {
         copy: {
@@ -1676,7 +1706,8 @@ export class ReportDataService {
     if (hasFilter(filters, "employmentType")) where.employmentType = filters.employmentType as never;
     if (filterString(filters, "positionId")) where.positionId = filterString(filters, "positionId");
 
-    const employees = await this.prisma.employeeProfile.findMany({ take: Number(filters.limit || 5000),
+    const employees = await this.prisma.employeeProfile.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { position: true },
       orderBy: { fullName: "asc" },
@@ -1715,7 +1746,8 @@ export class ReportDataService {
       };
     }
 
-    const attendance = await this.prisma.employeeAttendance.findMany({ take: Number(filters.limit || 5000),
+    const attendance = await this.prisma.employeeAttendance.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { employee: true },
       orderBy: [{ date: "desc" }, { employee: { fullName: "asc" } }],
@@ -1749,7 +1781,8 @@ export class ReportDataService {
     if (filterString(filters, "employeeId")) where.employeeId = filterString(filters, "employeeId");
     if (hasFilter(filters, "status")) where.status = filters.status as never;
 
-    const leaves = await this.prisma.leaveRequest.findMany({ take: Number(filters.limit || 5000),
+    const leaves = await this.prisma.leaveRequest.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { employee: true },
       orderBy: { createdAt: "desc" },
@@ -1783,7 +1816,8 @@ export class ReportDataService {
     if (hasFilter(filters, "status")) where.status = filters.status as never;
     if (filterNumber(filters, "year")!) where.year = filterNumber(filters, "year")!;
 
-    const periods = await this.prisma.payrollPeriod.findMany({ take: Number(filters.limit || 5000),
+    const periods = await this.prisma.payrollPeriod.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { _count: { select: { runs: true } } },
       orderBy: [{ year: "desc" }, { month: "desc" }],
@@ -1817,7 +1851,8 @@ export class ReportDataService {
     if (filterString(filters, "periodId")) where.periodId = filterString(filters, "periodId");
     if (hasFilter(filters, "paymentStatus")) where.status = filters.paymentStatus as never;
 
-    const runs = await this.prisma.payrollRun.findMany({ take: Number(filters.limit || 5000),
+    const runs = await this.prisma.payrollRun.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { employee: true, period: true },
       orderBy: [{ period: { year: "desc" } }, { period: { month: "desc" } }, { employee: { fullName: "asc" } }],
@@ -1850,7 +1885,8 @@ export class ReportDataService {
     const where: Prisma.PayrollComponentWhereInput = { deletedAt: null };
     if (hasFilter(filters, "type")) where.type = filters.type as never;
 
-    const components = await this.prisma.payrollComponent.findMany({ take: Number(filters.limit || 5000),
+    const components = await this.prisma.payrollComponent.findMany({
+      take: Number(filters.limit || 5000),
       where,
       orderBy: { code: "asc" },
     });
@@ -1886,7 +1922,8 @@ export class ReportDataService {
     }
     if (filterString(filters, "periodId")) where.payrollRun = { periodId: filterString(filters, "periodId") };
 
-    const payslips = await this.prisma.payslip.findMany({ take: Number(filters.limit || 5000),
+    const payslips = await this.prisma.payslip.findMany({
+      take: Number(filters.limit || 5000),
       where,
       include: { payrollRun: { include: { employee: true, period: true } } },
       orderBy: { paidAt: "desc" },

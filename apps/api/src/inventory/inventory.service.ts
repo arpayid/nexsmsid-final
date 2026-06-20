@@ -337,7 +337,7 @@ export class InventoryService {
       });
 
       const updateData: Prisma.InventoryItemUncheckedUpdateInput = {};
-      
+
       if (dto.type === "IN" || dto.type === "RETURN") {
         updateData.quantity = { increment: dto.quantity };
       } else if (dto.type === "OUT" || dto.type === "BORROW" || dto.type === "DISPOSAL") {

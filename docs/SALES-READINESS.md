@@ -38,59 +38,59 @@ Dokumen pendukung: [DEPLOY-PER-CUSTOMER.md](DEPLOY-PER-CUSTOMER.md) · [OPERATIO
 
 ### 1. Fitur & UI — 10/10
 
-| Bukti | Lokasi |
-|-------|--------|
-| UI Enterprise rollout S1–S20 | `.cursor/workflow/UI-PLAN.md`, `STATUS.md` |
-| QA browser pilot (dark, mobile, a11y) | `pnpm prod:smoke`, UI-S7/S20 sign-off di `STATUS.md` |
-| Modul admin + portal (akademik, keuangan, PPDB, dll.) | `apps/web`, `apps/api` |
+| Bukti                                                 | Lokasi                                               |
+| ----------------------------------------------------- | ---------------------------------------------------- |
+| UI Enterprise rollout S1–S20                          | `.cursor/workflow/UI-PLAN.md`, `STATUS.md`           |
+| QA browser pilot (dark, mobile, a11y)                 | `pnpm prod:smoke`, UI-S7/S20 sign-off di `STATUS.md` |
+| Modul admin + portal (akademik, keuangan, PPDB, dll.) | `apps/web`, `apps/api`                               |
 
 ### 2. Stabilitas teknis (pilot) — 10/10
 
-| Bukti | Lokasi |
-|-------|--------|
-| Quality gate (typecheck, lint, unit, build) | `pnpm validate` |
-| Integration tests | `pnpm validate:integration` |
-| Smoke produksi (health, auth, modul kunci) | `pnpm prod:smoke` |
-| Pilot prod diverifikasi | `.cursor/audit/ROADMAP.md`, `pnpm prod:smoke` |
+| Bukti                                       | Lokasi                                        |
+| ------------------------------------------- | --------------------------------------------- |
+| Quality gate (typecheck, lint, unit, build) | `pnpm validate`                               |
+| Integration tests                           | `pnpm validate:integration`                   |
+| Smoke produksi (health, auth, modul kunci)  | `pnpm prod:smoke`                             |
+| Pilot prod diverifikasi                     | `.cursor/audit/ROADMAP.md`, `pnpm prod:smoke` |
 
 ### 3. Kemudahan jual ulang (domain) — 10/10
 
-| Bukti | Lokasi |
-|-------|--------|
-| Ganti domain tanpa ubah kode | `docs/DEPLOY-PER-CUSTOMER.md` |
-| Template env pelanggan | `.env.production.example` |
-| HTTPS nginx dari domain | `scripts/setup-https-domain.sh` |
-| Deploy satu perintah | `pnpm deploy:customer` |
+| Bukti                        | Lokasi                          |
+| ---------------------------- | ------------------------------- |
+| Ganti domain tanpa ubah kode | `docs/DEPLOY-PER-CUSTOMER.md`   |
+| Template env pelanggan       | `.env.production.example`       |
+| HTTPS nginx dari domain      | `scripts/setup-https-domain.sh` |
+| Deploy satu perintah         | `pnpm deploy:customer`          |
 
 ### 4. Mitigasi risiko & maintenance — 10/10
 
-| Bukti | Lokasi |
-|-------|--------|
-| Validasi env sebelum deploy | `pnpm validate:prod-env` |
+| Bukti                       | Lokasi                         |
+| --------------------------- | ------------------------------ |
+| Validasi env sebelum deploy | `pnpm validate:prod-env`       |
 | Backup & restore PostgreSQL | `pnpm backup` / `pnpm restore` |
-| Audit dependency (CI) | `pnpm audit` |
-| Hardening checklist | `bug/PILOT-HARDENING.md` |
-| Prosedur update rilis | `docs/OPERATIONS.md` § Update |
+| Audit dependency (CI)       | `pnpm audit`                   |
+| Hardening checklist         | `bug/PILOT-HARDENING.md`       |
+| Prosedur update rilis       | `docs/OPERATIONS.md` § Update  |
 
 ### 5. Siap jual pilot / instalasi pertama — 10/10
 
-| Langkah | Perintah / dokumen |
-|---------|-------------------|
-| 1. Salin & isi env | `cp .env.production.example .env.production` |
-| 2. Generate JWT | `openssl rand -base64 64` (×2) |
-| 3. Deploy + migrate + smoke | `pnpm deploy:customer` |
-| 4. Seed admin pertama (sekali) | `pnpm db:seed:prod` |
-| 5. Onboarding sekolah | Admin → Profil Sekolah |
-| 6. Serah terima | Checklist § Onboarding di bawah |
+| Langkah                        | Perintah / dokumen                           |
+| ------------------------------ | -------------------------------------------- |
+| 1. Salin & isi env             | `cp .env.production.example .env.production` |
+| 2. Generate JWT                | `openssl rand -base64 64` (×2)               |
+| 3. Deploy + migrate + smoke    | `pnpm deploy:customer`                       |
+| 4. Seed admin pertama (sekali) | `pnpm db:seed:prod`                          |
+| 5. Onboarding sekolah          | Admin → Profil Sekolah                       |
+| 6. Serah terima                | Checklist § Onboarding di bawah              |
 
 ### 6. Siap jual tanpa tim ops besar — 10/10
 
-| Bukti | Lokasi |
-|-------|--------|
-| Runbook operasional L1 | `docs/OPERATIONS.md` |
-| Health check berkala | `pnpm health` + cron contoh |
-| Deploy ulang pelanggan baru | `pnpm deploy:customer` |
-| Eskalasi & batas dukungan | `docs/OPERATIONS.md` § Dukungan |
+| Bukti                       | Lokasi                          |
+| --------------------------- | ------------------------------- |
+| Runbook operasional L1      | `docs/OPERATIONS.md`            |
+| Health check berkala        | `pnpm health` + cron contoh     |
+| Deploy ulang pelanggan baru | `pnpm deploy:customer`          |
+| Eskalasi & batas dukungan   | `docs/OPERATIONS.md` § Dukungan |
 
 ---
 
@@ -118,4 +118,4 @@ Centang sebelum menandai instalasi **go-live**:
 
 ---
 
-*Terakhir diperbarui: 2026-06-18 — setelah P1–P3 pilot hardening & DEPLOY-PER-CUSTOMER.*
+_Terakhir diperbarui: 2026-06-18 — setelah P1–P3 pilot hardening & DEPLOY-PER-CUSTOMER._

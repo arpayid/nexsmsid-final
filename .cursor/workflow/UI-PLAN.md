@@ -8,12 +8,12 @@ Setiap baris = **1 PR** → validasi → merge jika CI hijau.
 
 ## UI-S0 — Audit & workflow ✅
 
-| Item | Status |
-|------|--------|
-| Dokumen A→P→E→V→PR→M | ✅ |
-| Audit baseline | ✅ |
-| Sprint map | ✅ |
-| Update STATUS.md | ✅ |
+| Item                 | Status |
+| -------------------- | ------ |
+| Dokumen A→P→E→V→PR→M | ✅     |
+| Audit baseline       | ✅     |
+| Sprint map           | ✅     |
+| Update STATUS.md     | ✅     |
 
 ---
 
@@ -145,10 +145,10 @@ Setiap baris = **1 PR** → validasi → merge jika CI hijau.
 
 ## Sprint aktif
 
-| Field | Nilai |
-|-------|-------|
+| Field      | Nilai                                   |
+| ---------- | --------------------------------------- |
 | **Sprint** | UI-S0 ✅ selesai → **UI-S1** berikutnya |
-| **Branch** | — |
-| **PR** | — |
+| **Branch** | —                                       |
+| **PR**     | —                                       |
 
 Update baris ini di setiap sprint (STATUS.md mirror).

@@ -341,7 +341,7 @@ export class ExamsService {
 
     return this.prisma.$transaction(async (tx) => {
       let totalScore = 0;
-      
+
       const questionIds = answers.map((a) => a.questionId);
       const questions = await tx.examQuestion.findMany({
         where: { id: { in: questionIds }, examId, deletedAt: null },

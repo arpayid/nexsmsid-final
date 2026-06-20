@@ -12,13 +12,13 @@ Generate onboarding doc by exploring in parallel.
 
 ### 1. Parallel exploration areas
 
-| Agent | Focus |
-|-------|-------|
+| Agent        | Focus                                  |
+| ------------ | -------------------------------------- |
 | Architecture | Monorepo structure, frameworks, config |
-| Data models | Prisma schema, migrations, seeds |
-| API | Controllers, routes, auth per endpoint |
-| Auth | JWT, RBAC, middleware, portals |
-| Deployment | Docker, CI, env vars, local dev |
+| Data models  | Prisma schema, migrations, seeds       |
+| API          | Controllers, routes, auth per endpoint |
+| Auth         | JWT, RBAC, middleware, portals         |
+| Deployment   | Docker, CI, env vars, local dev        |
 
 ### 2. Synthesize to markdown
 
@@ -27,6 +27,7 @@ Sections: Quick Start, Architecture, Data Models, API, Auth, Deployment, Key Fil
 ### 3. For NexSMSID V4
 
 Use existing artifacts instead of re-exploring from scratch when available:
+
 - `.cursor/audit/ROADMAP.md`
 - `.cursor/workflow/STATUS.md`
 - `.cursor/skills/nexsmsid-v4/modules.md`

@@ -10,14 +10,14 @@ cp .env.production.example .env.production
 pnpm validate:prod-env
 ```
 
-| Variabel | Wajib | Catatan |
-|----------|-------|---------|
-| `NODE_ENV` | production | |
-| `WEB_ORIGIN` / `CORS_ORIGIN` | URL akses user | Sama persis (http IP staging atau https domain) |
-| `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` | ≥64 char, berbeda | `openssl rand -base64 64` |
-| `TURNSTILE_SECRET_KEY` | Production key | Test key hanya pilot internal |
-| `NEXT_PUBLIC_API_URL` | `/api/v1` | Behind nginx |
-| `POSTGRES_PASSWORD` | Strong | Bukan placeholder example |
+| Variabel                                   | Wajib             | Catatan                                         |
+| ------------------------------------------ | ----------------- | ----------------------------------------------- |
+| `NODE_ENV`                                 | production        |                                                 |
+| `WEB_ORIGIN` / `CORS_ORIGIN`               | URL akses user    | Sama persis (http IP staging atau https domain) |
+| `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` | ≥64 char, berbeda | `openssl rand -base64 64`                       |
+| `TURNSTILE_SECRET_KEY`                     | Production key    | Test key hanya pilot internal                   |
+| `NEXT_PUBLIC_API_URL`                      | `/api/v1`         | Behind nginx                                    |
+| `POSTGRES_PASSWORD`                        | Strong            | Bukan placeholder example                       |
 
 ## 2. Deploy stack
 

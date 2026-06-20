@@ -2,27 +2,27 @@
 
 Enterprise School Management System — modular monolith, production-ready.
 
-| Atribut         | Nilai                                              |
-| --------------- | -------------------------------------------------- |
-| Nama            | NexSMSID V4                                        |
-| Version         | 4.0.0                                              |
-| Package         | `nexsmsid-v4`                                      |
-| Package Manager | pnpm@10.18.3                                       |
-| Node            | >= 20.11.0 (CI: Node.js 24)                        |
+| Atribut         | Nilai                                                                    |
+| --------------- | ------------------------------------------------------------------------ |
+| Nama            | NexSMSID V4                                                              |
+| Version         | 4.0.0                                                                    |
+| Package         | `nexsmsid-v4`                                                            |
+| Package Manager | pnpm@10.18.3                                                             |
+| Node            | >= 20.11.0 (CI: Node.js 24)                                              |
 | Repo            | [github.com/arpayid/nexsmsid-v4](https://github.com/arpayid/nexsmsid-v4) |
 | Status          | Fase 4 — Production pilot ✅ stack Docker + nginx; HTTPS domain opsional |
 
 ## Tech Stack
 
-| Layer      | Teknologi                                              |
-| ---------- | ------------------------------------------------------ |
-| Backend    | NestJS 11, Prisma 6, PostgreSQL 16, Redis 7, BullMQ   |
-| Frontend   | Next.js 15, React 19, TailwindCSS 3, shadcn/ui        |
-| Auth       | JWT (access + refresh), bcryptjs, RBAC                 |
-| Validation | Zod (env, DTO, pipes)                                  |
-| Testing    | Vitest (unit + integration)                            |
-| Tooling    | pnpm workspace, Turborepo, TypeScript 5.9, ESLint      |
-| Infra      | Docker Compose, Nginx, GitHub Actions                  |
+| Layer      | Teknologi                                           |
+| ---------- | --------------------------------------------------- |
+| Backend    | NestJS 11, Prisma 6, PostgreSQL 16, Redis 7, BullMQ |
+| Frontend   | Next.js 15, React 19, TailwindCSS 3, shadcn/ui      |
+| Auth       | JWT (access + refresh), bcryptjs, RBAC              |
+| Validation | Zod (env, DTO, pipes)                               |
+| Testing    | Vitest (unit + integration)                         |
+| Tooling    | pnpm workspace, Turborepo, TypeScript 5.9, ESLint   |
+| Infra      | Docker Compose, Nginx, GitHub Actions               |
 
 ## Struktur Monorepo
 
@@ -116,11 +116,11 @@ Turnstile **wajib** di production (divalidasi API saat `NODE_ENV=production`).
 
 **Staging pilot tanpa HTTPS (IP publik / localhost):** set `CORS_ORIGIN` dan `WEB_ORIGIN` ke URL akses yang sama, misalnya `http://156.67.216.146` atau `http://127.0.0.1`. Cookie auth otomatis **tanpa** flag `Secure` bila origin HTTP — login tetap berfungsi di browser. Untuk pilot, Turnstile test key dari `.env.example` boleh dipakai.
 
-| Variabel | Peran |
-| -------- | ----- |
-| `CORS_ORIGIN` / `WEB_ORIGIN` | Harus sama dengan URL yang dibuka user (termasuk skema `http`/`https`) |
-| `NEXT_PUBLIC_API_URL` | Path relatif `/api/v1` (nginx proxy) atau URL absolut penuh |
-| `API_INTERNAL_URL` | Sudah diset di `docker-compose.prod.yml` (`http://api:4000`) untuk refresh session web |
+| Variabel                     | Peran                                                                                  |
+| ---------------------------- | -------------------------------------------------------------------------------------- |
+| `CORS_ORIGIN` / `WEB_ORIGIN` | Harus sama dengan URL yang dibuka user (termasuk skema `http`/`https`)                 |
+| `NEXT_PUBLIC_API_URL`        | Path relatif `/api/v1` (nginx proxy) atau URL absolut penuh                            |
+| `API_INTERNAL_URL`           | Sudah diset di `docker-compose.prod.yml` (`http://api:4000`) untuk refresh session web |
 
 ### 2. Konfigurasi Nginx
 
@@ -181,10 +181,10 @@ sudo ./svc.sh install && sudo ./svc.sh start
 
 ## API
 
-| Endpoint                    | Deskripsi        |
-| --------------------------- | ---------------- |
-| `GET /api/v1/health`        | Health check     |
-| `GET /api/v1/docs`          | Swagger          |
-| `POST /api/v1/auth/login`   | Login            |
-| `POST /api/v1/auth/refresh` | Refresh token    |
-| `GET /api/v1/auth/me`       | User saat ini    |
+| Endpoint                    | Deskripsi     |
+| --------------------------- | ------------- |
+| `GET /api/v1/health`        | Health check  |
+| `GET /api/v1/docs`          | Swagger       |
+| `POST /api/v1/auth/login`   | Login         |
+| `POST /api/v1/auth/refresh` | Refresh token |
+| `GET /api/v1/auth/me`       | User saat ini |

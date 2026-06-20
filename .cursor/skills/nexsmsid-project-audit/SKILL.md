@@ -49,19 +49,19 @@ gh api repos/arpayid/nexsmsid-v4/actions/runners
 
 ## Kriteria verdict
 
-| Verdict | Syarat |
-|---------|--------|
-| **Dev ready** | CI hijau + build/test pass + `.env` + `pnpm dev` + login OK |
-| **Feature ready** | Dev ready + smoke test 5 domain |
-| **Prod ready** | Feature ready + docker audit clean + staging healthcheck + Turnstile prod |
+| Verdict           | Syarat                                                                    |
+| ----------------- | ------------------------------------------------------------------------- |
+| **Dev ready**     | CI hijau + build/test pass + `.env` + `pnpm dev` + login OK               |
+| **Feature ready** | Dev ready + smoke test 5 domain                                           |
+| **Prod ready**    | Feature ready + docker audit clean + staging healthcheck + Turnstile prod |
 
 ## Sub-skills (muat bersamaan)
 
-| Skill | Fokus |
-|-------|-------|
-| `fullstack-project-audit` | Framework 7 fase umum |
-| `docker-compose-audit` | Container hardening |
-| `nexsmsid-v4` | Konvensi develop fitur |
+| Skill                     | Fokus                  |
+| ------------------------- | ---------------------- |
+| `fullstack-project-audit` | Framework 7 fase umum  |
+| `docker-compose-audit`    | Container hardening    |
+| `nexsmsid-v4`             | Konvensi develop fitur |
 
 ## Security hotspots (NexSMSID)
 
@@ -79,17 +79,21 @@ Pola dari [awesome-cursor-skills/auditing-security](https://github.com/spencerpa
 
 ```markdown
 ## Fase 1 Dev Ready (1–2 hari)
+
 - .env + migrate + seed + pnpm dev + login
 
 ## Fase 2 Quality (3–5 hari)
+
 - Smoke test per domain bisnis
 - GHA Node 24 upgrade
 
 ## Fase 3 Hardening (6–8 hari)
+
 - Dockerfile HEALTHCHECK
 - PPDB upload review
 
 ## Fase 4 Production (9–12 hari)
+
 - docker:prod:up + health + backup
 ```
 

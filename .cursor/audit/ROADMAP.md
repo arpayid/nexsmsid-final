@@ -58,25 +58,25 @@
 
 ## Fase 5 — Post-Pilot (backlog)
 
-| Prioritas | Task | Estimasi |
-|-----------|------|----------|
-| P1 | Rebuild prod Docker + migrate prod | 30 menit |
-| P2 | js-yaml override (swagger transitive) | 1 jam |
-| P2 | Fix 2 ESLint react-hooks warnings | 1 jam |
-| P2 | QA manual: dark mode, mobile, a11y | 2–4 jam |
-| P2 | HTTPS + domain production | saat DNS ready |
-| P3 | Enable PR auto-merge di GitHub settings | 15 menit |
-| P3 | Repair `pnpm dev` / Turbopack edge bundler | 4–8 jam |
+| Prioritas | Task                                       | Estimasi       |
+| --------- | ------------------------------------------ | -------------- |
+| P1        | Rebuild prod Docker + migrate prod         | 30 menit       |
+| P2        | js-yaml override (swagger transitive)      | 1 jam          |
+| P2        | Fix 2 ESLint react-hooks warnings          | 1 jam          |
+| P2        | QA manual: dark mode, mobile, a11y         | 2–4 jam        |
+| P2        | HTTPS + domain production                  | saat DNS ready |
+| P3        | Enable PR auto-merge di GitHub settings    | 15 menit       |
+| P3        | Repair `pnpm dev` / Turbopack edge bundler | 4–8 jam        |
 
 ---
 
 ## CI / GitHub Status (2026-06-18)
 
-| Item | Status |
-|------|--------|
-| `main` latest CI | ✅ SUCCESS (`c2bde98`) |
-| Open PRs | 0 |
-| Merged recent | #39 PPDB provision, #40 multer, docs commit |
+| Item             | Status                                      |
+| ---------------- | ------------------------------------------- |
+| `main` latest CI | ✅ SUCCESS (`c2bde98`)                      |
+| Open PRs         | 0                                           |
+| Merged recent    | #39 PPDB provision, #40 multer, docs commit |
 
 ---
 

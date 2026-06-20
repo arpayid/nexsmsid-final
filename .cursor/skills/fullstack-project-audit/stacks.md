@@ -54,8 +54,8 @@ Perhatikan: compose project name bentrok antar repo, volume stale dari project l
 
 ## Output severity guide
 
-| Severity | Kriteria |
-|----------|----------|
-| Blocker | Security hole, data loss, CI broken, cannot run dev |
-| Warning | Missing tests, audit fail, perf concern, debt |
-| Nit | Naming, docs, style inconsistency |
+| Severity | Kriteria                                            |
+| -------- | --------------------------------------------------- |
+| Blocker  | Security hole, data loss, CI broken, cannot run dev |
+| Warning  | Missing tests, audit fail, perf concern, debt       |
+| Nit      | Naming, docs, style inconsistency                   |
