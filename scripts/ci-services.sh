@@ -14,20 +14,16 @@ REDIS_PORT="${REDIS_PORT:-6379}"
 TEST_DB="${CI_TEST_DATABASE:-nexsmsid_test}"
 
 compose() {
-  docker compose -p "$COMPOSE_PROJECT_NAME" -f "$COMPOSE_FILE" "$@"
+  POSTGRES_PORT="$POSTGRES_PORT" REDIS_PORT="$REDIS_PORT" \
+    docker compose -p "$COMPOSE_PROJECT_NAME" -f "$COMPOSE_FILE" "$@"
 }
 
 pg_ready() {
-  if command -v pg_isready >/dev/null 2>&1; then
-    pg_isready -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -d nexsmsid >/dev/null 2>&1 && return 0
-  fi
+  # Always check using Docker container to avoid confusion with host PostgreSQL
   compose exec -T postgres pg_isready -U "$POSTGRES_USER" -d nexsmsid >/dev/null 2>&1
 }
 
 redis_ready() {
-  if command -v redis-cli >/dev/null 2>&1; then
-    redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" ping 2>/dev/null | grep -q PONG && return 0
-  fi
   compose exec -T redis redis-cli ping 2>/dev/null | grep -q PONG
 }
 
@@ -73,14 +69,14 @@ case "$cmd" in
   start)
     if services_healthy; then
       ensure_test_database
-      echo "CI services already running (warm start)"
+      echo "CI services already running (warm start) on ports PG:${POSTGRES_PORT} Redis:${REDIS_PORT}"
       exit 0
     fi
     compose up -d postgres redis
     wait_for_postgres
     wait_for_redis
     ensure_test_database
-    echo "CI services are ready (project: ${COMPOSE_PROJECT_NAME}, test DB: ${TEST_DB})"
+    echo "CI services are ready (project: ${COMPOSE_PROJECT_NAME}, test DB: ${TEST_DB}, PG port: ${POSTGRES_PORT}, Redis port: ${REDIS_PORT})"
     ;;
   stop)
     if [ "${CI_KEEP_SERVICES:-0}" = "1" ]; then
