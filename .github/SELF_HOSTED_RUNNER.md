@@ -1,6 +1,6 @@
 # Self-Hosted Runner — NexSMSID V4 CI
 
-Workflow CI memakai **self-hosted runner** dengan label `self-hosted`, `linux`, dan `nexsmsid-v4`.
+Workflow CI memakai **self-hosted runner** dengan label `self-hosted`, `linux`, dan `nexsmsid-final`.
 
 ## Prasyarat di mesin runner
 
@@ -17,7 +17,7 @@ Port **5432** (PostgreSQL) dan **6379** (Redis) harus bebas saat job CI berjalan
 
 ## 1. Daftarkan runner ke GitHub
 
-Di repository **arpayid/nexsmsid-v4**:
+Di repository **arpayid/nexsmsid-final**:
 
 **Settings → Actions → Runners → New self-hosted runner**
 
@@ -29,8 +29,8 @@ curl -o actions-runner-linux-x64-2.335.1.tar.gz -L \
   https://github.com/actions/runner/releases/download/v2.335.1/actions-runner-linux-x64-2.335.1.tar.gz
 tar xzf ./actions-runner-linux-x64-*.tar.gz
 
-./config.sh --url https://github.com/arpayid/nexsmsid-v4 --token <TOKEN_DARI_GITHUB> \
-  --labels self-hosted,linux,nexsmsid-v4 --name nexsmsid-v4-ci-01
+./config.sh --url https://github.com/arpayid/nexsmsid-final --token <TOKEN_DARI_GITHUB> \
+  --labels self-hosted,linux,nexsmsid-final --name nexsmsid-final-ci-01
 
 sudo ./svc.sh install
 sudo ./svc.sh start
@@ -41,10 +41,10 @@ sudo ./svc.sh start
 Workflow `.github/workflows/ci.yml` memakai:
 
 ```yaml
-runs-on: [self-hosted, linux, nexsmsid-v4]
+runs-on: [self-hosted, linux, nexsmsid-final]
 ```
 
-Pastikan label `nexsmsid-v4` terpasang saat `config.sh`.
+Pastikan label `nexsmsid-final` terpasang saat `config.sh`.
 
 ## 3. Cara kerja layanan CI
 
@@ -56,7 +56,7 @@ GitHub **tidak** mendukung blok `services:` pada self-hosted runner. CI menjalan
 ./scripts/ci-services.sh stop    # no-op jika CI_KEEP_SERVICES=1
 ```
 
-Project Compose terisolasi: `nexsmsid-v4-ci` (terpisah dari dev `nexsmsid-v4`).
+Project Compose terisolasi: `nexsmsid-final-ci` (terpisah dari dev `nexsmsid-final`).
 
 ### Percepatan CI (disarankan di VPS)
 
@@ -85,8 +85,8 @@ CI_KEEP_SERVICES=0 CI_RESET_VOLUMES=1 ./scripts/ci-services.sh stop
 ## 4. Verifikasi manual di runner
 
 ```bash
-git clone https://github.com/arpayid/nexsmsid-v4.git
-cd nexsmsid-v4
+git clone https://github.com/arpayid/nexsmsid-final.git
+cd nexsmsid-final
 ./scripts/ci-services.sh start
 pnpm install --frozen-lockfile
 pnpm --filter @nexsmsid/api prisma generate
@@ -100,7 +100,7 @@ pnpm --filter @nexsmsid/api test
 
 | Gejala                     | Solusi                                                                                 |
 | -------------------------- | -------------------------------------------------------------------------------------- |
-| Job stuck di queue         | Runner offline atau label tidak cocok (`nexsmsid-v4`)                                  |
+| Job stuck di queue         | Runner offline atau label tidak cocok (`nexsmsid-final`)                                  |
 | Port 5432/6379 in use      | Hentikan stack Docker lain atau ubah port                                              |
 | `docker compose` not found | Pasang [Compose plugin](https://docs.docker.com/compose/install/linux/)                |
 | Permission denied Docker   | `sudo usermod -aG docker <user>` lalu restart service runner                           |

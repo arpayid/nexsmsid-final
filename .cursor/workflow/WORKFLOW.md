@@ -8,7 +8,7 @@ Dokumen workflow utama sebelum dan selama pengerjaan project. **Lokal only.**
 flowchart TD
     subgraph init [Fase 0 — Inisialisasi]
         A[Sesi baru / task baru] --> B{Baca STATUS.md}
-        B --> C[Muat skill nexsmsid-v4-workflow]
+        B --> C[Muat skill nexsmsid-final-workflow]
         C --> D{Dev ready?}
         D -->|Belum| E[Fase 1: Setup env + migrate + dev]
         D -->|Sudah| F[Fase 2+: Pengerjaan fitur]
@@ -67,9 +67,9 @@ Setiap perubahan kode mengikuti urutan ini:
 
 ### 1. Discover
 
-- Baca `nexsmsid-v4-master` → route ke sub-skill
+- Baca `nexsmsid-final-master` → route ke sub-skill
 - Identifikasi layer: API / Web / Prisma / CI / Docker
-- Cek modul terkait di `nexsmsid-v4/modules.md`
+- Cek modul terkait di `nexsmsid-final/modules.md`
 - Jangan coding sebelum scope jelas
 
 ### 2. Plan
@@ -80,7 +80,7 @@ Setiap perubahan kode mengikuti urutan ini:
 
 ### 3. Implement
 
-- Ikuti pola di `nexsmsid-v4` skill:
+- Ikuti pola di `nexsmsid-final` skill:
   - Master data → `BaseMasterDataService`
   - People → `BasePeopleService`
   - `@RequirePermissions` wajib di setiap endpoint protected
@@ -135,13 +135,13 @@ gitGraph
 | Base branch     | `main`                                        |
 | Branch naming   | `feat/`, `fix/`, `chore/`, `cursor/`          |
 | CI trigger      | Push/PR ke `main`                             |
-| Runner          | Self-hosted, label `nexsmsid-v4`              |
-| CI services     | `nexsmsid-v4-ci` via `scripts/ci-services.sh` |
+| Runner          | Self-hosted, label `nexsmsid-final`              |
+| CI services     | `nexsmsid-final-ci` via `scripts/ci-services.sh` |
 | Commit          | Hanya saat user minta                         |
 | Push            | Hanya saat user minta                         |
 | Force push main | **Dilarang**                                  |
 
-Setelah PR: `gh run list --repo arpayid/nexsmsid-v4 --branch <branch>`
+Setelah PR: `gh run list --repo arpayid/nexsmsid-final --branch <branch>`
 
 ---
 
@@ -149,9 +149,9 @@ Setelah PR: `gh run list --repo arpayid/nexsmsid-v4 --branch <branch>`
 
 | Pekerjaan               | Skill                                        |
 | ----------------------- | -------------------------------------------- |
-| Workflow / fase project | `nexsmsid-v4-workflow` (ini)                 |
-| Develop fitur           | `nexsmsid-v4`                                |
-| Orchestrasi umum        | `nexsmsid-v4-master`                         |
+| Workflow / fase project | `nexsmsid-final-workflow` (ini)                 |
+| Develop fitur           | `nexsmsid-final`                                |
+| Orchestrasi umum        | `nexsmsid-final-master`                         |
 | Audit                   | `nexsmsid-project-audit`                     |
 | NestJS patterns         | `nestjs-best-practices`                      |
 | Next.js pages           | `nextjs-app-router-patterns`                 |
@@ -209,4 +209,4 @@ Verifikasi:
     └── task-cycle.md
 ```
 
-Skill agent: `.cursor/skills/nexsmsid-v4-workflow/SKILL.md`
+Skill agent: `.cursor/skills/nexsmsid-final-workflow/SKILL.md`

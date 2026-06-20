@@ -47,7 +47,7 @@ gantt
 ### Setiap sesi kerja dimulai dengan
 
 1. Baca `STATUS.md`
-2. Muat skill `nexsmsid-v4-workflow`
+2. Muat skill `nexsmsid-final-workflow`
 3. Kerjakan hanya task fase aktif (kecuali user override)
 
 ### Setiap task kode (setelah Fase 1)
@@ -70,12 +70,12 @@ Ikuti **D → P → I → V → R** — detail di [checklists/task-cycle.md](che
 
 | ID    | Task                                               | Status | Output                      |
 | ----- | -------------------------------------------------- | ------ | --------------------------- |
-| P0-01 | Install skill lokal (nexsmsid-v4, audit, workflow) | ✅     | `.cursor/skills/`           |
+| P0-01 | Install skill lokal (nexsmsid-final, audit, workflow) | ✅     | `.cursor/skills/`           |
 | P0-02 | Install skill eksternal via skills.sh              | ✅     | `.agents/skills/` (9 skill) |
 | P0-03 | Audit baseline                                     | ✅     | `ROADMAP.md`                |
 | P0-04 | Roadmap audit                                      | ✅     | `ROADMAP.md`                |
 | P0-05 | Workflow + STATUS + checklists                     | ✅     | `.cursor/workflow/`         |
-| P0-06 | CI decouple v3 → v4                                | ✅     | Runner `nexsmsid-v4-ci-01`  |
+| P0-06 | CI decouple v3 → v4                                | ✅     | Runner `nexsmsid-final-ci-01`  |
 | P0-07 | `pnpm audit --audit-level high` hijau              | ✅     | overrides di `package.json` |
 
 **Tidak ada action tersisa di Fase 0.**
@@ -86,7 +86,7 @@ Ikuti **D → P → I → V → R** — detail di [checklists/task-cycle.md](che
 
 **Tujuan:** Stack lokal jalan, developer bisa login dan navigasi admin dasar.  
 **Estimasi:** 1–2 hari  
-**Skill:** `nexsmsid-v4-workflow`, `nexsmsid-v4`, `prisma-database-setup`  
+**Skill:** `nexsmsid-final-workflow`, `nexsmsid-final`, `prisma-database-setup`  
 **Checklist:** [phase-1-dev-ready.md](checklists/phase-1-dev-ready.md)
 
 ### Blok 1.1 — Environment file
@@ -111,12 +111,12 @@ test -f .env && grep -q 'JWT_ACCESS_SECRET=.' .env && echo OK
 
 | ID    | Langkah                | Perintah                                              | Expected result            | Risiko                             |
 | ----- | ---------------------- | ----------------------------------------------------- | -------------------------- | ---------------------------------- |
-| P1-08 | Start postgres + redis | `docker compose up -d`                                | Project name `nexsmsid-v4` | Port 5432/6379 dipakai proses lain |
+| P1-08 | Start postgres + redis | `docker compose up -d`                                | Project name `nexsmsid-final` | Port 5432/6379 dipakai proses lain |
 | P1-09 | Cek health postgres    | `docker compose ps`                                   | Status `healthy`           | Container crash                    |
 | P1-10 | Cek health redis       | `docker compose ps`                                   | Status `healthy`           | —                                  |
 | P1-11 | Test koneksi DB        | `docker compose exec postgres pg_isready -U nexsmsid` | `accepting connections`    | —                                  |
 
-**Catatan:** CI memakai project terpisah `nexsmsid-v4-ci` — tidak bentrok dengan dev `nexsmsid-v4`.
+**Catatan:** CI memakai project terpisah `nexsmsid-final-ci` — tidak bentrok dengan dev `nexsmsid-final`.
 
 **Verifikasi blok 1.2:**
 
@@ -190,7 +190,7 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:4000/api/v1/health
 **Tujuan:** Validasi alur bisnis end-to-end + maintenance CI.  
 **Estimasi:** 2–3 hari  
 **Prasyarat:** Fase 1 ✅  
-**Skill:** `nexsmsid-v4`, `nexsmsid-v4-workflow`  
+**Skill:** `nexsmsid-final`, `nexsmsid-final-workflow`  
 **Checklist:** [phase-2-quality.md](checklists/phase-2-quality.md)
 
 ### Blok 2.1 — Smoke test domain (urutan disarankan)
@@ -282,7 +282,7 @@ Setiap smoke test = **D→P→I→V→R** ringkas (discover URL, plan alur, exec
 
 ```bash
 pnpm format:check && pnpm lint && pnpm typecheck && pnpm build
-gh run list --repo arpayid/nexsmsid-v4 --limit 3
+gh run list --repo arpayid/nexsmsid-final --limit 3
 ```
 
 ### Blok 2.4 — Dependency review
@@ -309,7 +309,7 @@ gh run list --repo arpayid/nexsmsid-v4 --limit 3
 **Tujuan:** Production readiness — Docker, security, cleanup.  
 **Estimasi:** 2–3 hari  
 **Prasyarat:** Fase 2 ✅  
-**Skill:** `docker-expert`, `docker-compose-audit`, `auditing-security`, `nexsmsid-v4`  
+**Skill:** `docker-expert`, `docker-compose-audit`, `auditing-security`, `nexsmsid-final`  
 **Checklist:** [phase-3-hardening.md](checklists/phase-3-hardening.md)
 
 ### Blok 3.1 — Docker HEALTHCHECK
@@ -378,7 +378,7 @@ pnpm audit --audit-level high
 **Tujuan:** Deploy stack production di environment staging/pilot.  
 **Estimasi:** 2–3 hari  
 **Prasyarat:** Fase 3 ✅  
-**Skill:** `docker-expert`, `docker-patterns`, `nexsmsid-v4-workflow`  
+**Skill:** `docker-expert`, `docker-patterns`, `nexsmsid-final-workflow`  
 **Checklist:** [phase-4-production.md](checklists/phase-4-production.md)
 
 ### Blok 4.1 — Production environment
@@ -454,7 +454,7 @@ Setelah Fase 1 selesai, setiap fitur baru mengikuti template ini:
 - Modul: apps/api/src/...
 - Web: apps/web/src/app/admin/...
 - Permission existing: ...
-- Skill: nexsmsid-v4 + [sub-skill]
+- Skill: nexsmsid-final + [sub-skill]
 
 ### P — Plan
 
@@ -485,12 +485,12 @@ Tier: [API only / Web only / Full]
 
 | Jenis fitur       | Skill utama                              | Quality tier           |
 | ----------------- | ---------------------------------------- | ---------------------- |
-| CRUD master data  | nexsmsid-v4                              | Full                   |
-| Endpoint API baru | nexsmsid-v4 + nestjs-best-practices      | Full                   |
-| Halaman admin     | nexsmsid-v4 + nextjs-app-router-patterns | Web + build            |
+| CRUD master data  | nexsmsid-final                              | Full                   |
+| Endpoint API baru | nexsmsid-final + nestjs-best-practices      | Full                   |
+| Halaman admin     | nexsmsid-final + nextjs-app-router-patterns | Web + build            |
 | Schema DB         | prisma-database-setup                    | Full + integration     |
-| Laporan BullMQ    | nexsmsid-v4                              | Full + Redis           |
-| PPDB publik       | nexsmsid-v4 + auditing-security          | Full + security review |
+| Laporan BullMQ    | nexsmsid-final                              | Full + Redis           |
+| PPDB publik       | nexsmsid-final + auditing-security          | Full + security review |
 
 ---
 
@@ -518,7 +518,7 @@ main
 | 6    | Tunggu CI     | `gh run watch`                  |
 | 7    | Merge         | Setelah CI hijau + user approve |
 
-**CI environment:** runner `nexsmsid-v4`, services via `scripts/ci-services.sh`, compose `nexsmsid-v4-ci`.
+**CI environment:** runner `nexsmsid-final`, services via `scripts/ci-services.sh`, compose `nexsmsid-final-ci`.
 
 ---
 
@@ -565,7 +565,7 @@ pnpm --filter @nexsmsid/api test && pnpm build
 pnpm validate:integration && pnpm audit --audit-level high
 
 # CI status
-gh run list --repo arpayid/nexsmsid-v4 --branch main --limit 5
+gh run list --repo arpayid/nexsmsid-final --branch main --limit 5
 
 # Docker audit
 .cursor/skills/fullstack-project-audit/scripts/docker-audit.sh .
@@ -581,5 +581,5 @@ gh run list --repo arpayid/nexsmsid-v4 --branch main --limit 5
 | Status terkini      | [STATUS.md](STATUS.md)                                                             |
 | Checklists per fase | [checklists/](checklists/)                                                         |
 | Audit roadmap       | [../audit/ROADMAP.md](../audit/ROADMAP.md)                                         |
-| Skill workflow      | [../skills/nexsmsid-v4-workflow/SKILL.md](../skills/nexsmsid-v4-workflow/SKILL.md) |
-| Skill develop       | [../skills/nexsmsid-v4/SKILL.md](../skills/nexsmsid-v4/SKILL.md)                   |
+| Skill workflow      | [../skills/nexsmsid-final-workflow/SKILL.md](../skills/nexsmsid-final-workflow/SKILL.md) |
+| Skill develop       | [../skills/nexsmsid-final/SKILL.md](../skills/nexsmsid-final/SKILL.md)                   |

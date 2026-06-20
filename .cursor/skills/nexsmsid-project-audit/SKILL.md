@@ -1,6 +1,6 @@
 ---
 name: nexsmsid-project-audit
-description: Runs end-to-end audit of NexSMSID V4 school management monorepo and produces report plus roadmap. Orchestrates fullstack-project-audit, docker-compose-audit, and nexsmsid-v4 domain checks. Use when auditing nexsmsid-v4 from scratch, onboarding, pre-deploy review, or creating audit roadmap.
+description: Runs end-to-end audit of NexSMSID V4 school management monorepo and produces report plus roadmap. Orchestrates fullstack-project-audit, docker-compose-audit, and nexsmsid-final domain checks. Use when auditing nexsmsid-final from scratch, onboarding, pre-deploy review, or creating audit roadmap.
 compatibility: Requires pnpm, docker, gh CLI, postgres/redis for integration tests
 ---
 
@@ -43,8 +43,8 @@ pnpm audit --audit-level high
 .cursor/skills/fullstack-project-audit/scripts/docker-audit.sh .
 
 # CI remote
-gh run list --repo arpayid/nexsmsid-v4 --branch main --limit 3
-gh api repos/arpayid/nexsmsid-v4/actions/runners
+gh run list --repo arpayid/nexsmsid-final --branch main --limit 3
+gh api repos/arpayid/nexsmsid-final/actions/runners
 ```
 
 ## Kriteria verdict
@@ -61,7 +61,7 @@ gh api repos/arpayid/nexsmsid-v4/actions/runners
 | ------------------------- | ---------------------- |
 | `fullstack-project-audit` | Framework 7 fase umum  |
 | `docker-compose-audit`    | Container hardening    |
-| `nexsmsid-v4`             | Konvensi develop fitur |
+| `nexsmsid-final`             | Konvensi develop fitur |
 
 ## Security hotspots (NexSMSID)
 

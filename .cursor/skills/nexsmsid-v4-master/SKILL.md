@@ -1,7 +1,7 @@
 ---
-name: nexsmsid-v4-master
-description: Master orchestrator for NexSMSID V4 monorepo — maps entire project, routes tasks to local and external skills (skills.sh, ECC, awesome-cursor-skills), and defines audit → develop → deploy workflows. Use for any work in nexsmsid-v4 when unsure which skill to load, onboarding, full-project context, or multi-domain tasks.
-compatibility: pnpm 10, Node 20+, Docker, PostgreSQL 16, Redis 7, self-hosted GHA runner label nexsmsid-v4
+name: nexsmsid-final-master
+description: Master orchestrator for NexSMSID V4 monorepo — maps entire project, routes tasks to local and external skills (skills.sh, ECC, awesome-cursor-skills), and defines audit → develop → deploy workflows. Use for any work in nexsmsid-final when unsure which skill to load, onboarding, full-project context, or multi-domain tasks.
+compatibility: pnpm 10, Node 20+, Docker, PostgreSQL 16, Redis 7, self-hosted GHA runner label nexsmsid-final
 ---
 
 # NexSMSID V4 — Master Skill
@@ -10,19 +10,19 @@ Skill utama yang memetakan seluruh project dan mengarahkan agent ke skill spesif
 
 ## Kapan pakai skill ini
 
-- Mulai sesi baru di repo `nexsmsid-v4`
+- Mulai sesi baru di repo `nexsmsid-final`
 - Task menyentuh banyak layer (DB + API + Web + CI)
 - Audit, onboarding, atau pre-deploy review
 - Tidak yakin skill mana yang relevan
 
-**Langkah pertama:** baca `nexsmsid-v4-workflow` + `STATUS.md` → baca skill ini → pilih sub-skill → ikuti konvensi `nexsmsid-v4`.
+**Langkah pertama:** baca `nexsmsid-final-workflow` + `STATUS.md` → baca skill ini → pilih sub-skill → ikuti konvensi `nexsmsid-final`.
 
 ---
 
 ## Peta project
 
 ```
-nexsmsid-v4/
+nexsmsid-final/
 ├── apps/
 │   ├── api/          NestJS 11, Prisma, BullMQ, JWT auth
 │   └── web/          Next.js 15 App Router, 5 portal
@@ -30,10 +30,10 @@ nexsmsid-v4/
 │   ├── types/        Shared TS types, portal helpers
 │   ├── api-client/   Typed HTTP client per domain
 │   └── ui/           Shared React components
-├── docker-compose.yml          project: nexsmsid-v4
-├── docker-compose.prod.yml     project: nexsmsid-v4-prod
-├── .github/workflows/ci.yml    runs-on: nexsmsid-v4
-├── scripts/ci-services.sh      CI postgres+redis (nexsmsid-v4-ci)
+├── docker-compose.yml          project: nexsmsid-final
+├── docker-compose.prod.yml     project: nexsmsid-final-prod
+├── .github/workflows/ci.yml    runs-on: nexsmsid-final
+├── scripts/ci-services.sh      CI postgres+redis (nexsmsid-final-ci)
 └── .cursor/skills/               skill lokal (tidak di-commit)
 ```
 
@@ -54,16 +54,16 @@ Package scope: `@nexsmsid/*` · Package manager: `pnpm@10` · Build: Turbo
 
 | Skill                       | Path                       | Gunakan saat                                           |
 | --------------------------- | -------------------------- | ------------------------------------------------------ |
-| **nexsmsid-v4-workflow**    | `nexsmsid-v4-workflow/`    | Fase project, D→P→I→V→R, quality gate                  |
-| **nexsmsid-v4**             | `nexsmsid-v4/`             | Develop fitur, debug, konvensi kode                    |
-| **nexsmsid-v4-master**      | `nexsmsid-v4-master/`      | Orchestrasi & routing skill (ini)                      |
+| **nexsmsid-final-workflow**    | `nexsmsid-final-workflow/`    | Fase project, D→P→I→V→R, quality gate                  |
+| **nexsmsid-final**             | `nexsmsid-final/`             | Develop fitur, debug, konvensi kode                    |
+| **nexsmsid-final-master**      | `nexsmsid-final-master/`      | Orchestrasi & routing skill (ini)                      |
 | **nexsmsid-project-audit**  | `nexsmsid-project-audit/`  | Audit end-to-end + roadmap                             |
 | **fullstack-project-audit** | `fullstack-project-audit/` | Framework audit 7 fase umum                            |
 | **docker-compose-audit**    | `docker-compose-audit/`    | Hardening container/compose                            |
 | **auditing-security**       | `auditing-security/`       | Security review OWASP (vendored awesome-cursor-skills) |
 | **codebase-onboarding**     | `codebase-onboarding/`     | Generate onboarding doc                                |
 
-Detail modul API: `nexsmsid-v4/modules.md`
+Detail modul API: `nexsmsid-final/modules.md`
 
 ### Eksternal (`.agents/skills/` — via skills.sh)
 
@@ -87,15 +87,15 @@ Install tambahan: `npx skills add <owner/repo@skill> -a cursor -y`
 
 | User intent                          | Baca skill                                                    |
 | ------------------------------------ | ------------------------------------------------------------- |
-| Mulai sesi / fase project / planning | `nexsmsid-v4-workflow`                                        |
-| Tambah/edit fitur API                | `nexsmsid-v4` + `nestjs-best-practices`                       |
-| Tambah halaman web / portal          | `nexsmsid-v4` + `nextjs-app-router-patterns`                  |
-| Ubah schema / migration              | `nexsmsid-v4` + `prisma-database-setup` + `prisma-client-api` |
+| Mulai sesi / fase project / planning | `nexsmsid-final-workflow`                                        |
+| Tambah/edit fitur API                | `nexsmsid-final` + `nestjs-best-practices`                       |
+| Tambah halaman web / portal          | `nexsmsid-final` + `nextjs-app-router-patterns`                  |
+| Ubah schema / migration              | `nexsmsid-final` + `prisma-database-setup` + `prisma-client-api` |
 | Query Prisma kompleks                | `prisma-client-api`                                           |
 | Monorepo / turbo / cache             | `turborepo`                                                   |
 | Dockerfile / compose prod            | `docker-expert` + `docker-patterns` + `docker-compose-audit`  |
 | CI / runner / workflow               | `github-actions` + baca `.github/SELF_HOSTED_RUNNER.md`       |
-| Unit / integration test              | `vitest` + `nexsmsid-v4` (quality gate)                       |
+| Unit / integration test              | `vitest` + `nexsmsid-final` (quality gate)                       |
 | Audit project                        | `nexsmsid-project-audit` (orchestrator)                       |
 | Security hardening                   | `auditing-security`                                           |
 | Onboarding developer baru            | `codebase-onboarding`                                         |
@@ -116,7 +116,7 @@ Baca `STATUS.md` → jalankan checklist fase aktif sebelum fitur baru.
 ```bash
 pnpm install
 cp .env.example .env          # JWT min 64 char
-docker compose up -d          # nexsmsid-v4
+docker compose up -d          # nexsmsid-final
 pnpm --filter @nexsmsid/api prisma migrate dev
 pnpm --filter @nexsmsid/api prisma db seed
 pnpm dev
@@ -126,7 +126,7 @@ Login seed: `superadmin@nexsmsid.dev` / `ChangeMe123!`
 
 ### 2. Develop fitur
 
-Ikuti checklist di `nexsmsid-v4` → muat sub-skill sesuai layer.
+Ikuti checklist di `nexsmsid-final` → muat sub-skill sesuai layer.
 
 ### 3. Quality gate (mirror CI)
 
@@ -158,7 +158,7 @@ pnpm health
 2. **JWT di httpOnly cookie** — bukan localStorage
 3. **Response envelope** — `apiSuccess()` di API
 4. **Soft delete** — `deletedAt`, jangan hard delete master data
-5. **Infra v4 only** — compose project `nexsmsid-v4` / `nexsmsid-v4-ci` / `nexsmsid-v4-prod`; runner label `nexsmsid-v4`
+5. **Infra v4 only** — compose project `nexsmsid-final` / `nexsmsid-final-ci` / `nexsmsid-final-prod`; runner label `nexsmsid-final`
 6. **pnpm.overrides** — jaga `pnpm audit --audit-level high` hijau
 7. **Skill lokal** — `.cursor/` dan `.agents/` tidak di-commit kecuali user minta
 
@@ -197,8 +197,8 @@ Prioritas review manual:
 
 ## Referensi cepat
 
-- Module map: [modules.md](../nexsmsid-v4/modules.md)
-- Develop conventions: [nexsmsid-v4/SKILL.md](../nexsmsid-v4/SKILL.md)
+- Module map: [modules.md](../nexsmsid-final/modules.md)
+- Develop conventions: [nexsmsid-final/SKILL.md](../nexsmsid-final/SKILL.md)
 - Audit orchestrator: [nexsmsid-project-audit/SKILL.md](../nexsmsid-project-audit/SKILL.md)
 - Skill index: [SKILLS-INDEX.md](../SKILLS-INDEX.md)
 - CI runner: [SELF_HOSTED_RUNNER.md](../../../.github/SELF_HOSTED_RUNNER.md)

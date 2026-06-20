@@ -6,10 +6,10 @@ Enterprise School Management System — modular monolith, production-ready.
 | --------------- | ------------------------------------------------------------------------ |
 | Nama            | NexSMSID V4                                                              |
 | Version         | 4.0.0                                                                    |
-| Package         | `nexsmsid-v4`                                                            |
+| Package         | `nexsmsid-final`                                                            |
 | Package Manager | pnpm@10.18.3                                                             |
 | Node            | >= 20.11.0 (CI: Node.js 24)                                              |
-| Repo            | [github.com/arpayid/nexsmsid-v4](https://github.com/arpayid/nexsmsid-v4) |
+| Repo            | [github.com/arpayid/nexsmsid-final](https://github.com/arpayid/nexsmsid-final) |
 | Status          | Fase 4 — Production pilot ✅ stack Docker + nginx; HTTPS domain opsional |
 
 ## Tech Stack
@@ -27,7 +27,7 @@ Enterprise School Management System — modular monolith, production-ready.
 ## Struktur Monorepo
 
 ```text
-nexsmsid-v4/
+nexsmsid-final/
 ├── apps/
 │   ├── api/          # NestJS API (port 4000, prefix /api/v1)
 │   └── web/          # Next.js 15 App Router (port 3000)
@@ -81,7 +81,7 @@ User seed memakai `forceChangePassword=true` — login pertama akan diminta gant
 
 ## Deploy Production
 
-Stack production: **PostgreSQL + Redis + API + Web + Nginx** via `docker-compose.prod.yml` (project Docker: `nexsmsid-v4-prod`).
+Stack production: **PostgreSQL + Redis + API + Web + Nginx** via `docker-compose.prod.yml` (project Docker: `nexsmsid-final-prod`).
 
 **Penjualan ke banyak sekolah (ganti domain tanpa ubah kode):** lihat [docs/DEPLOY-PER-CUSTOMER.md](docs/DEPLOY-PER-CUSTOMER.md). **Skor kesiapan jual (10 poin):** [docs/SALES-READINESS.md](docs/SALES-READINESS.md).
 
@@ -162,11 +162,11 @@ pnpm restore         # scripts/restore-postgres.sh
 
 ## CI
 
-Workflow **NexSMSID V4 CI** (`.github/workflows/ci.yml`) berjalan di self-hosted runner `nexsmsid-v4-ci-01` dengan label `self-hosted`, `linux`, `nexsmsid-v4`.
+Workflow **NexSMSID V4 CI** (`.github/workflows/ci.yml`) berjalan di self-hosted runner `nexsmsid-final-ci-01` dengan label `self-hosted`, `linux`, `nexsmsid-final`.
 
 Pipeline: format → lint → unit test → typecheck → build → integration test → dependency audit (Node.js 24).
 
-PostgreSQL dan Redis di CI dijalankan lewat `scripts/ci-services.sh` (Docker Compose, project `nexsmsid-v4-ci`).
+PostgreSQL dan Redis di CI dijalankan lewat `scripts/ci-services.sh` (Docker Compose, project `nexsmsid-final-ci`).
 
 Status terakhir: **main hijau** — PR #2–#6 merged (dev bootstrap, CI Node 24, Dockerfile HEALTHCHECK, nginx staging, auth cookies HTTP).
 
@@ -174,8 +174,8 @@ Status terakhir: **main hijau** — PR #2–#6 merged (dev bootstrap, CI Node 24
 
 ```bash
 # Di VPS CI, unduh runner dari GitHub → Settings → Actions → Runners
-./config.sh --url https://github.com/arpayid/nexsmsid-v4 --token <TOKEN> \
-  --labels self-hosted,linux,nexsmsid-v4 --name nexsmsid-v4-ci-01
+./config.sh --url https://github.com/arpayid/nexsmsid-final --token <TOKEN> \
+  --labels self-hosted,linux,nexsmsid-final --name nexsmsid-final-ci-01
 sudo ./svc.sh install && sudo ./svc.sh start
 ```
 

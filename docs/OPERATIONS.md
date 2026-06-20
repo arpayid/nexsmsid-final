@@ -1,7 +1,7 @@
 # Operasional minimal — NexSMSID V4
 
 Runbook untuk **menjual dan mengoperasikan banyak instalasi** tanpa tim DevOps besar.  
-Satu pelanggan = satu server (atau VM) dengan stack Docker `nexsmsid-v4-prod`.
+Satu pelanggan = satu server (atau VM) dengan stack Docker `nexsmsid-final-prod`.
 
 Lihat juga: [DEPLOY-PER-CUSTOMER.md](DEPLOY-PER-CUSTOMER.md) · [SALES-READINESS.md](SALES-READINESS.md)
 
@@ -24,14 +24,14 @@ Lihat juga: [DEPLOY-PER-CUSTOMER.md](DEPLOY-PER-CUSTOMER.md) · [SALES-READINESS
 Jalankan **harian** atau **setiap 6 jam** di server pelanggan:
 
 ```bash
-cd /path/to/nexsmsid-v4
+cd /path/to/nexsmsid-final
 pnpm health https://sms.sekolah-contoh.sch.id >> /var/log/nexsmsid-health.log 2>&1
 ```
 
 Contoh crontab (`crontab -e`):
 
 ```cron
-0 */6 * * * cd /opt/nexsmsid-v4 && /usr/bin/bash -lc 'pnpm health "$WEB_ORIGIN"' >> /var/log/nexsmsid-health.log 2>&1
+0 */6 * * * cd /opt/nexsmsid-final && /usr/bin/bash -lc 'pnpm health "$WEB_ORIGIN"' >> /var/log/nexsmsid-health.log 2>&1
 ```
 
 Ganti `WEB_ORIGIN` dengan URL aktual atau export di shell profile.
@@ -45,7 +45,7 @@ Ganti `WEB_ORIGIN` dengan URL aktual atau export di shell profile.
 **Mingguan** (minimal) + sebelum setiap update versi:
 
 ```bash
-cd /path/to/nexsmsid-v4
+cd /path/to/nexsmsid-final
 pnpm backup
 ```
 

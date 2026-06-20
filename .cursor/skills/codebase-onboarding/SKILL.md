@@ -30,7 +30,7 @@ Use existing artifacts instead of re-exploring from scratch when available:
 
 - `.cursor/audit/ROADMAP.md`
 - `.cursor/workflow/STATUS.md`
-- `.cursor/skills/nexsmsid-v4/modules.md`
+- `.cursor/skills/nexsmsid-final/modules.md`
 - `README.md`, `.github/SELF_HOSTED_RUNNER.md`
 
 Write output to `.cursor/audit/ONBOARDING.md` unless user specifies otherwise.

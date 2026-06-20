@@ -1,5 +1,5 @@
 ---
-description: Ikuti workflow project NexSMSID V4 sebelum dan selama pengerjaan — baca STATUS.md dan skill nexsmsid-v4-workflow
+description: Ikuti workflow project NexSMSID V4 sebelum dan selama pengerjaan — baca STATUS.md dan skill nexsmsid-final-workflow
 alwaysApply: true
 ---
 
@@ -8,7 +8,7 @@ alwaysApply: true
 Sebelum mengerjakan project ini:
 
 1. Baca `.cursor/workflow/STATUS.md` untuk fase aktif, blocker, dan backlog
-2. Ikuti skill `nexsmsid-v4-workflow` (`.cursor/skills/nexsmsid-v4-workflow/SKILL.md`)
+2. Ikuti skill `nexsmsid-final-workflow` (`.cursor/skills/nexsmsid-final-workflow/SKILL.md`)
 3. Setiap task kode: siklus **D→P→I→V→R** (Discover → Plan → Implement → Verify → Report)
 4. Quality gate harus mirror CI sebelum menyatakan task selesai
 5. Commit dan push **hanya** jika user minta eksplisit
@@ -29,7 +29,7 @@ Dokumen: `.cursor/workflow/UI-ENTERPRISE-2026.md` · Plan: `UI-PLAN.md`
 |---------|-------|
 | **D** | Scope jelas; baca STATUS + route skill; jangan coding dulu |
 | **P** | Daftar file; task besar → konfirmasi user |
-| **I** | Minimal diff; pola `nexsmsid-v4` |
+| **I** | Minimal diff; pola `nexsmsid-final` |
 | **V** | Tier verify sesuai scope (web/API/full) — lihat WORKFLOW.md |
 | **R** | Laporkan hasil; update STATUS jika fase/blocker berubah |
 

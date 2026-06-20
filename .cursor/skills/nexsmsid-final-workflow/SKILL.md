@@ -1,12 +1,12 @@
 ---
-name: nexsmsid-v4-workflow
+name: nexsmsid-final-workflow
 description: Defines NexSMSID V4 project workflow — phases 0-4, D→P→I→V→R task cycle, quality gate, git/CI rules, and STATUS tracking. Use before starting any project work, at session start, when planning tasks, or checking which phase to execute next.
 compatibility: Requires .cursor/workflow/STATUS.md and WORKFLOW.md
 ---
 
 # NexSMSID V4 — Workflow
 
-**Wajib dibaca sebelum pengerjaan project.** Orchestrator: `nexsmsid-v4-master` · Konvensi kode: `nexsmsid-v4`.
+**Wajib dibaca sebelum pengerjaan project.** Orchestrator: `nexsmsid-final-master` · Konvensi kode: `nexsmsid-final`.
 
 ## Langkah pertama setiap sesi
 
@@ -50,8 +50,8 @@ Detail: `.cursor/workflow/checklists/task-cycle.md`
 
 ### Discover
 
-- Route skill via `nexsmsid-v4-master`
-- Cek `nexsmsid-v4/modules.md` untuk domain terkait
+- Route skill via `nexsmsid-final-master`
+- Cek `nexsmsid-final/modules.md` untuk domain terkait
 - Scope harus jelas sebelum edit file
 
 ### Plan
@@ -62,7 +62,7 @@ Detail: `.cursor/workflow/checklists/task-cycle.md`
 
 ### Implement
 
-- Ikuti `nexsmsid-v4` skill — BaseMasterDataService, `@RequirePermissions`, `apiSuccess()`
+- Ikuti `nexsmsid-final` skill — BaseMasterDataService, `@RequirePermissions`, `apiSuccess()`
 - Minimal diff
 
 ### Verify (quality gate = CI mirror)
@@ -98,7 +98,7 @@ Setelah merge PR web: rebuild prod images agar pilot dapat UI terbaru.
 | --------------- | --------------------------------------------------- |
 | Base            | `main`                                              |
 | Branch          | `feat/`, `fix/`, `chore/`, `cursor/`                |
-| CI              | Self-hosted `nexsmsid-v4`, compose `nexsmsid-v4-ci` |
+| CI              | Self-hosted `nexsmsid-final`, compose `nexsmsid-final-ci` |
 | Force push main | Dilarang                                            |
 
 ## Bootstrap Fase 1 (jalankan jika diminta)

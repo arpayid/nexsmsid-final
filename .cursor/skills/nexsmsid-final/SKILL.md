@@ -1,6 +1,6 @@
 ---
-name: nexsmsid-v4
-description: Develop, debug, and extend NexSMSID V4 — enterprise school management monorepo (NestJS API, Next.js 15, Prisma, RBAC). Use when working in nexsmsid-v4, adding modules, API endpoints, admin pages, PPDB, portals, CI, or database changes.
+name: nexsmsid-final
+description: Develop, debug, and extend NexSMSID V4 — enterprise school management monorepo (NestJS API, Next.js 15, Prisma, RBAC). Use when working in nexsmsid-final, adding modules, API endpoints, admin pages, PPDB, portals, CI, or database changes.
 ---
 
 # NexSMSID V4
@@ -20,7 +20,7 @@ API prefix: `/api/v1` · Dev ports: API `4000`, Web `3000`
 ```bash
 pnpm install
 cp .env.example .env          # JWT secrets min 64 chars
-docker compose up -d          # project: nexsmsid-v4
+docker compose up -d          # project: nexsmsid-final
 pnpm --filter @nexsmsid/api prisma migrate dev
 pnpm --filter @nexsmsid/api prisma db seed
 pnpm dev
@@ -38,7 +38,7 @@ pnpm validate:integration     # needs Postgres + Redis
 pnpm audit --audit-level high
 ```
 
-CI: self-hosted runner label `nexsmsid-v4`, compose project `nexsmsid-v4-ci` via `scripts/ci-services.sh`.
+CI: self-hosted runner label `nexsmsid-final`, compose project `nexsmsid-final-ci` via `scripts/ci-services.sh`.
 
 ## Arsitektur modul API
 
@@ -106,9 +106,9 @@ Portal helpers: `packages/types` → `portalHomePath`, `resolvePortalForUser`.
 
 | Context    | Docker compose project |
 | ---------- | ---------------------- |
-| Local dev  | `nexsmsid-v4`          |
-| CI         | `nexsmsid-v4-ci`       |
-| Production | `nexsmsid-v4-prod`     |
+| Local dev  | `nexsmsid-final`          |
+| CI         | `nexsmsid-final-ci`       |
+| Production | `nexsmsid-final-prod`     |
 
 Jangan pakai `nexsmsid-ci` atau referensi repo v3.
 

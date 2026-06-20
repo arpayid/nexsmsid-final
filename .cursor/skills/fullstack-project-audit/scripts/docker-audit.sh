@@ -104,8 +104,8 @@ fi
 # 9. CI services script
 if [[ -f scripts/ci-services.sh ]]; then
   ok "CI services script present (scripts/ci-services.sh)"
-  if grep -q 'nexsmsid-v4-ci' scripts/ci-services.sh .github/workflows/ci.yml 2>/dev/null; then
-    ok "CI compose project targets nexsmsid-v4-ci"
+  if grep -q 'nexsmsid-final-ci' scripts/ci-services.sh .github/workflows/ci.yml 2>/dev/null; then
+    ok "CI compose project targets nexsmsid-final-ci"
   else
     warn "CI compose project name may not match v4 convention"
   fi

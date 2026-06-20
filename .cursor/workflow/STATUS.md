@@ -11,8 +11,8 @@ Terakhir diperbarui: **2026-06-18**
 | **Blocker utama**   | HTTPS domain belum dikonfigurasi (opsional untuk pilot lokal) |
 | **CI main**         | ✅ Hijau                                                      |
 | **Dev stack**       | ✅ native `next dev` :3000 + API :4000 **atau** `pnpm dev`    |
-| **Prod stack**      | ✅ `nexsmsid-v4-prod` healthy via nginx :80                   |
-| **Runner**          | ✅ `nexsmsid-v4-ci-01` online                                 |
+| **Prod stack**      | ✅ `nexsmsid-final-prod` healthy via nginx :80                   |
+| **Runner**          | ✅ `nexsmsid-final-ci-01` online                                 |
 
 ---
 

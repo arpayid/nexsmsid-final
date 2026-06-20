@@ -5,7 +5,7 @@ Gunakan untuk **setiap** task pengembangan setelah Fase 1 selesai.
 ## D — Discover
 
 - [ ] Baca `STATUS.md` — fase & blocker
-- [ ] Muat skill via `nexsmsid-v4-master` routing
+- [ ] Muat skill via `nexsmsid-final-master` routing
 - [ ] Identifikasi file/modul terkait (`modules.md`)
 - [ ] Scope jelas — tanya user jika ambigu
 
@@ -18,7 +18,7 @@ Gunakan untuk **setiap** task pengembangan setelah Fase 1 selesai.
 ## I — Implement
 
 - [ ] Minimal diff — tidak ubah kode tidak terkait
-- [ ] Pola `nexsmsid-v4`: DTO Zod, service base class, `@RequirePermissions`
+- [ ] Pola `nexsmsid-final`: DTO Zod, service base class, `@RequirePermissions`
 - [ ] api-client domain method jika endpoint baru
 - [ ] Halaman web jika fitur UI
 

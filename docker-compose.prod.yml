@@ -1,4 +1,4 @@
-name: nexsmsid-v4-prod
+name: nexsmsid-final-prod
 
 services:
   postgres:

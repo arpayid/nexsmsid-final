@@ -37,7 +37,7 @@ Security:
 
 CI self-hosted:
 - [ ] scripts/ci-services.sh untuk Postgres/Redis lokal
-- [ ] Compose project CI terisolasi (mis. nexsmsid-v4-ci)
+- [ ] Compose project CI terisolasi (mis. nexsmsid-final-ci)
 - [ ] CI_KEEP_SERVICES untuk warm start (opsional)
 
 Production:
@@ -50,9 +50,9 @@ Production:
 
 | Context | Compose project |
 |---------|-----------------|
-| Dev | `nexsmsid-v4` |
-| CI | `nexsmsid-v4-ci` |
-| Prod | `nexsmsid-v4-prod` |
+| Dev | `nexsmsid-final` |
+| CI | `nexsmsid-final-ci` |
+| Prod | `nexsmsid-final-prod` |
 
 Jangan gunakan `nexsmsid-ci` (legacy).
 

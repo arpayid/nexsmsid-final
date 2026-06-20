@@ -4,7 +4,7 @@
 # self-hosted jobs must bring up dependencies locally (Docker Compose here).
 set -euo pipefail
 
-COMPOSE_PROJECT_NAME="${CI_COMPOSE_PROJECT:-nexsmsid-v4-ci}"
+COMPOSE_PROJECT_NAME="${CI_COMPOSE_PROJECT:-nexsmsid-final-ci}"
 COMPOSE_FILE="${CI_COMPOSE_FILE:-docker-compose.yml}"
 POSTGRES_USER="${POSTGRES_USER:-nexsmsid}"
 POSTGRES_HOST="${POSTGRES_HOST:-localhost}"

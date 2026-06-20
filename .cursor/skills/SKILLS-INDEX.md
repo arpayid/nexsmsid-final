@@ -6,8 +6,8 @@ Manifest semua skill untuk project ini. **Lokal only — tidak di-commit.**
 
 | Skill                    | Path                                           | Kapan                                    |
 | ------------------------ | ---------------------------------------------- | ---------------------------------------- |
-| **nexsmsid-v4-workflow** | `.cursor/skills/nexsmsid-v4-workflow/SKILL.md` | **Sebelum pengerjaan** — fase, D→P→I→V→R |
-| **nexsmsid-v4-master**   | `.cursor/skills/nexsmsid-v4-master/SKILL.md`   | Routing skill & peta project             |
+| **nexsmsid-final-workflow** | `.cursor/skills/nexsmsid-final-workflow/SKILL.md` | **Sebelum pengerjaan** — fase, D→P→I→V→R |
+| **nexsmsid-final-master**   | `.cursor/skills/nexsmsid-final-master/SKILL.md`   | Routing skill & peta project             |
 
 Workflow docs: `.cursor/workflow/WORKFLOW.md` · Status: `.cursor/workflow/STATUS.md`
 
@@ -15,9 +15,9 @@ Workflow docs: `.cursor/workflow/WORKFLOW.md` · Status: `.cursor/workflow/STATU
 
 | Skill                   | Sumber                | Fokus                                     |
 | ----------------------- | --------------------- | ----------------------------------------- |
-| nexsmsid-v4-workflow    | Dibuat lokal          | Fase 0–4, task cycle, git/CI rules        |
-| nexsmsid-v4             | Dibuat lokal          | Konvensi develop, bootstrap, quality gate |
-| nexsmsid-v4-master      | Dibuat lokal          | Orchestrator seluruh project              |
+| nexsmsid-final-workflow    | Dibuat lokal          | Fase 0–4, task cycle, git/CI rules        |
+| nexsmsid-final             | Dibuat lokal          | Konvensi develop, bootstrap, quality gate |
+| nexsmsid-final-master      | Dibuat lokal          | Orchestrator seluruh project              |
 | nexsmsid-project-audit  | Dibuat lokal          | Audit E2E + roadmap                       |
 | fullstack-project-audit | Dibuat lokal          | Framework audit 7 fase                    |
 | docker-compose-audit    | Dibuat lokal          | Container hardening                       |
@@ -26,7 +26,7 @@ Workflow docs: `.cursor/workflow/WORKFLOW.md` · Status: `.cursor/workflow/STATU
 
 Supporting files:
 
-- `nexsmsid-v4/modules.md` — peta domain API
+- `nexsmsid-final/modules.md` — peta domain API
 - `fullstack-project-audit/scripts/docker-audit.sh` — script audit Docker
 
 ## Skill eksternal (`.agents/skills/` — skills.sh)
@@ -64,7 +64,7 @@ npx skills add <owner/repo@skill-name> -a cursor -y
 
 # Atau buat lokal:
 # .cursor/skills/<nama-skill>/SKILL.md
-# Update SKILLS-INDEX.md dan nexsmsid-v4-master/SKILL.md
+# Update SKILLS-INDEX.md dan nexsmsid-final-master/SKILL.md
 ```
 
 ## Git ignore

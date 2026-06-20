@@ -4,15 +4,15 @@
 
 ## Skill & tooling
 
-- [x] Skill lokal: `nexsmsid-v4`, `nexsmsid-v4-master`, audit skills
+- [x] Skill lokal: `nexsmsid-final`, `nexsmsid-final-master`, audit skills
 - [x] Skill eksternal via skills.sh (NestJS, Next.js, Prisma, Turbo, Docker, Vitest, GHA)
 - [x] `SKILLS-INDEX.md` manifest
 - [x] Workflow skill + dokumen (`WORKFLOW.md`, `STATUS.md`)
 
 ## Infrastructure baseline
 
-- [x] CI runner `nexsmsid-v4-ci-01` label `nexsmsid-v4`
-- [x] Docker compose project `nexsmsid-v4` / `nexsmsid-v4-ci`
+- [x] CI runner `nexsmsid-final-ci-01` label `nexsmsid-final`
+- [x] Docker compose project `nexsmsid-final` / `nexsmsid-final-ci`
 - [x] Referensi v3 dihapus dari repo
 - [x] `pnpm audit --audit-level high` hijau di CI
 

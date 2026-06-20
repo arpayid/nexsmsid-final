@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   build-validation:
-    runs-on: [self-hosted, linux, nexsmsid-v4]
+    runs-on: [self-hosted, linux, nexsmsid-final]
 
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -30,12 +30,12 @@ jobs:
       NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
       RATE_LIMIT_TTL: 60
       RATE_LIMIT_LIMIT: 100
-      STORAGE_PATH: /tmp/nexsmsid-v4/storage
-      REPORT_STORAGE_PATH: /tmp/nexsmsid-v4/storage/reports
+      STORAGE_PATH: /tmp/nexsmsid-final/storage
+      REPORT_STORAGE_PATH: /tmp/nexsmsid-final/storage/reports
       LOG_LEVEL: error
       TURNSTILE_SECRET_KEY: 1x0000000000000000000000000000000AA
       PPDB_LEGACY_PIN_GRACE_END: 2026-07-15T00:00:00.000Z
-      CI_COMPOSE_PROJECT: nexsmsid-v4-ci
+      CI_COMPOSE_PROJECT: nexsmsid-final-ci
 
     steps:
       - name: Checkout repository
