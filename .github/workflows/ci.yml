@@ -45,7 +45,7 @@ jobs:
       - name: Ensure PostgreSQL and Redis
         run: |
           chmod +x ./scripts/ci-services.sh
-          CI_RESET_VOLUMES=1 ./scripts/ci-services.sh stop
+          CI_KEEP_SERVICES=0 CI_RESET_VOLUMES=1 ./scripts/ci-services.sh stop
           ./scripts/ci-services.sh start
 
       - name: Set up Node.js 24
