@@ -1,5 +1,5 @@
 # Stage 1: Build dependencies and app
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 
 RUN apk add --no-cache libc6-compat
 RUN npm install -g pnpm@10.18.3
@@ -19,7 +19,7 @@ RUN pnpm --filter @nexsmsid/api-client build
 RUN pnpm --filter @nexsmsid/api build
 
 # Stage 2: Runner
-FROM node:20-alpine AS runner
+FROM node:24-alpine AS runner
 
 WORKDIR /app
 
@@ -45,7 +45,7 @@ COPY --from=builder /app/packages/types/dist ./packages/types/dist
 COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
 
 # Generate Prisma Client in the runner to ensure correct paths
-RUN pnpm --filter @nexsmsid/api prisma generate
+RUN cd apps/api && npx prisma@6 generate
 
 # Run as non-root (storage dir must be writable for report generation)
 RUN addgroup --system --gid 1001 nodejs \

@@ -134,25 +134,27 @@ export class AttendanceService {
       }
     }
 
-    const results = [];
-
-    for (const recordInput of data.records) {
-      const existing = await this.prisma.attendanceRecord.findUnique({
-        where: { sessionId_studentId: { sessionId, studentId: recordInput.studentId } },
-      });
-      if (existing) {
-        const updated = await this.prisma.attendanceRecord.update({
-          where: { id: existing.id },
-          data: { status: recordInput.status as any, note: recordInput.note || null },
+    const results = await this.prisma.$transaction(async (tx) => {
+      const txResults = [];
+      for (const recordInput of data.records) {
+        const existing = await tx.attendanceRecord.findUnique({
+          where: { sessionId_studentId: { sessionId, studentId: recordInput.studentId } },
         });
-        results.push(updated);
-      } else {
-        const created = await this.prisma.attendanceRecord.create({
-          data: { sessionId, studentId: recordInput.studentId, status: recordInput.status as any, note: recordInput.note || null },
-        });
-        results.push(created);
+        if (existing) {
+          const updated = await tx.attendanceRecord.update({
+            where: { id: existing.id },
+            data: { status: recordInput.status as any, note: recordInput.note || null },
+          });
+          txResults.push(updated);
+        } else {
+          const created = await tx.attendanceRecord.create({
+            data: { sessionId, studentId: recordInput.studentId, status: recordInput.status as any, note: recordInput.note || null },
+          });
+          txResults.push(created);
+        }
       }
-    }
+      return txResults;
+    });
 
     await this.auditService.record({
       ...meta,

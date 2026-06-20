@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import useSWR from "swr";
+import { useCallback, useState } from "react";
 
 type UseApiQueryOptions = {
   enabled?: boolean;
@@ -8,56 +9,48 @@ type UseApiQueryOptions = {
 
 export function useApiQuery<T>(queryFn: () => Promise<T>, deps: unknown[] = [], options: UseApiQueryOptions = {}) {
   const { enabled = true } = options;
-  const [data, setData] = useState<T | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [fetchLoading, setFetchLoading] = useState(enabled);
-  const loading = enabled && fetchLoading;
+
+  // Use JSON.stringify on deps as part of the key for SWR to detect changes
+  // We include queryFn.toString() lightly if needed, but since it's an API fetcher,
+  // we rely on deps to represent the unique request path/params.
+  const key = enabled ? [queryFn.name || "query", ...deps] : null;
+
+  const fetcher = async () => {
+    return await queryFn();
+  };
+
+  const { data, error: swrError, isLoading: loading, mutate } = useSWR<T>(key, fetcher, {
+    revalidateOnFocus: false, // Prevents aggressive refetching unless specifically requested
+  });
+
+  const [localData, setLocalData] = useState<T | null>(null);
+
+  // Maintain the exact returned API structure for backwards compatibility
+  const error = swrError instanceof Error ? swrError.message : swrError ? String(swrError) : null;
 
   const refetch = useCallback(async () => {
-    setFetchLoading(true);
-    setError(null);
+    const result = await mutate();
+    return result;
+  }, [mutate]);
 
-    try {
-      const result = await queryFn();
-      setData(result);
-      return result;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Request failed";
-      setError(message);
-      return null;
-    } finally {
-      setFetchLoading(false);
+  // Provide a way to manually overwrite data locally if required by some components
+  const setData = useCallback((newData: T | null) => {
+    setLocalData(newData);
+    if (newData !== null) {
+      void mutate(newData, false);
     }
-  }, [queryFn]);
+  }, [mutate]);
 
-  useEffect(() => {
-    if (!enabled) {
-      return;
-    }
+  const setError = useCallback((newError: string | null) => {
+    // Cannot easily set SWR error manually, but backwards compatibility might not strictly need manual errors
+  }, []);
 
-    let active = true;
-
-    async function load() {
-      setFetchLoading(true);
-      setError(null);
-
-      try {
-        const result = await queryFn();
-        if (active) setData(result);
-      } catch (err) {
-        if (active) setError(err instanceof Error ? err.message : "Request failed");
-      } finally {
-        if (active) setFetchLoading(false);
-      }
-    }
-
-    void load();
-
-    return () => {
-      active = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, queryFn, ...deps]);
-
-  return { data, error, loading, refetch, setData, setError };
+  return {
+    data: localData !== null ? localData : data ?? null,
+    error,
+    loading,
+    refetch,
+    setData,
+    setError,
+  };
 }

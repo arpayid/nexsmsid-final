@@ -339,45 +339,57 @@ export class ExamsService {
     const participant = await this.prisma.examParticipant.findFirst({ where: { id: participantId, examId, deletedAt: null } });
     if (!participant) throw new NotFoundException("Participant not found");
 
-    let totalScore = 0;
-    for (const item of answers) {
-      const question = await this.prisma.examQuestion.findFirst({ where: { id: item.questionId, examId, deletedAt: null } });
-      if (!question) continue;
-
-      const normalizedAnswer = item.answer.trim();
-      const isCorrect = question.correctAnswer ? question.correctAnswer.trim() === normalizedAnswer : null;
-      const score = isCorrect ? question.score : 0;
-      if (isCorrect) totalScore += question.score;
-
-      const existing = await this.prisma.examResult.findFirst({
-        where: { examId, participantId, questionId: item.questionId },
+    return this.prisma.$transaction(async (tx) => {
+      let totalScore = 0;
+      
+      const questionIds = answers.map((a) => a.questionId);
+      const questions = await tx.examQuestion.findMany({
+        where: { id: { in: questionIds }, examId, deletedAt: null },
       });
+      const questionsMap = new Map(questions.map((q) => [q.id, q]));
 
-      if (existing) {
-        await this.prisma.examResult.update({
-          where: { id: existing.id },
-          data: { answer: normalizedAnswer, isCorrect, score, gradedAt: new Date(), gradedById },
-        });
-      } else {
-        await this.prisma.examResult.create({
-          data: {
-            examId,
-            participantId,
-            questionId: item.questionId,
-            answer: normalizedAnswer,
-            isCorrect,
-            score,
-            gradedAt: new Date(),
-            gradedById,
-          },
-        });
+      const existingResults = await tx.examResult.findMany({
+        where: { examId, participantId, questionId: { in: questionIds } },
+      });
+      const existingResultsMap = new Map(existingResults.map((r) => [r.questionId, r]));
+
+      for (const item of answers) {
+        const question = questionsMap.get(item.questionId);
+        if (!question) continue;
+
+        const normalizedAnswer = item.answer.trim();
+        const isCorrect = question.correctAnswer ? question.correctAnswer.trim() === normalizedAnswer : null;
+        const score = isCorrect ? question.score : 0;
+        if (isCorrect) totalScore += question.score;
+
+        const existing = existingResultsMap.get(item.questionId);
+
+        if (existing) {
+          await tx.examResult.update({
+            where: { id: existing.id },
+            data: { answer: normalizedAnswer, isCorrect, score, gradedAt: new Date(), gradedById },
+          });
+        } else {
+          await tx.examResult.create({
+            data: {
+              examId,
+              participantId,
+              questionId: item.questionId,
+              answer: normalizedAnswer,
+              isCorrect,
+              score,
+              gradedAt: new Date(),
+              gradedById,
+            },
+          });
+        }
       }
-    }
 
-    return this.prisma.examParticipant.update({
-      where: { id: participantId },
-      data: { score: totalScore, status: "PRESENT" },
-      include: { student: true, results: true },
+      return tx.examParticipant.update({
+        where: { id: participantId },
+        data: { score: totalScore, status: "PRESENT" },
+        include: { student: true, results: true },
+      });
     });
   }
 

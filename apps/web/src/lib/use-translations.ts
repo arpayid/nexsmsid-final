@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import useSWR, { mutate } from "swr";
 import { getMessages, getNestedValue, type Locale } from "../i18n";
 
 const STORAGE_KEY = "nexsmsid.locale";
@@ -11,13 +12,17 @@ export function getStoredLocale(): Locale {
 }
 
 export function useTranslations() {
-  const locale: Locale = getStoredLocale();
+  const { data: locale = "id" } = useSWR<Locale>("locale", getStoredLocale, {
+    fallbackData: typeof window === "undefined" ? "id" : getStoredLocale(),
+  });
+  
   const messages = getMessages(locale);
 
   const t = useCallback((key: string) => getNestedValue(messages, key), [messages]);
+  
   const setLocale = useCallback((newLocale: Locale) => {
     localStorage.setItem(STORAGE_KEY, newLocale);
-    window.location.reload();
+    void mutate("locale", newLocale, false);
   }, []);
 
   return { t, locale, setLocale };

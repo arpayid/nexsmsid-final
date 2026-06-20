@@ -1,0 +1,7 @@
+node_modules
+apps/*/node_modules
+packages/*/node_modules
+railway-config/build/apps
+.git
+.next
+apps/web/.next

@@ -126,53 +126,55 @@ export class GradesService {
       }
     }
 
-    const results = [];
-
-    for (const scoreInput of data.scores) {
-      try {
-        const existing = await this.prisma.grade.findUnique({
-          where: { assessmentId_studentId: { assessmentId, studentId: scoreInput.studentId } },
-        });
-
-        if (existing && (existing.status === "APPROVED" || existing.status === "PUBLISHED")) {
-          throw new BadRequestException(
-            `Grade for student ${scoreInput.studentId} is already ${existing.status} and cannot be modified. Revert approval first.`,
-          );
-        }
-
-        if (existing) {
-          const updated = await this.prisma.grade.update({
-            where: { id: existing.id },
-            data: {
-              score: scoreInput.score,
-              notes: scoreInput.notes || null,
-              status: "SUBMITTED",
-              gradedById: actor.id,
-              gradedAt: new Date(),
-            },
+    const results = await this.prisma.$transaction(async (tx) => {
+      const txResults = [];
+      for (const scoreInput of data.scores) {
+        try {
+          const existing = await tx.grade.findUnique({
+            where: { assessmentId_studentId: { assessmentId, studentId: scoreInput.studentId } },
           });
-          results.push(updated);
-        } else {
-          const created = await this.prisma.grade.create({
-            data: {
-              assessmentId,
-              studentId: scoreInput.studentId,
-              score: scoreInput.score,
-              notes: scoreInput.notes || null,
-              status: "SUBMITTED",
-              gradedById: actor.id,
-              gradedAt: new Date(),
-            },
-          });
-          results.push(created);
+
+          if (existing && (existing.status === "APPROVED" || existing.status === "PUBLISHED")) {
+            throw new BadRequestException(
+              `Grade for student ${scoreInput.studentId} is already ${existing.status} and cannot be modified. Revert approval first.`,
+            );
+          }
+
+          if (existing) {
+            const updated = await tx.grade.update({
+              where: { id: existing.id },
+              data: {
+                score: scoreInput.score,
+                notes: scoreInput.notes || null,
+                status: "SUBMITTED",
+                gradedById: actor.id,
+                gradedAt: new Date(),
+              },
+            });
+            txResults.push(updated);
+          } else {
+            const created = await tx.grade.create({
+              data: {
+                assessmentId,
+                studentId: scoreInput.studentId,
+                score: scoreInput.score,
+                notes: scoreInput.notes || null,
+                status: "SUBMITTED",
+                gradedById: actor.id,
+                gradedAt: new Date(),
+              },
+            });
+            txResults.push(created);
+          }
+        } catch (error) {
+          if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+            throw new ConflictException(`Grade already exists for student ${scoreInput.studentId} in this assessment`);
+          }
+          throw error;
         }
-      } catch (error) {
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-          throw new ConflictException(`Grade already exists for student ${scoreInput.studentId} in this assessment`);
-        }
-        throw error;
       }
-    }
+      return txResults;
+    });
 
     await this.auditService.record({
       ...meta,

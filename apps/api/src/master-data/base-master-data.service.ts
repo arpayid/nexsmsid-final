@@ -21,6 +21,7 @@ export type MasterDataConfig<TCreate extends z.ZodType, TUpdate extends z.ZodTyp
   modelName: string;
   searchableFields: string[];
   updateSchema: TUpdate;
+  checkRelationsOnDelete?: string[];
 };
 
 @Injectable()
@@ -124,6 +125,33 @@ export class BaseMasterDataService<TCreate extends z.ZodType, TUpdate extends z.
 
   async delete(id: string, actor: AuthenticatedUser, meta: RequestMeta) {
     const existing = await this.findById(id);
+
+    if (this.config.checkRelationsOnDelete && this.config.checkRelationsOnDelete.length > 0) {
+      const includeConfig = this.config.checkRelationsOnDelete.reduce((acc, rel) => ({ ...acc, [rel]: true }), {});
+      const itemWithRelations = await this.delegate().findUnique({
+        where: { id },
+        include: includeConfig,
+      });
+
+      if (itemWithRelations) {
+        const activeRelations = this.config.checkRelationsOnDelete.filter((rel) => {
+          const relationData = itemWithRelations[rel];
+          if (Array.isArray(relationData)) {
+            return relationData.some((r: any) => r.deletedAt === null || r.deletedAt === undefined);
+          } else if (relationData) {
+            return (relationData as any).deletedAt === null || (relationData as any).deletedAt === undefined;
+          }
+          return false;
+        });
+
+        if (activeRelations.length > 0) {
+          throw new ConflictException(
+            `Cannot delete ${this.config.auditEntity} because it is referenced by active records in: ${activeRelations.join(", ")}`
+          );
+        }
+      }
+    }
+
     const item = await this.delegate().update({
       where: { id },
       data: {
@@ -189,6 +217,7 @@ type MasterDataDelegate = {
   count(args: unknown): Promise<number>;
   create(args: unknown): Promise<Record<string, unknown>>;
   findFirst(args: unknown): Promise<Record<string, unknown> | null>;
+  findUnique(args: unknown): Promise<Record<string, unknown> | null>;
   findMany(args: unknown): Promise<Array<Record<string, unknown>>>;
   update(args: unknown): Promise<Record<string, unknown>>;
 };

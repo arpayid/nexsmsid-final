@@ -305,30 +305,38 @@ export class PayrollService {
     const paidAt = new Date();
 
     // Generate or mark payslips as paid when the full payroll period is paid.
-    for (const run of runs) {
-      await this.prisma.payrollRun.update({
-        where: { id: run.id },
-        data: { status: "PAID", paidById: userId, paidAt },
+    await this.prisma.$transaction(async (tx) => {
+      const runIds = runs.map((r) => r.id);
+      const existingPayslips = await tx.payslip.findMany({
+        where: { payrollRunId: { in: runIds } },
       });
+      const payslipsMap = new Map(existingPayslips.map((ps) => [ps.payrollRunId, ps]));
 
-      const psExists = await this.prisma.payslip.findFirst({ where: { payrollRunId: run.id } });
-      if (psExists) {
-        await this.prisma.payslip.update({
-          where: { id: psExists.id },
-          data: { status: "PAID", issuedAt: psExists.issuedAt ?? paidAt, paidAt },
+      for (const run of runs) {
+        await tx.payrollRun.update({
+          where: { id: run.id },
+          data: { status: "PAID", paidById: userId, paidAt },
         });
-      } else {
-        await this.prisma.payslip.create({
-          data: {
-            payrollRunId: run.id,
-            payslipNumber: `PS-${period.code}-${run.employeeId.slice(0, 4).toUpperCase()}-${crypto.randomUUID().split("-")[0]}`,
-            status: "PAID",
-            issuedAt: paidAt,
-            paidAt,
-          },
-        });
+
+        const psExists = payslipsMap.get(run.id);
+        if (psExists) {
+          await tx.payslip.update({
+            where: { id: psExists.id },
+            data: { status: "PAID", issuedAt: psExists.issuedAt ?? paidAt, paidAt },
+          });
+        } else {
+          await tx.payslip.create({
+            data: {
+              payrollRunId: run.id,
+              payslipNumber: `PS-${period.code}-${run.employeeId.slice(0, 4).toUpperCase()}-${crypto.randomUUID().split("-")[0]}`,
+              status: "PAID",
+              issuedAt: paidAt,
+              paidAt,
+            },
+          });
+        }
       }
-    }
+    });
 
     await this.audit.record({ actorId: userId, action: "payroll.period.pay", entity: "Paid payroll period", metadata: { periodId: id } });
     return updated;
