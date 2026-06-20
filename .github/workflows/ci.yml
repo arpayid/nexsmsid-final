@@ -84,7 +84,9 @@ jobs:
         run: pnpm build
 
       - name: Integration Tests (real PostgreSQL + Redis)
-        run: pnpm --filter @nexsmsid/api test:integration
+        run: |
+          pnpm --filter @nexsmsid/api prisma db push --accept-data-loss
+          pnpm --filter @nexsmsid/api test:integration
 
       - name: Audit Dependencies (high severity only)
         run: pnpm audit --audit-level high
