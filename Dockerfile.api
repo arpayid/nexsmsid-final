@@ -2,7 +2,7 @@
 FROM node:24-alpine AS builder
 
 RUN apk add --no-cache libc6-compat
-RUN npm install -g pnpm@10.18.3
+RUN corepack enable && corepack prepare pnpm@10.18.3 --activate
 
 WORKDIR /app
 
@@ -24,30 +24,27 @@ FROM node:24-alpine AS runner
 WORKDIR /app
 
 RUN apk add --no-cache libc6-compat openssl wget
-RUN npm install -g pnpm@10.18.3
+RUN corepack enable && corepack prepare pnpm@10.18.3 --activate
 
 ENV NODE_ENV=production
 
-# Copy workspace configuration
+# Copy workspace config
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-# Copy shared packages (might be needed for prod)
 COPY packages/ ./packages/
-# Copy API package.json
 COPY apps/api/package.json ./apps/api/
 
-# Install ONLY production dependencies
-RUN pnpm install --prod --frozen-lockfile
+# Install hanya production dependencies (tanpa frozen-lockfile untuk menghindari mismatch)
+RUN pnpm install --prod
 
-# Copy built files
+# Copy built artifacts
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/packages/types/dist ./packages/types/dist
-# Copy prisma schema
 COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
 
-# Generate Prisma Client in the runner to ensure correct paths
+# Generate Prisma Client
 RUN cd apps/api && npx prisma@6 generate
 
-# Run as non-root (storage dir must be writable for report generation)
+# Non-root user
 RUN addgroup --system --gid 1001 nodejs \
     && adduser --system --uid 1001 nestjs \
     && mkdir -p /app/storage/reports \
