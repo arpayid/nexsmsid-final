@@ -90,6 +90,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.web
+      # Build-time only: make the internal API hostname resolve to loopback so the
+      # Next.js static-generation fetches fail fast (ECONNREFUSED) instead of waiting
+      # on slow DNS SERVFAIL retries. Runtime rewrites still use the compose network.
+      extra_hosts:
+        - "api:127.0.0.1"
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api/v1}
         NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY}
