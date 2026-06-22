@@ -15,6 +15,7 @@ RUN pnpm install --frozen-lockfile
 COPY apps/api/ ./apps/api/
 
 RUN pnpm --filter @nexsmsid/types build
+RUN pnpm --filter @nexsmsid/contracts build
 RUN pnpm --filter @nexsmsid/api-client build
 RUN pnpm --filter @nexsmsid/api build
 
