@@ -19,10 +19,14 @@ jobs:
       NODE_ENV: test
       # Use port 5433 to avoid conflicts with any host-level PostgreSQL
       DATABASE_URL: ${{ secrets.CI_DATABASE_URL || 'postgresql://nexsmsid:nexsmsid@localhost:5433/nexsmsid_test' }}
+      # Empty shadow DB used by `prisma migrate diff --to-migrations` (created by ci-services.sh).
+      SHADOW_DATABASE_URL: ${{ secrets.CI_SHADOW_DATABASE_URL || 'postgresql://nexsmsid:nexsmsid@localhost:5433/nexsmsid_shadow' }}
       REDIS_HOST: localhost
       REDIS_PORT: 6380
-      JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
-      JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+      # Fall back to CI-only test secrets so the suite is self-contained when repo
+      # secrets are unset (NODE_ENV=test requires >= 32 chars; these are not real secrets).
+      JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET || 'ci-access-secret-0123456789abcdef0123456789abcdef0123456789abcdef' }}
+      JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET || 'ci-refresh-secret-fedcba9876543210fedcba9876543210fedcba98765432' }}
       WEB_ORIGIN: http://localhost:3000
       API_PORT: 4000
       API_PREFIX: api/v1
@@ -78,6 +82,7 @@ jobs:
           pnpm --filter @nexsmsid/api prisma migrate diff \
             --from-schema-datamodel prisma/schema.prisma \
             --to-migrations prisma/migrations/ \
+            --shadow-database-url "$SHADOW_DATABASE_URL" \
             --exit-code || {
             echo "❌ Migration drift detected. Run 'pnpm --filter @nexsmsid/api prisma migrate dev' locally."
             exit 1

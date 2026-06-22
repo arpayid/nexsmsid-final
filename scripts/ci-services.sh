@@ -12,6 +12,8 @@ POSTGRES_PORT="${POSTGRES_PORT:-5432}"
 REDIS_HOST="${REDIS_HOST:-localhost}"
 REDIS_PORT="${REDIS_PORT:-6379}"
 TEST_DB="${CI_TEST_DATABASE:-nexsmsid_test}"
+# Shadow DB for `prisma migrate diff --to-migrations` (replays migrations).
+SHADOW_DB="${CI_SHADOW_DATABASE:-nexsmsid_shadow}"
 
 compose() {
   POSTGRES_PORT="$POSTGRES_PORT" REDIS_PORT="$REDIS_PORT" \
@@ -61,6 +63,7 @@ wait_for_redis() {
 
 ensure_test_database() {
   compose exec -T postgres createdb -U "$POSTGRES_USER" "$TEST_DB" 2>/dev/null || true
+  compose exec -T postgres createdb -U "$POSTGRES_USER" "$SHADOW_DB" 2>/dev/null || true
 }
 
 cmd="${1:-}"
