@@ -191,49 +191,148 @@ sudo ./svc.sh install && sudo ./svc.sh start
 
 ---
 
-## 🐳 Portainer Production Deployment
 
-### Prasyarat
-- Portainer instance (CE/EE) dengan akses ke Docker socket
-- Domain + DNS pointing ke IP server
-- Cloudflare Turnstile keys (production)
+---
 
-### Langkah Cepat
+## 🚀 Production Tools & Scripts
 
-1. **Generate secrets & env**:
-   ```bash
-   bash scripts/generate-prod-env.sh sms.sekolah-contoh.sch.id
-   ```
+| Kategori | Script | Fungsi |
+|----------|--------|--------|
+| **Setup** | `scripts/generate-prod-env.sh` | Generate `.env.production` + semua secrets acak |
+| **Setup** | `scripts/validate-prod-env.sh` | Validasi env sebelum deploy (Sentry, Redis, DS) |
+| **Setup** | `scripts/setup-https-domain.sh` | Generate nginx HTTPS config dari domain |
+| **Setup** | `scripts/setup-https-selfsigned.sh` | Self-signed SSL untuk staging |
+| **Setup** | `scripts/setup-pitr.sh` | PostgreSQL Point-in-Time Recovery (WAL) |
+| **Setup** | `scripts/setup-monitoring.sh` | Healthchecks.io + alertmanager + cAdvisor |
+| **Setup** | `scripts/setup-scaling.sh` | Load balancing + horizontal scaling config |
+| **Deploy** | `scripts/deploy-customer.sh` | Full deploy: validate → build → up → migrate → smoke |
+| **Deploy** | `scripts/clone-instance.sh` | Clone instance untuk customer baru (multi-tenant) |
+| **Deploy** | `portainer-template.json` | Portainer 1-click app template |
+| **Secrets** | `scripts/secrets-encrypt.sh` | Encrypt/decrypt/rotate/validate secrets (AES-256) |
+| **Secrets** | `scripts/generate-prod-env.sh` | Generate semua secrets otomatis |
+| **Backup** | `pnpm backup` | Backup PostgreSQL ke `backups/` |
+| **Backup** | `pnpm restore` | Restore dengan safety confirm |
+| **Backup** | Auto-backup cron container | Backup tiap 6 jam + S3 offsite + healthchecks.io |
+| **Monitoring** | `pnpm health` | Healthcheck semua service |
+| **Monitoring** | `scripts/verify-stateless.sh` | Verifikasi API siap di-scale horizontal |
+| **Monitoring** | Sentry DSN | Error tracking production |
+| **Deploy** | `SETUP-AND-DEPLOY.md` | Panduan lengkap Portainer deploy |
 
-2. **Validasi env**:
-   ```bash
-   bash scripts/validate-prod-env.sh .env.production
-   ```
+### 📦 Auto-Backup (Cron Container)
 
-3. **Di Portainer UI**:
-   - **Volumes** → buat: `postgres_data`, `redis_data`, `storage_data`, `certbot_etc`, `certbot_var`
-   - **Stack** → deploy `docker-compose.prod.yml`
-   - **Environment variables** → isi dari `.env.production`
+Backup otomatis berjalan tiap 6 jam via service `backup`:
+- `pg_dump` compressed → `/backups/`
+- Rotasi otomatis (30 hari retention)
+- Upload S3 opsional
+- Healthchecks.io ping opsional
 
-4. **Post-deploy**:
-   ```bash
-   pnpm db:migrate:prod          # migrasi database
-   pnpm db:seed:prod             # seed admin awal (first deploy only)
-   pnpm health <URL>             # verifikasi semua service
-   ```
+### 🔐 Secrets Management
 
-### Scripts Production
+```bash
+# Generate env + semua secrets
+bash scripts/generate-prod-env.sh sms.sekolah.sch.id
 
-| Script | Fungsi |
-|--------|--------|
-| `scripts/generate-prod-env.sh` | Generate `.env.production` dengan secrets acak |
-| `scripts/validate-prod-env.sh` | Validasi env sebelum deploy |
-| `scripts/deploy-customer.sh` | Full deploy: build → up → migrate → smoke |
-| `scripts/backup-postgres.sh` | Backup database ke `backups/` |
-| `scripts/staging-healthcheck.sh` | Healthcheck semua service |
+# Encrypt untuk backup aman
+bash scripts/secrets-encrypt.sh encrypt
 
-### Nginx HTTPS
-Set env `DOMAIN=sms.sekolah-contoh.sch.id` untuk:
-- Self-signed SSL cert auto-generate saat container start
-- Redirect HTTP → HTTPS otomatis
-- Ganti dengan certbot/LetsEncrypt untuk production riil
+# Rotasi secrets (ganti password)
+bash scripts/secrets-encrypt.sh rotate
+
+# Validasi kekuatan secrets
+bash scripts/secrets-encrypt.sh validate
+```
+
+### 📈 Monitoring
+
+- Semua service punya Docker `HEALTHCHECK`
+- Sentry error tracking (set `SENTRY_DSN`)
+- Healthchecks.io ping untuk backup
+- Container health via Portainer dashboard
+- cAdvisor siap (tambah ke compose jika perlu)
+
+### 🔄 Scaling
+
+API stateless (JWT + Redis):
+```bash
+# Scale API ke 3 instance
+docker compose -f docker-compose.prod.yml up -d --scale api=3
+
+# Verifikasi stateless
+bash scripts/verify-stateless.sh
+```
+
+## 🐳 Deploy via Portainer
+
+### 1. Install Portainer (1 baris)
+
+```bash
+docker volume create portainer_data && \
+docker run -d --name portainer --restart always \
+  -p 8000:8000 -p 9443:9443 \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v portainer_data:/data \
+  portainer/portainer-ce:lts
+```
+
+Akses: `https://IP-SERVER:9443`
+
+### 2. Deploy Stack
+
+**Portainer UI** → **Stacks** → **Add Stack**:
+
+| Field | Isi |
+|-------|-----|
+| Name | `nexsmsid` |
+| Build method | **Repository** |
+| URL | `https://github.com/arpayid/nexsmsid-final` |
+| Compose path | `docker-compose.prod.yml` |
+| Branch | `main` |
+
+**Environment variables (wajib):**
+
+```env
+DOMAIN=sms.id-tech.cloud
+WEB_ORIGIN=https://sms.id-tech.cloud
+CORS_ORIGIN=https://sms.id-tech.cloud
+NEXT_PUBLIC_APP_URL=https://sms.id-tech.cloud
+NEXT_PUBLIC_API_URL=/api/v1
+
+POSTGRES_PASSWORD=<generate: openssl rand -base64 32>
+REDIS_PASSWORD=<generate: openssl rand -base64 32>
+DATABASE_URL=postgresql://nexsmsid:\${POSTGRES_PASSWORD}@postgres:5432/nexsmsid?schema=public
+REDIS_URL=redis://:\${REDIS_PASSWORD}@redis:6379
+
+JWT_ACCESS_SECRET=<generate: openssl rand -base64 64>
+JWT_REFRESH_SECRET=<generate: openssl rand -base64 64>
+
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=<dari Cloudflare>
+TURNSTILE_SECRET_KEY=<dari Cloudflare>
+
+BACKUP_SCHEDULE=0 */6 * * *
+BACKUP_RETENTION_DAYS=30
+```
+
+### 3. Post-Deploy
+
+Via **Portainer Console** → container **api**:
+
+```bash
+cd /app/apps/api && npx prisma migrate deploy
+npx prisma db seed    # hanya first deploy
+```
+
+Verifikasi: buka `https://sms.id-tech.cloud`
+
+## 🐳 Deploy via CLI (alternatif)
+
+```bash
+git clone https://github.com/arpayid/nexsmsid-final.git /opt/nexsmsid
+cd /opt/nexsmsid
+bash scripts/generate-prod-env.sh sms.id-tech.cloud
+pnpm docker:prod:build && pnpm docker:prod:up
+pnpm db:migrate:prod && pnpm db:seed:prod
+```
+
+---
+
+> Panduan lengkap: [SETUP-AND-DEPLOY.md](SETUP-AND-DEPLOY.md) · [docs/OPERATIONS.md](docs/OPERATIONS.md) · [docs/DEPLOY-PER-CUSTOMER.md](docs/DEPLOY-PER-CUSTOMER.md)
