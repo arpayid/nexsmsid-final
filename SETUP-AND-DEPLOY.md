@@ -67,18 +67,20 @@ BACKUP_RETENTION_DAYS=30
 
 ### C. Deploy → tunggu build selesai
 
-## 🔧 3. Post-Deploy (via Portainer Console)
+## 🔧 3. Post-Deploy
 
-### Masuk ke container `api` → Exec Console
+**Migrasi database berjalan otomatis** saat container `api` start (`prisma migrate deploy`
+di entrypoint). Tidak perlu langkah manual untuk migrasi.
+
+### Seed admin — hanya pada deploy PERTAMA (via Portainer Console)
+
+Masuk ke container `api` → Exec Console:
 
 ```bash
-# 1. Migrate database
-cd /app/apps/api && npx prisma migrate deploy
+# Seed super admin (sekali saja, deploy pertama)
+cd /app/apps/api && prisma db seed
 
-# 2. Seed admin (hanya deploy pertama)
-npx prisma db seed
-
-# 3. Verifikasi
+# Verifikasi
 curl -s http://localhost:4000/api/v1/health
 ```
 
@@ -92,22 +94,27 @@ curl -s http://localhost:4000/api/v1/health
 - `https://sms.sekolah.sch.id` → Login page ✅
 - `https://sms.sekolah.sch.id/api/v1/health` → `{"status":"ok"}` ✅
 
-## 🔐 5. Setup SSL (LetsEncrypt)
+## 🔐 5. Setup SSL
 
-Setelah deploy berjalan dan domain aktif:
+**HTTPS otomatis:** jika `DOMAIN` di-set di environment, nginx langsung:
+- meng-generate self-signed cert (jika belum ada cert di volume `nginx_ssl`),
+- menyajikan HTTPS di port 443, dan
+- redirect HTTP → HTTPS.
+
+Untuk **sertifikat tepercaya** (production publik), ganti self-signed dengan cert asli:
 
 ```bash
-# Masuk ke container nginx
-docker exec -it nexsmsid-nginx-1 sh
+# Opsi A — Let's Encrypt (webroot sudah ter-mount di /var/www/certbot)
+docker compose -f docker-compose.prod.yml exec nginx sh -c \
+  'apk add --no-cache certbot && certbot certonly --webroot -w /var/www/certbot -d sms.sekolah.sch.id'
+# salin hasil cert ke volume nginx_ssl sebagai /etc/nginx/ssl/{fullchain,privkey}.pem
 
-# Install certbot
-apk add certbot
-
-# Generate SSL
-certbot certonly --webroot -w /var/www/certbot -d sms.sekolah.sch.id
+# Opsi B — Cloudflare Origin Cert / cert sendiri
+docker compose -f docker-compose.prod.yml cp fullchain.pem nginx:/etc/nginx/ssl/fullchain.pem
+docker compose -f docker-compose.prod.yml cp privkey.pem  nginx:/etc/nginx/ssl/privkey.pem
 
 # Reload nginx
-nginx -s reload
+docker compose -f docker-compose.prod.yml exec nginx nginx -s reload
 ```
 
 Atau via Portainer: Containers → nginx → Exec Console

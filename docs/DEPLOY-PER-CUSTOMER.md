@@ -81,18 +81,19 @@ Cookie auth otomatis tanpa flag `Secure` pada origin HTTP.
 
 ---
 
-## Nginx — sekali per domain
+## Nginx — otomatis dari `DOMAIN`
 
-Placeholder `your-domain.com` ada di `docker/nginx/conf.d/default.conf` dan `https.conf.example`.
+Konfigurasi nginx **di-bake ke dalam image** dan dirender otomatis saat start:
+
+- `DOMAIN` kosong → HTTP-only di IP/localhost (`default_server`) — cocok untuk staging.
+- `DOMAIN` di-set → HTTPS di 443 + redirect HTTP→HTTPS + self-signed cert otomatis.
+
+Tidak perlu mengedit file conf per domain. Untuk sertifikat tepercaya (certbot /
+Cloudflare Origin Cert), ikuti panduan:
 
 ```bash
-# Ganti your-domain.com di default.conf (blok redirect HTTP→HTTPS)
 DOMAIN=sms.smkcontoh.sch.id bash scripts/setup-https-domain.sh
 ```
-
-Lalu terbitkan sertifikat (certbot atau Cloudflare Origin Cert) dan aktifkan `docker/nginx/conf.d/https.conf`.
-
-Stack default tetap melayani **HTTP di IP/localhost** lewat blok `default_server` — berguna untuk staging sebelum domain siap.
 
 ---
 

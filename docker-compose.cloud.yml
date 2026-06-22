@@ -35,6 +35,14 @@ services:
         reservations: { memory: "0" }
 
   web:
+    build:
+      # Build-time only: make the internal API hostname resolve to loopback so the
+      # Next.js static-generation fetches fail fast (ECONNREFUSED) instead of waiting
+      # ~5s each on the cloud VM resolver's SERVFAIL for the bare "api" host (which can
+      # push slow pages past Next's 60s static-generation timeout). Runtime API routing
+      # is unaffected (it uses the compose network at run time).
+      extra_hosts:
+        - "api:127.0.0.1"
     deploy:
       resources:
         limits: { cpus: "0", memory: "0" }

@@ -14,5 +14,7 @@ if ! "${COMPOSE[@]}" ps --status running --services api 2>/dev/null | grep -qx a
   exit 1
 fi
 
+# Note: the API container already runs `prisma migrate deploy` on startup.
+# This script is for manually re-applying migrations without a restart.
 echo "=== NexSMSID prod migrate deploy (API container) ==="
-"${COMPOSE[@]}" exec -T api sh -c 'cd /app/apps/api && npx prisma migrate deploy'
+"${COMPOSE[@]}" exec -T api sh -c 'cd /app/apps/api && prisma migrate deploy --schema prisma/schema.prisma'
