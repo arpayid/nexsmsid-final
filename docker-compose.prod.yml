@@ -15,6 +15,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
     deploy:
       resources:
         limits:
@@ -30,17 +31,17 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
     deploy:
       resources:
         limits:
-          cpus: '0.5'
-          memory: 256M
+          cpus: '1'
+          memory: 512M
         reservations:
-          memory: 64M
+          memory: 128M
 
   api:
     build:
@@ -48,7 +49,7 @@ services:
       dockerfile: Dockerfile.api
     restart: always
     healthcheck:
-      test: wget -q -O /dev/null http://127.0.0.1:${API_PORT:-4000}/api/v1/health
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:${API_PORT:-4000}/api/v1/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -66,6 +67,8 @@ services:
       RATE_LIMIT_LIMIT: ${RATE_LIMIT_LIMIT:-100}
       LOG_LEVEL: ${LOG_LEVEL:-log}
       TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY}
+      SENTRY_DSN: ${SENTRY_DSN}
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-production}
       STORAGE_PATH: /app/storage
       REPORT_STORAGE_PATH: /app/storage/reports
     volumes:
@@ -88,32 +91,36 @@ services:
       context: .
       dockerfile: Dockerfile.web
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api/v1}
         NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+        API_INTERNAL_URL: ${API_INTERNAL_URL:-http://api:4000}
     restart: always
     healthcheck:
-      test: wget -q -O- http://127.0.0.1:${PORT:-3000}/
+      test: ["CMD", "wget", "-q", "-O-", "http://127.0.0.1:${PORT:-3000}/"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-      API_INTERNAL_URL: http://api:4000
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api/v1}
+      API_INTERNAL_URL: ${API_INTERNAL_URL:-http://api:4000}
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY}
     depends_on:
       api:
         condition: service_healthy
     deploy:
       resources:
         limits:
-          cpus: '0.5'
-          memory: 512M
+          cpus: '1'
+          memory: 768M
         reservations:
-          memory: 128M
+          memory: 256M
 
   nginx:
-    image: nginx:alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
     restart: always
     ports:
       - "80:80"
@@ -124,11 +131,59 @@ services:
       - ./docker/nginx/ssl:/etc/nginx/ssl:ro
       - certbot_etc:/etc/letsencrypt
       - certbot_var:/var/lib/letsencrypt
+    environment:
+      DOMAIN: ${DOMAIN}
     depends_on:
       - api
       - web
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://127.0.0.1:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+        reservations:
+          memory: 64M
+
+  backup:
+    build:
+      context: .
+      dockerfile: docker/cron.Dockerfile
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_HOST: postgres
+      DB_NAME: ${POSTGRES_DB:-nexsmsid}
+      DB_USER: ${POSTGRES_USER:-nexsmsid}
+      BACKUP_DIR: /backups
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
+      SCHEDULE: ${BACKUP_SCHEDULE:-"0 */6 * * *"}
+      S3_BUCKET: ${S3_BUCKET}
+      HEALTHCHECKS_URL: ${HEALTHCHECKS_URL}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-ap-southeast-1}
+    volumes:
+      - backup_data:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          memory: 64M
+
 
 volumes:
+  backup_data:
   postgres_data:
   redis_data:
   storage_data:

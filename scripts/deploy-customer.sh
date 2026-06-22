@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Full customer deploy: validate env → optional HTTPS nginx → build → up → migrate → smoke.
+# Full customer deploy: validate env → build → up → migrate → smoke.
 # Usage:
-#   pnpm deploy:customer
-#   pnpm deploy:customer https://sms.sekolah.sch.id
-#   DOMAIN=sms.sekolah.sch.id pnpm deploy:customer
+#   bash scripts/deploy-customer.sh
+#   DOMAIN=sms.sekolah.sch.id bash scripts/deploy-customer.sh
+#   PORT=8080 bash scripts/deploy-customer.sh  # custom HTTP port
 set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
@@ -16,23 +16,6 @@ echo "=== NexSMSID V4 — Deploy pelanggan ==="
 echo "Env: $ENV_FILE"
 
 bash scripts/validate-prod-env.sh "$ENV_FILE"
-
-if [[ -n "${DOMAIN:-}" ]]; then
-  echo ""
-  echo "→ Setup nginx HTTPS untuk DOMAIN=$DOMAIN"
-  bash scripts/setup-https-domain.sh
-fi
-
-echo ""
-echo "→ Menyimpan state compose sebelumnya..."
-PREV_COMPOSE=$(docker compose -f docker-compose.prod.yml ps -q 2>/dev/null || true)
-PREV_STATE_SAVED=false
-if [[ -n "$PREV_COMPOSE" ]]; then
-  docker compose -f docker-compose.prod.yml config > /tmp/docker-compose.prev.yml 2>/dev/null || true
-  docker compose -f docker-compose.prod.yml images > /tmp/docker-images.prev.txt 2>/dev/null || true
-  PREV_STATE_SAVED=true
-  echo "  State sebelumnya tersimpan."
-fi
 
 echo ""
 echo "→ Docker build..."
@@ -51,7 +34,6 @@ if [[ -z "$BASE_URL" ]]; then
 fi
 
 if [[ -z "$BASE_URL" ]]; then
-  echo "WARN: WEB_ORIGIN kosong — smoke memakai http://localhost"
   BASE_URL="http://localhost"
 fi
 
@@ -62,16 +44,15 @@ if pnpm prod:smoke "$BASE_URL"; then
   echo "✅ Deploy pelanggan selesai."
 else
   echo ""
-  echo "❌ Smoke test gagal! Mengembalikan ke state sebelumnya..."
-  if [[ "$PREV_STATE_SAVED" == true ]] && [[ -f /tmp/docker-compose.prev.yml ]]; then
-    docker compose -f docker-compose.prod.yml down || true
-    docker compose -f /tmp/docker-compose.prev.yml up -d
-    echo "  Rollback selesai. Periksa log untuk detail."
-  else
-    echo "  Tidak ada state sebelumnya untuk rollback. Periksa secara manual."
-  fi
+  echo "❌ Smoke test gagal! Periksa log: docker compose -f docker-compose.prod.yml logs"
   exit 1
 fi
+
+echo ""
+echo "📋 Post-deploy:"
+echo "   Health check:    pnpm health $BASE_URL"
+echo "   Lihat log API:   docker compose -f docker-compose.prod.yml logs -f api"
+echo "   Lihat log web:   docker compose -f docker-compose.prod.yml logs -f web"
+echo "   Backup DB:       pnpm backup"
 echo "   Instalasi pertama: pnpm db:seed:prod"
-echo "   Pantau rutin:      pnpm health $BASE_URL"
-echo "   Dokumentasi:       docs/OPERATIONS.md"
+echo "   Dokumentasi:       cat docs/OPERATIONS.md"

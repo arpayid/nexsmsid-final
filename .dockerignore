@@ -10,8 +10,6 @@ dist
 *.log
 docker-compose.yml
 docker-compose.prod.yml
-docker/
-scripts/
 storage/
 backups/
 .agents/
@@ -19,3 +17,5 @@ backups/
 bug/
 AGENTS.md
 prompt-cleanup-v2.md
+# Needed for nginx Dockerfile.build (entrypoint script)
+!docker/nginx/entrypoint.sh

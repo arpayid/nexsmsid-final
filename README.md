@@ -188,3 +188,52 @@ sudo ./svc.sh install && sudo ./svc.sh start
 | `POST /api/v1/auth/login`   | Login         |
 | `POST /api/v1/auth/refresh` | Refresh token |
 | `GET /api/v1/auth/me`       | User saat ini |
+
+---
+
+## 🐳 Portainer Production Deployment
+
+### Prasyarat
+- Portainer instance (CE/EE) dengan akses ke Docker socket
+- Domain + DNS pointing ke IP server
+- Cloudflare Turnstile keys (production)
+
+### Langkah Cepat
+
+1. **Generate secrets & env**:
+   ```bash
+   bash scripts/generate-prod-env.sh sms.sekolah-contoh.sch.id
+   ```
+
+2. **Validasi env**:
+   ```bash
+   bash scripts/validate-prod-env.sh .env.production
+   ```
+
+3. **Di Portainer UI**:
+   - **Volumes** → buat: `postgres_data`, `redis_data`, `storage_data`, `certbot_etc`, `certbot_var`
+   - **Stack** → deploy `docker-compose.prod.yml`
+   - **Environment variables** → isi dari `.env.production`
+
+4. **Post-deploy**:
+   ```bash
+   pnpm db:migrate:prod          # migrasi database
+   pnpm db:seed:prod             # seed admin awal (first deploy only)
+   pnpm health <URL>             # verifikasi semua service
+   ```
+
+### Scripts Production
+
+| Script | Fungsi |
+|--------|--------|
+| `scripts/generate-prod-env.sh` | Generate `.env.production` dengan secrets acak |
+| `scripts/validate-prod-env.sh` | Validasi env sebelum deploy |
+| `scripts/deploy-customer.sh` | Full deploy: build → up → migrate → smoke |
+| `scripts/backup-postgres.sh` | Backup database ke `backups/` |
+| `scripts/staging-healthcheck.sh` | Healthcheck semua service |
+
+### Nginx HTTPS
+Set env `DOMAIN=sms.sekolah-contoh.sch.id` untuk:
+- Self-signed SSL cert auto-generate saat container start
+- Redirect HTTP → HTTPS otomatis
+- Ganti dengan certbot/LetsEncrypt untuk production riil

@@ -1,0 +1,10 @@
+FROM nginx:alpine
+
+RUN apk add --no-cache openssl
+
+# Copy entrypoint for envsubst + SSL auto-generation
+COPY docker/nginx/entrypoint.sh /docker-entrypoint.d/30-agentfull.sh
+RUN chmod +x /docker-entrypoint.d/30-agentfull.sh
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]

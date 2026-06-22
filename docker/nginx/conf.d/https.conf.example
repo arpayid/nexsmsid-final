@@ -1,22 +1,19 @@
-# Production HTTPS — enable after certbot certificates exist.
-# Copy to conf.d/https.conf when deploying with a real domain:
-#   cp docker/nginx/conf.d/https.conf.example docker/nginx/conf.d/https.conf
+# HTTPS server — aktifkan dengan: 
+#   1. Generate SSL cert (certbot atau self-signed)
+#   2. Copy file ini ke https.conf
+#   3. Set environment DOMAIN=your-domain.com di compose
 #
-upstream api_upstream {
-    server api:4000;
-}
+# Template ini menggunakan $DOMAIN yang di-substitusi oleh entrypoint script.
 
-upstream web_upstream {
-    server web:3000;
-}
+
 
 server {
     listen 443 ssl;
     http2 on;
-    server_name your-domain.com www.your-domain.com;
+    server_name ${DOMAIN} www.${DOMAIN};
 
-    ssl_certificate /etc/letsencrypt/live/your-domain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
+    ssl_certificate /etc/nginx/ssl/fullchain.pem;
+    ssl_certificate_key /etc/nginx/ssl/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
 
