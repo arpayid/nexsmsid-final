@@ -1,4 +1,5 @@
 import { BadRequestException, Body, Controller, Get, Inject, Post, Query, Req, Res, UseGuards } from "@nestjs/common";
+import { randomBytes } from "node:crypto";
 import { Throttle } from "@nestjs/throttler";
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody, ApiResponse } from "@nestjs/swagger";
 import type { Response } from "express";
@@ -144,5 +145,25 @@ export class AuthController {
   @AllowPendingPasswordChange()
   async me(@CurrentUser() user: AuthenticatedUser) {
     return apiSuccess("Authenticated user retrieved", await this.authService.me(user));
+  }
+
+  // =========================================================================
+  // CSRF Token
+  // =========================================================================
+
+  @ApiOperation({ summary: "Get CSRF token" })
+  @ApiResponse({ status: 200, description: "CSRF token set as cookie" })
+  @Get("csrf")
+  @Public()
+  getCsrfToken(@Res({ passthrough: true }) res: Response) {
+    const token = randomBytes(32).toString("hex");
+    res.cookie("nexsmsid.csrf", token, {
+      httpOnly: false, // Must be readable by JS for double-submit pattern
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 86400_000, // 24h
+    });
+    return apiSuccess("CSRF token generated", { csrfToken: token });
   }
 }

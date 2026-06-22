@@ -15,7 +15,8 @@
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@nexsmsid/types": "workspace:*"
+    "@nexsmsid/types": "workspace:*",
+    "@nexsmsid/contracts": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

@@ -17,9 +17,12 @@ import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RequirePermissions } from "../auth/decorators/require-permissions.decorator";
 import { PermissionGuard } from "../auth/guards/permission.guard";
 import { apiSuccess } from "../common/api-response";
-import { LibraryService } from "./library.service";
+import { LibraryCatalogService } from "./library-catalog.service";
+import { LibraryCirculationService } from "./library-circulation.service";
+import { LibraryFinesService } from "./library-fines.service";
+import { LibraryMembersService } from "./library-members.service";
+import { LibraryDashboardService } from "./library-dashboard.service";
 import { LibraryPdfService } from "./library-pdf.service";
-import { LibraryReportService } from "./library-report.service";
 import {
   CreateLibraryCategoryDto,
   UpdateLibraryCategoryDto,
@@ -51,9 +54,12 @@ function asQueryRecord(query: unknown): QueryRecord {
 @ApiBearerAuth()
 export class LibraryController {
   constructor(
-    private readonly libraryService: LibraryService,
+    private readonly catalogService: LibraryCatalogService,
+    private readonly circulationService: LibraryCirculationService,
+    private readonly finesService: LibraryFinesService,
+    private readonly membersService: LibraryMembersService,
+    private readonly dashboardService: LibraryDashboardService,
     private readonly pdfService: LibraryPdfService,
-    private readonly reportService: LibraryReportService,
   ) {}
 
   // =========================================================================
@@ -67,7 +73,7 @@ export class LibraryController {
   @RequirePermissions("library.view")
   getCategories(@Query() query: unknown) {
     const q = asQueryRecord(query);
-    return this.libraryService.getCategories({
+    return this.catalogService.getCategories({
       page: q.page ? Number(q.page) : 1,
       limit: q.limit ? Number(q.limit) : 10,
       search: q.search,
@@ -80,7 +86,7 @@ export class LibraryController {
   @Post("categories")
   @RequirePermissions("library.create")
   createCategory(@Body() dto: CreateLibraryCategoryDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.createCategory(dto, user.id);
+    return this.catalogService.createCategory(dto, user.id);
   }
 
   @ApiOperation({ summary: "Get Category" })
@@ -89,7 +95,7 @@ export class LibraryController {
   @Get("categories/:id")
   @RequirePermissions("library.view")
   getCategory(@Param("id", ParseCuidPipe) id: string) {
-    return this.libraryService.getCategory(id);
+    return this.catalogService.getCategory(id);
   }
 
   @ApiOperation({ summary: "Update Category" })
@@ -98,7 +104,7 @@ export class LibraryController {
   @Patch("categories/:id")
   @RequirePermissions("library.update")
   updateCategory(@Param("id", ParseCuidPipe) id: string, @Body() dto: UpdateLibraryCategoryDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.updateCategory(id, dto, user.id);
+    return this.catalogService.updateCategory(id, dto, user.id);
   }
 
   @ApiOperation({ summary: "Delete Category" })
@@ -107,7 +113,7 @@ export class LibraryController {
   @Delete("categories/:id")
   @RequirePermissions("library.delete")
   deleteCategory(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.deleteCategory(id, user.id);
+    return this.catalogService.deleteCategory(id, user.id);
   }
 
   // =========================================================================
@@ -121,7 +127,7 @@ export class LibraryController {
   @RequirePermissions("library.view")
   getShelves(@Query() query: unknown) {
     const q = asQueryRecord(query);
-    return this.libraryService.getShelves({
+    return this.catalogService.getShelves({
       page: q.page ? Number(q.page) : 1,
       limit: q.limit ? Number(q.limit) : 10,
       search: q.search,
@@ -134,7 +140,7 @@ export class LibraryController {
   @Post("shelves")
   @RequirePermissions("library.create")
   createShelf(@Body() dto: CreateLibraryShelfDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.createShelf(dto, user.id);
+    return this.catalogService.createShelf(dto, user.id);
   }
 
   @ApiOperation({ summary: "Get Shelf" })
@@ -143,7 +149,7 @@ export class LibraryController {
   @Get("shelves/:id")
   @RequirePermissions("library.view")
   getShelf(@Param("id", ParseCuidPipe) id: string) {
-    return this.libraryService.getShelf(id);
+    return this.catalogService.getShelf(id);
   }
 
   @ApiOperation({ summary: "Update Shelf" })
@@ -152,7 +158,7 @@ export class LibraryController {
   @Patch("shelves/:id")
   @RequirePermissions("library.update")
   updateShelf(@Param("id", ParseCuidPipe) id: string, @Body() dto: UpdateLibraryShelfDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.updateShelf(id, dto, user.id);
+    return this.catalogService.updateShelf(id, dto, user.id);
   }
 
   @ApiOperation({ summary: "Delete Shelf" })
@@ -161,7 +167,7 @@ export class LibraryController {
   @Delete("shelves/:id")
   @RequirePermissions("library.delete")
   deleteShelf(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.deleteShelf(id, user.id);
+    return this.catalogService.deleteShelf(id, user.id);
   }
 
   // =========================================================================
@@ -175,7 +181,7 @@ export class LibraryController {
   @RequirePermissions("library.view")
   getBooks(@Query() query: unknown) {
     const q = asQueryRecord(query);
-    return this.libraryService.getBooks({
+    return this.catalogService.getBooks({
       page: q.page ? Number(q.page) : 1,
       limit: q.limit ? Number(q.limit) : 10,
       search: q.search,
@@ -191,7 +197,7 @@ export class LibraryController {
   @Post("books")
   @RequirePermissions("library.create")
   createBook(@Body() dto: CreateLibraryBookDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.createBook(dto, user.id);
+    return this.catalogService.createBook(dto, user.id);
   }
 
   @ApiOperation({ summary: "Get Book" })
@@ -200,7 +206,7 @@ export class LibraryController {
   @Get("books/:id")
   @RequirePermissions("library.view")
   getBook(@Param("id", ParseCuidPipe) id: string) {
-    return this.libraryService.getBook(id);
+    return this.catalogService.getBook(id);
   }
 
   @ApiOperation({ summary: "Update Book" })
@@ -209,7 +215,7 @@ export class LibraryController {
   @Patch("books/:id")
   @RequirePermissions("library.update")
   updateBook(@Param("id", ParseCuidPipe) id: string, @Body() dto: UpdateLibraryBookDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.updateBook(id, dto, user.id);
+    return this.catalogService.updateBook(id, dto, user.id);
   }
 
   @ApiOperation({ summary: "Delete Book" })
@@ -218,7 +224,7 @@ export class LibraryController {
   @Delete("books/:id")
   @RequirePermissions("library.delete")
   deleteBook(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.deleteBook(id, user.id);
+    return this.catalogService.deleteBook(id, user.id);
   }
 
   // =========================================================================
@@ -232,7 +238,7 @@ export class LibraryController {
   @RequirePermissions("library.view")
   getCopies(@Param("bookId") bookId: string, @Query() query: unknown) {
     const q = asQueryRecord(query);
-    return this.libraryService.getCopies(bookId, {
+    return this.catalogService.getCopies(bookId, {
       page: q.page ? Number(q.page) : 1,
       limit: q.limit ? Number(q.limit) : 10,
       status: q.status as LibraryCopyStatus | undefined,
@@ -249,7 +255,7 @@ export class LibraryController {
     @Body() dto: CreateLibraryBookCopyDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.libraryService.createCopy(bookId, dto, user.id);
+    return this.catalogService.createCopy(bookId, dto, user.id);
   }
 
   @ApiOperation({ summary: "List All Copies" })
@@ -258,7 +264,7 @@ export class LibraryController {
   @Get("copies")
   @RequirePermissions("library.view")
   async listAllCopies(@Query() query: { page?: string | number; limit?: string | number; search?: string; status?: LibraryCopyStatus }) {
-    const data = await this.libraryService.listAllCopies(query);
+    const data = await this.catalogService.listAllCopies(query);
     return apiSuccess("Copies retrieved", data.data, data.meta);
   }
 
@@ -268,7 +274,7 @@ export class LibraryController {
   @Get("copies/:id")
   @RequirePermissions("library.view")
   getCopy(@Param("id", ParseCuidPipe) id: string) {
-    return this.libraryService.getCopy(id);
+    return this.catalogService.getCopy(id);
   }
 
   @ApiOperation({ summary: "Update Copy" })
@@ -277,7 +283,7 @@ export class LibraryController {
   @Patch("copies/:id")
   @RequirePermissions("library.update")
   updateCopy(@Param("id", ParseCuidPipe) id: string, @Body() dto: UpdateLibraryBookCopyDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.updateCopy(id, dto, user.id);
+    return this.catalogService.updateCopy(id, dto, user.id);
   }
 
   @ApiOperation({ summary: "Delete Copy" })
@@ -286,7 +292,7 @@ export class LibraryController {
   @Delete("copies/:id")
   @RequirePermissions("library.delete")
   deleteCopy(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.deleteCopy(id, user.id);
+    return this.catalogService.deleteCopy(id, user.id);
   }
 
   // =========================================================================
@@ -300,7 +306,7 @@ export class LibraryController {
   @RequirePermissions("library.view")
   getMembers(@Query() query: unknown) {
     const q = asQueryRecord(query);
-    return this.libraryService.getMembers({
+    return this.membersService.getMembers({
       page: q.page ? Number(q.page) : 1,
       limit: q.limit ? Number(q.limit) : 10,
       search: q.search,
@@ -315,7 +321,7 @@ export class LibraryController {
   @Post("members")
   @RequirePermissions("library.create")
   createMember(@Body() dto: CreateLibraryMemberDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.createMember(dto, user.id);
+    return this.membersService.createMember(dto, user.id);
   }
 
   @ApiOperation({ summary: "Get Member" })
@@ -324,7 +330,7 @@ export class LibraryController {
   @Get("members/:id")
   @RequirePermissions("library.view")
   getMember(@Param("id", ParseCuidPipe) id: string) {
-    return this.libraryService.getMember(id);
+    return this.membersService.getMember(id);
   }
 
   @ApiOperation({ summary: "Update Member" })
@@ -333,7 +339,7 @@ export class LibraryController {
   @Patch("members/:id")
   @RequirePermissions("library.update")
   updateMember(@Param("id", ParseCuidPipe) id: string, @Body() dto: UpdateLibraryMemberDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.updateMember(id, dto, user.id);
+    return this.membersService.updateMember(id, dto, user.id);
   }
 
   @ApiOperation({ summary: "Delete Member" })
@@ -342,7 +348,7 @@ export class LibraryController {
   @Delete("members/:id")
   @RequirePermissions("library.delete")
   deleteMember(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.deleteMember(id, user.id);
+    return this.membersService.deleteMember(id, user.id);
   }
 
   // =========================================================================
@@ -356,7 +362,7 @@ export class LibraryController {
   @RequirePermissions("library.view")
   getLoans(@Query() query: unknown) {
     const q = asQueryRecord(query);
-    return this.libraryService.getLoans({
+    return this.circulationService.getLoans({
       page: q.page ? Number(q.page) : 1,
       limit: q.limit ? Number(q.limit) : 10,
       status: q.status as LibraryLoanStatus | undefined,
@@ -371,7 +377,7 @@ export class LibraryController {
   @Post("loans")
   @RequirePermissions("library.borrow")
   createLoan(@Body() dto: CreateLibraryLoanDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.createLoan(dto, user.id);
+    return this.circulationService.createLoan(dto, user.id);
   }
 
   @ApiOperation({ summary: "Get Loan" })
@@ -380,7 +386,7 @@ export class LibraryController {
   @Get("loans/:id")
   @RequirePermissions("library.view")
   getLoan(@Param("id", ParseCuidPipe) id: string) {
-    return this.libraryService.getLoan(id);
+    return this.circulationService.getLoan(id);
   }
 
   @ApiOperation({ summary: "Return Loan" })
@@ -389,7 +395,7 @@ export class LibraryController {
   @Post("loans/:id/return")
   @RequirePermissions("library.return")
   returnLoan(@Param("id", ParseCuidPipe) id: string, @Body() dto: ReturnLibraryLoanDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.returnLoan(id, dto, user.id);
+    return this.circulationService.returnLoan(id, dto, user.id);
   }
 
   @ApiOperation({ summary: "Mark Lost Loan" })
@@ -398,7 +404,7 @@ export class LibraryController {
   @Post("loans/:id/mark-lost")
   @RequirePermissions("library.update")
   markLostLoan(@Param("id", ParseCuidPipe) id: string, @Body() dto: MarkLostLibraryLoanDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.markLostLoan(id, dto, user.id);
+    return this.circulationService.markLostLoan(id, dto, user.id);
   }
 
   @ApiOperation({ summary: "Cancel Loan" })
@@ -407,7 +413,7 @@ export class LibraryController {
   @Post("loans/:id/cancel")
   @RequirePermissions("library.update")
   cancelLoan(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.cancelLoan(id, user.id);
+    return this.circulationService.cancelLoan(id, user.id);
   }
 
   @ApiOperation({ summary: "Delete Loan" })
@@ -416,7 +422,7 @@ export class LibraryController {
   @Delete("loans/:id")
   @RequirePermissions("library.delete")
   deleteLoan(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.deleteLoan(id, user.id);
+    return this.circulationService.deleteLoan(id, user.id);
   }
 
   // =========================================================================
@@ -430,7 +436,7 @@ export class LibraryController {
   @RequirePermissions("library.view")
   getReservations(@Query() query: unknown) {
     const q = asQueryRecord(query);
-    return this.libraryService.getReservations({
+    return this.circulationService.getReservations({
       page: q.page ? Number(q.page) : 1,
       limit: q.limit ? Number(q.limit) : 10,
       status: q.status as LibraryReservationStatus | undefined,
@@ -444,7 +450,7 @@ export class LibraryController {
   @Post("reservations")
   @RequirePermissions("library.reserve")
   createReservation(@Body() dto: CreateLibraryReservationDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.createReservation(dto, user.id);
+    return this.circulationService.createReservation(dto, user.id);
   }
 
   @ApiOperation({ summary: "Get Reservation" })
@@ -453,7 +459,7 @@ export class LibraryController {
   @Get("reservations/:id")
   @RequirePermissions("library.view")
   getReservation(@Param("id", ParseCuidPipe) id: string) {
-    return this.libraryService.getReservation(id);
+    return this.circulationService.getReservation(id);
   }
 
   @ApiOperation({ summary: "Mark Reservation Ready" })
@@ -462,7 +468,7 @@ export class LibraryController {
   @Post("reservations/:id/mark-ready")
   @RequirePermissions("library.update")
   markReservationReady(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.markReservationReady(id, user.id);
+    return this.circulationService.markReservationReady(id, user.id);
   }
 
   @ApiOperation({ summary: "Cancel Reservation" })
@@ -471,7 +477,7 @@ export class LibraryController {
   @Post("reservations/:id/cancel")
   @RequirePermissions("library.update")
   cancelReservation(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.cancelReservation(id, user.id);
+    return this.circulationService.cancelReservation(id, user.id);
   }
 
   @ApiOperation({ summary: "Expire Reservation" })
@@ -480,7 +486,7 @@ export class LibraryController {
   @Post("reservations/:id/expire")
   @RequirePermissions("library.update")
   expireReservation(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.expireReservation(id, user.id);
+    return this.circulationService.expireReservation(id, user.id);
   }
 
   // =========================================================================
@@ -494,7 +500,7 @@ export class LibraryController {
   @RequirePermissions("library.view")
   getFines(@Query() query: unknown) {
     const q = asQueryRecord(query);
-    return this.libraryService.getFines({
+    return this.finesService.getFines({
       page: q.page ? Number(q.page) : 1,
       limit: q.limit ? Number(q.limit) : 10,
       status: q.status as LibraryFineStatus | undefined,
@@ -508,7 +514,7 @@ export class LibraryController {
   @Get("fines/:id")
   @RequirePermissions("library.view")
   getFine(@Param("id", ParseCuidPipe) id: string) {
-    return this.libraryService.getFine(id);
+    return this.finesService.getFine(id);
   }
 
   @ApiOperation({ summary: "Pay Fine" })
@@ -517,7 +523,7 @@ export class LibraryController {
   @Post("fines/:id/pay")
   @RequirePermissions("library.fine")
   payFine(@Param("id", ParseCuidPipe) id: string, @Body() dto: PayLibraryFineDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.payFine(id, dto, user.id);
+    return this.finesService.payFine(id, dto, user.id);
   }
 
   @ApiOperation({ summary: "Waive Fine" })
@@ -526,7 +532,7 @@ export class LibraryController {
   @Post("fines/:id/waive")
   @RequirePermissions("library.fine")
   waiveFine(@Param("id", ParseCuidPipe) id: string, @Body() dto: WaiveLibraryFineDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.waiveFine(id, dto, user.id);
+    return this.finesService.waiveFine(id, dto, user.id);
   }
 
   @ApiOperation({ summary: "Cancel Fine" })
@@ -535,7 +541,7 @@ export class LibraryController {
   @Post("fines/:id/cancel")
   @RequirePermissions("library.fine")
   cancelFine(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.libraryService.cancelFine(id, user.id);
+    return this.finesService.cancelFine(id, user.id);
   }
 
   // =========================================================================
@@ -548,7 +554,7 @@ export class LibraryController {
   @Get("summary")
   @RequirePermissions("library.view")
   getSummary() {
-    return this.libraryService.getSummary();
+    return this.dashboardService.getSummary();
   }
 
   @ApiOperation({ summary: "Get Overdue" })
@@ -557,7 +563,7 @@ export class LibraryController {
   @Get("overdue")
   @RequirePermissions("library.view")
   getOverdue() {
-    return this.libraryService.getOverdue();
+    return this.dashboardService.getOverdue();
   }
 
   @ApiOperation({ summary: "Get Available Books" })
@@ -566,7 +572,7 @@ export class LibraryController {
   @Get("available-books")
   @RequirePermissions("library.view")
   getAvailableBooks() {
-    return this.libraryService.getAvailableBooks();
+    return this.dashboardService.getAvailableBooks();
   }
 
   @ApiOperation({ summary: "Get Popular Books" })
@@ -575,7 +581,7 @@ export class LibraryController {
   @Get("popular-books")
   @RequirePermissions("library.view")
   getPopularBooks() {
-    return this.libraryService.getPopularBooks();
+    return this.dashboardService.getPopularBooks();
   }
 
   // PDF Endpoints

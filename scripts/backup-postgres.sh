@@ -28,3 +28,15 @@ echo "Backup successful: $BACKUP_DIR/backup_${DB_NAME}_${TIMESTAMP}.sql"
 
 # Keep only last 30 backups
 ls -t "$BACKUP_DIR/backup_${DB_NAME}"_*.sql 2>/dev/null | tail -n +31 | xargs rm -- 2>/dev/null || true
+
+# Optional S3 offsite backup
+if [[ -n "${S3_BACKUP_BUCKET:-}" ]]; then
+  BACKUP_FILE="$BACKUP_DIR/backup_${DB_NAME}_${TIMESTAMP}.sql"
+  if command -v aws &>/dev/null; then
+    echo "Uploading to S3: $S3_BACKUP_BUCKET..."
+    aws s3 cp "$BACKUP_FILE" "${S3_BACKUP_BUCKET}/" --only-show-errors
+    echo "S3 upload successful."
+  else
+    echo "WARN: S3_BACKUP_BUCKET is set but 'aws' CLI not found. Install awscli or configure path."
+  fi
+fi

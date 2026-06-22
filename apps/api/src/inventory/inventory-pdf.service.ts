@@ -1,17 +1,21 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { PdfService } from "../pdf/pdf.service";
-import { InventoryService } from "./inventory.service";
+import { InventoryItemsService } from "./inventory-items.service";
+import { InventoryLoansService } from "./inventory-loans.service";
+import { InventoryStockService } from "./inventory-stock.service";
 import { PdfHeader } from "../pdf/pdf.types";
 
 @Injectable()
 export class InventoryPdfService {
   constructor(
     private readonly pdfService: PdfService,
-    private readonly inventoryService: InventoryService,
+    private readonly itemsService: InventoryItemsService,
+    private readonly loansService: InventoryLoansService,
+    private readonly stockService: InventoryStockService,
   ) {}
 
   async generateItemPdf(itemId: string): Promise<Buffer> {
-    const item = await this.inventoryService.getItem(itemId);
+    const item = await this.itemsService.getItem(itemId);
     const schoolHeader = await this.pdfService.getSchoolHeader();
 
     const header: PdfHeader = {
@@ -40,7 +44,7 @@ export class InventoryPdfService {
   }
 
   async generateItemLabelPdf(itemId: string): Promise<Buffer> {
-    const item = await this.inventoryService.getItem(itemId);
+    const item = await this.itemsService.getItem(itemId);
     const doc = this.pdfService.createDocument({ info: { Title: `Label ${item.code}` } });
 
     // Custom logic for label
@@ -57,7 +61,7 @@ export class InventoryPdfService {
   }
 
   async generateLoanPdf(loanId: string): Promise<Buffer> {
-    const loan = await this.inventoryService.getLoan(loanId);
+    const loan = await this.loansService.getLoan(loanId);
     const schoolHeader = await this.pdfService.getSchoolHeader();
 
     const header: PdfHeader = {
@@ -90,7 +94,7 @@ export class InventoryPdfService {
   }
 
   async generateSummaryPdf(): Promise<Buffer> {
-    const summary = await this.inventoryService.getSummary();
+    const summary = await this.stockService.getSummary();
     const schoolHeader = await this.pdfService.getSchoolHeader();
 
     const header: PdfHeader = {

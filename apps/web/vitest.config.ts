@@ -8,6 +8,16 @@ export default defineConfig({
     environment: "node",
     include: ["src/**/*.spec.ts", "src/**/*.test.ts"],
     exclude: ["node_modules", ".next"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "lcov"],
+      thresholds: {
+        statements: 15,
+        branches: 10,
+        functions: 15,
+        lines: 15,
+      },
+    },
   },
   resolve: {
     alias: {

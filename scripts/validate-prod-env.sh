@@ -11,26 +11,18 @@ if [[ ! -f "$ENV_FILE" ]]; then
   exit 1
 fi
 
-get_env() {
-  local key=$1
-  local line
-  line=$(grep -E "^${key}=" "$ENV_FILE" | tail -1 || true)
-  if [[ -z "$line" ]]; then
-    echo ""
-    return
-  fi
-  echo "${line#*=}" | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//"
-}
+# Source env file directly instead of fragile grep parsing
+set -a
+source "$ENV_FILE"
+set +a
 
-NODE_ENV=$(get_env NODE_ENV)
-WEB_ORIGIN=$(get_env WEB_ORIGIN)
-CORS_ORIGIN=$(get_env CORS_ORIGIN)
-JWT_ACCESS_SECRET=$(get_env JWT_ACCESS_SECRET)
-JWT_REFRESH_SECRET=$(get_env JWT_REFRESH_SECRET)
-TURNSTILE_SECRET_KEY=$(get_env TURNSTILE_SECRET_KEY)
-POSTGRES_PASSWORD=$(get_env POSTGRES_PASSWORD)
-DATABASE_URL=$(get_env DATABASE_URL)
-NEXT_PUBLIC_API_URL=$(get_env NEXT_PUBLIC_API_URL)
+# Override with env-specific file if exists
+ENV_FILE_OVERRIDE="${ENV_FILE}.local"
+if [[ -f "$ENV_FILE_OVERRIDE" ]]; then
+  set -a
+  source "$ENV_FILE_OVERRIDE"
+  set +a
+fi
 
 fail=0
 

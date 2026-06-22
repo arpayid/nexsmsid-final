@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import type { MasterDataRecord } from "@nexsmsid/api-client";
+import { Button, ConfirmDialog } from "@nexsmsid/ui";
 
 import { PeoplePage, type PeopleField } from "@/components/people-page";
 import { createBrowserApiClient } from "@/lib/api-client";
@@ -45,6 +46,22 @@ const fields: PeopleField[] = [
 
 export default function TeachersPage() {
   const api = useMemo(() => createBrowserApiClient(), []);
+  const [resetPasswordId, setResetPasswordId] = useState<string | null>(null);
+  const [tempPassword, setTempPassword] = useState<string | null>(null);
+  const [resetBusyId, setResetBusyId] = useState<string | null>(null);
+
+  async function handleResetPassword(item: MasterDataRecord) {
+    setResetBusyId(item.id);
+    try {
+      await api.resetUserPassword(item.id, {});
+      setTempPassword("Password telah direset. Beri tahu guru untuk menggunakan password baru.");
+      setResetPasswordId(null);
+    } catch {
+      setTempPassword("Gagal mereset password");
+    } finally {
+      setResetBusyId(null);
+    }
+  }
 
   const resource = useMemo(
     () => ({
@@ -73,14 +90,37 @@ export default function TeachersPage() {
   };
 
   return (
-    <PeoplePage
-      description="Kelola data guru dan tenaga pendidik untuk kebutuhan penjadwalan serta pembelajaran."
-      eyebrow="People & Akademik"
-      excel={excel}
-      fields={fields}
-      resource={resource}
-      statusOptions={["ACTIVE", "INACTIVE", "RESIGNED", "TRANSFERRED"]}
-      title="Guru"
-    />
+    <>
+      <PeoplePage
+        description="Kelola data guru dan tenaga pendidik untuk kebutuhan penjadwalan serta pembelajaran."
+        eyebrow="People & Akademik"
+        excel={excel}
+        extraRowActions={(item) => (
+          <Button disabled={resetBusyId === item.id} onClick={() => void handleResetPassword(item)} size="sm" variant="outline">
+            Reset PW
+          </Button>
+        )}
+        fields={fields}
+        resource={resource}
+        statusOptions={["ACTIVE", "INACTIVE", "RESIGNED", "TRANSFERRED"]}
+        title="Guru"
+      />
+
+      <ConfirmDialog
+        cancelLabel="Tutup"
+        confirmLabel="OK"
+        description={<span className="text-sm">{tempPassword}</span>}
+        onCancel={() => {
+          setTempPassword(null);
+          setResetPasswordId(null);
+        }}
+        onConfirm={() => {
+          setTempPassword(null);
+          setResetPasswordId(null);
+        }}
+        open={Boolean(tempPassword)}
+        title="Password Guru Direset"
+      />
+    </>
   );
 }

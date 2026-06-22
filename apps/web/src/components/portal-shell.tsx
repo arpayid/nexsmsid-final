@@ -46,6 +46,8 @@ const portalNavigation: Record<PortalKind, { title: string; items: NavItem[] }> 
       { href: "/teacher/schedules", icon: BookOpen, label: "Jadwal Mengajar" },
       { href: "/teacher/attendance", icon: ClipboardCheck, label: "Presensi" },
       { href: "/teacher/grades", icon: GraduationCap, label: "Penilaian" },
+      { href: "/teacher/announcements", icon: Newspaper, label: "Pengumuman" },
+      { href: "/teacher/discipline", icon: ClipboardCheck, label: "Kedisiplinan" },
       { href: "/teacher/notifications", icon: Bell, label: "Notifikasi" },
       { href: "/account/security", icon: UserCog, label: "Keamanan Akun" },
     ],

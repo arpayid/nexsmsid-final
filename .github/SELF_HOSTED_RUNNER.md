@@ -100,7 +100,7 @@ pnpm --filter @nexsmsid/api test
 
 | Gejala                     | Solusi                                                                                 |
 | -------------------------- | -------------------------------------------------------------------------------------- |
-| Job stuck di queue         | Runner offline atau label tidak cocok (`nexsmsid-final`)                                  |
+| Job stuck di queue         | Runner offline atau label tidak cocok (`nexsmsid-final`)                               |
 | Port 5432/6379 in use      | Hentikan stack Docker lain atau ubah port                                              |
 | `docker compose` not found | Pasang [Compose plugin](https://docs.docker.com/compose/install/linux/)                |
 | Permission denied Docker   | `sudo usermod -aG docker <user>` lalu restart service runner                           |

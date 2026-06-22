@@ -28,9 +28,17 @@ if [ -z "$CONTAINER_NAME" ]; then
 fi
 
 echo "Warning: This will overwrite the current database: $DB_NAME"
+
+# Auto-backup current DB before restore
+PRE_BACKUP_DIR="$BACKUP_DIR/pre-restore"
+mkdir -p "$PRE_BACKUP_DIR"
+PRE_BACKUP_FILE="${PRE_BACKUP_DIR}/${DB_NAME}_pre_restore_$(date +"%Y%m%d_%H%M%S").sql"
+echo "Creating pre-restore backup: $PRE_BACKUP_FILE..."
+docker exec "$CONTAINER_NAME" pg_dump -U "$DB_USER" "$DB_NAME" > "$PRE_BACKUP_FILE" && echo "Pre-restore backup saved." || echo "WARN: Pre-restore backup failed."
+
 read -r -p "Are you sure? (y/N) " confirm
 if [[ $confirm != [yY] ]]; then
-  echo "Aborted."
+  echo "Aborted. Pre-restore backup tersimpan di $PRE_BACKUP_FILE"
   exit 0
 fi
 

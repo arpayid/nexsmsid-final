@@ -1,4 +1,4 @@
-import { Inject, Injectable, ServiceUnavailableException } from "@nestjs/common";
+import { Inject, Injectable, Logger, ServiceUnavailableException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 import { PrismaService } from "../database/prisma.service";
@@ -18,12 +18,23 @@ export class HealthService {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
+      Logger.warn(`getBasicHealth: database health check failed — ${error instanceof Error ? error.message : String(error)}`);
       throw new ServiceUnavailableException("Database connection failed");
     }
   }
 
   async getDetailedHealth() {
-    await this.prisma.$queryRaw`SELECT 1`;
+    try {
+      await this.prisma.$queryRaw`SELECT 1`;
+    } catch (error) {
+      Logger.warn(`getDetailedHealth: database health check failed — ${error instanceof Error ? error.message : String(error)}`);
+      return {
+        service: "api",
+        status: "degraded",
+        timestamp: new Date().toISOString(),
+        database: { provider: "postgresql", status: "error" },
+      };
+    }
 
     return {
       service: "api",
@@ -61,6 +72,7 @@ export class HealthService {
 
       return url.toString();
     } catch {
+      Logger.warn(`Failed to parse REDIS_URL for masking`);
       return "configured";
     }
   }

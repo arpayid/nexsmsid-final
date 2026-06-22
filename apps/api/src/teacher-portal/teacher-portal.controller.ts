@@ -92,6 +92,28 @@ export class TeacherPortalController {
     return apiSuccess("Teacher portal pending grades retrieved", await this.service.getPendingGrades(user.id));
   }
 
+  @ApiOperation({ summary: "Get Announcements" })
+  @ApiResponse({ status: 200, description: "Teacher Portal announcements" })
+  @Get("announcements")
+  async getAnnouncements(@CurrentUser() user: AuthenticatedUser, @Query("limit") limit?: string) {
+    const parsed = limit ? Math.max(1, Math.min(100, Number(limit))) : 30;
+    return apiSuccess(
+      "Teacher portal announcements retrieved",
+      await this.service.getAnnouncements(user.id, Number.isFinite(parsed) ? parsed : 30),
+    );
+  }
+
+  @ApiOperation({ summary: "Get Discipline" })
+  @ApiResponse({ status: 200, description: "Teacher Portal discipline" })
+  @Get("discipline")
+  async getDiscipline(@CurrentUser() user: AuthenticatedUser, @Query("limit") limit?: string) {
+    const parsed = limit ? Math.max(1, Math.min(200, Number(limit))) : 50;
+    return apiSuccess(
+      "Teacher portal discipline retrieved",
+      await this.service.getDiscipline(user.id, Number.isFinite(parsed) ? parsed : 50),
+    );
+  }
+
   @ApiOperation({ summary: "Get Recent Notifications" })
   @ApiResponse({ status: 200, description: "Teacher Portal get recent notifications" })
   @Get("recent-notifications")

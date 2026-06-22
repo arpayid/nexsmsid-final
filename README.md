@@ -2,15 +2,15 @@
 
 Enterprise School Management System — modular monolith, production-ready.
 
-| Atribut         | Nilai                                                                    |
-| --------------- | ------------------------------------------------------------------------ |
-| Nama            | NexSMSID V4                                                              |
-| Version         | 4.0.0                                                                    |
-| Package         | `nexsmsid-final`                                                            |
-| Package Manager | pnpm@10.18.3                                                             |
-| Node            | >= 20.11.0 (CI: Node.js 24)                                              |
+| Atribut         | Nilai                                                                          |
+| --------------- | ------------------------------------------------------------------------------ |
+| Nama            | NexSMSID V4                                                                    |
+| Version         | 4.0.0                                                                          |
+| Package         | `nexsmsid-final`                                                               |
+| Package Manager | pnpm@10.18.3                                                                   |
+| Node            | >= 20.11.0 (CI: Node.js 24)                                                    |
 | Repo            | [github.com/arpayid/nexsmsid-final](https://github.com/arpayid/nexsmsid-final) |
-| Status          | Fase 4 — Production pilot ✅ stack Docker + nginx; HTTPS domain opsional |
+| Status          | Fase 4 — Production pilot ✅ stack Docker + nginx; HTTPS domain opsional       |
 
 ## Tech Stack
 

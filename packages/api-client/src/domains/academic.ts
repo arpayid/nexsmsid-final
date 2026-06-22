@@ -358,5 +358,19 @@ export function createAcademicApi({ request, downloadFile }: ApiClientCore) {
       const response = await request<unknown[]>("/guardian-portal/recent-announcements");
       return response.data;
     },
+    async getTeacherPortalAnnouncements(options: { limit?: number } = {}) {
+      const params = new URLSearchParams();
+      if (options.limit) params.set("limit", String(options.limit));
+      const query = params.toString();
+      const response = await request<unknown[]>(`/teacher-portal/announcements${query ? `?${query}` : ""}`);
+      return response.data;
+    },
+    async getTeacherPortalDiscipline(options: { limit?: number } = {}) {
+      const params = new URLSearchParams();
+      if (options.limit) params.set("limit", String(options.limit));
+      const query = params.toString();
+      const response = await request<unknown>(`/teacher-portal/discipline${query ? `?${query}` : ""}`);
+      return response.data;
+    },
   };
 }

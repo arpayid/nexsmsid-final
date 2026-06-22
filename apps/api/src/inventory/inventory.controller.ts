@@ -2,7 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Re
 import { ParseCuidPipe } from "../common/pipes/parse-cuid.pipe";
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from "@nestjs/swagger";
 import { Response } from "express";
-import { InventoryService } from "./inventory.service";
+import { InventoryItemsService } from "./inventory-items.service";
+import { InventoryLoansService } from "./inventory-loans.service";
+import { InventoryStockService } from "./inventory-stock.service";
 import { InventoryPdfService } from "./inventory-pdf.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { PermissionGuard } from "../auth/guards/permission.guard";
@@ -30,7 +32,9 @@ import {
 @ApiBearerAuth()
 export class InventoryController {
   constructor(
-    private readonly inventoryService: InventoryService,
+    private readonly itemsService: InventoryItemsService,
+    private readonly loansService: InventoryLoansService,
+    private readonly stockService: InventoryStockService,
     private readonly pdfService: InventoryPdfService,
   ) {}
 
@@ -41,7 +45,7 @@ export class InventoryController {
   @Get("categories")
   @RequirePermissions("inventory.view")
   getCategories() {
-    return this.inventoryService.getCategories();
+    return this.itemsService.getCategories();
   }
 
   @ApiOperation({ summary: "Create Category" })
@@ -50,7 +54,7 @@ export class InventoryController {
   @Post("categories")
   @RequirePermissions("inventory.create")
   createCategory(@Body() dto: CreateInventoryCategoryDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.createCategory(dto, user.id);
+    return this.itemsService.createCategory(dto, user.id);
   }
 
   @ApiOperation({ summary: "Get Category" })
@@ -59,7 +63,7 @@ export class InventoryController {
   @Get("categories/:id")
   @RequirePermissions("inventory.view")
   getCategory(@Param("id", ParseCuidPipe) id: string) {
-    return this.inventoryService.getCategory(id);
+    return this.itemsService.getCategory(id);
   }
 
   @ApiOperation({ summary: "Update Category" })
@@ -68,7 +72,7 @@ export class InventoryController {
   @Patch("categories/:id")
   @RequirePermissions("inventory.update")
   updateCategory(@Param("id", ParseCuidPipe) id: string, @Body() dto: UpdateInventoryCategoryDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.updateCategory(id, dto, user.id);
+    return this.itemsService.updateCategory(id, dto, user.id);
   }
 
   @ApiOperation({ summary: "Delete Category" })
@@ -77,7 +81,7 @@ export class InventoryController {
   @Delete("categories/:id")
   @RequirePermissions("inventory.delete")
   deleteCategory(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.deleteCategory(id, user.id);
+    return this.itemsService.deleteCategory(id, user.id);
   }
 
   // Locations
@@ -87,7 +91,7 @@ export class InventoryController {
   @Get("locations")
   @RequirePermissions("inventory.view")
   getLocations() {
-    return this.inventoryService.getLocations();
+    return this.itemsService.getLocations();
   }
 
   @ApiOperation({ summary: "Create Location" })
@@ -96,7 +100,7 @@ export class InventoryController {
   @Post("locations")
   @RequirePermissions("inventory.create")
   createLocation(@Body() dto: CreateInventoryLocationDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.createLocation(dto, user.id);
+    return this.itemsService.createLocation(dto, user.id);
   }
 
   @ApiOperation({ summary: "Get Location" })
@@ -105,7 +109,7 @@ export class InventoryController {
   @Get("locations/:id")
   @RequirePermissions("inventory.view")
   getLocation(@Param("id", ParseCuidPipe) id: string) {
-    return this.inventoryService.getLocation(id);
+    return this.itemsService.getLocation(id);
   }
 
   @ApiOperation({ summary: "Update Location" })
@@ -114,7 +118,7 @@ export class InventoryController {
   @Patch("locations/:id")
   @RequirePermissions("inventory.update")
   updateLocation(@Param("id", ParseCuidPipe) id: string, @Body() dto: UpdateInventoryLocationDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.updateLocation(id, dto, user.id);
+    return this.itemsService.updateLocation(id, dto, user.id);
   }
 
   @ApiOperation({ summary: "Delete Location" })
@@ -123,7 +127,7 @@ export class InventoryController {
   @Delete("locations/:id")
   @RequirePermissions("inventory.delete")
   deleteLocation(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.deleteLocation(id, user.id);
+    return this.itemsService.deleteLocation(id, user.id);
   }
 
   // Items
@@ -133,7 +137,7 @@ export class InventoryController {
   @Get("items")
   @RequirePermissions("inventory.view")
   getItems(@Query() query: InventoryQueryDto) {
-    return this.inventoryService.getItems(query);
+    return this.itemsService.getItems(query);
   }
 
   @ApiOperation({ summary: "Create Item" })
@@ -142,7 +146,7 @@ export class InventoryController {
   @Post("items")
   @RequirePermissions("inventory.create")
   createItem(@Body() dto: CreateInventoryItemDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.createItem(dto, user.id);
+    return this.itemsService.createItem(dto, user.id);
   }
 
   @ApiOperation({ summary: "Get Item" })
@@ -151,7 +155,7 @@ export class InventoryController {
   @Get("items/:id")
   @RequirePermissions("inventory.view")
   getItem(@Param("id", ParseCuidPipe) id: string) {
-    return this.inventoryService.getItem(id);
+    return this.itemsService.getItem(id);
   }
 
   @ApiOperation({ summary: "Update Item" })
@@ -160,7 +164,7 @@ export class InventoryController {
   @Patch("items/:id")
   @RequirePermissions("inventory.update")
   updateItem(@Param("id", ParseCuidPipe) id: string, @Body() dto: UpdateInventoryItemDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.updateItem(id, dto, user.id);
+    return this.itemsService.updateItem(id, dto, user.id);
   }
 
   @ApiOperation({ summary: "Delete Item" })
@@ -169,7 +173,7 @@ export class InventoryController {
   @Delete("items/:id")
   @RequirePermissions("inventory.delete")
   deleteItem(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.deleteItem(id, user.id);
+    return this.itemsService.deleteItem(id, user.id);
   }
 
   @ApiOperation({ summary: "Get Item Movements" })
@@ -178,7 +182,7 @@ export class InventoryController {
   @Get("items/:id/movements")
   @RequirePermissions("inventory.view")
   getItemMovements(@Param("id", ParseCuidPipe) id: string) {
-    return this.inventoryService.getItemMovements(id);
+    return this.itemsService.getItemMovements(id);
   }
 
   // Movements
@@ -188,7 +192,7 @@ export class InventoryController {
   @Get("movements")
   @RequirePermissions("inventory.view")
   getMovements(@Query() query: InventoryQueryDto) {
-    return this.inventoryService.getMovements(query);
+    return this.itemsService.getMovements(query);
   }
 
   @ApiOperation({ summary: "Create Movement" })
@@ -197,7 +201,7 @@ export class InventoryController {
   @Post("movements")
   @RequirePermissions("inventory.transfer")
   createMovement(@Body() dto: CreateInventoryMovementDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.createMovement(dto, user.id);
+    return this.itemsService.createMovement(dto, user.id);
   }
 
   // Maintenance
@@ -207,7 +211,7 @@ export class InventoryController {
   @Get("maintenances")
   @RequirePermissions("inventory.maintenance")
   getMaintenances(@Query() query: InventoryQueryDto) {
-    return this.inventoryService.getMaintenances(query);
+    return this.itemsService.getMaintenances(query);
   }
 
   @ApiOperation({ summary: "Create Maintenance" })
@@ -216,7 +220,7 @@ export class InventoryController {
   @Post("maintenances")
   @RequirePermissions("inventory.maintenance")
   createMaintenance(@Body() dto: CreateInventoryMaintenanceDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.createMaintenance(dto, user.id);
+    return this.itemsService.createMaintenance(dto, user.id);
   }
 
   @ApiOperation({ summary: "Get Maintenance" })
@@ -225,7 +229,7 @@ export class InventoryController {
   @Get("maintenances/:id")
   @RequirePermissions("inventory.maintenance")
   getMaintenance(@Param("id", ParseCuidPipe) id: string) {
-    return this.inventoryService.getMaintenance(id);
+    return this.itemsService.getMaintenance(id);
   }
 
   @ApiOperation({ summary: "Update Maintenance" })
@@ -238,7 +242,7 @@ export class InventoryController {
     @Body() dto: UpdateInventoryMaintenanceDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.inventoryService.updateMaintenance(id, dto, user.id);
+    return this.itemsService.updateMaintenance(id, dto, user.id);
   }
 
   @ApiOperation({ summary: "Start Maintenance" })
@@ -247,7 +251,7 @@ export class InventoryController {
   @Post("maintenances/:id/start")
   @RequirePermissions("inventory.maintenance")
   startMaintenance(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.startMaintenance(id, user.id);
+    return this.itemsService.startMaintenance(id, user.id);
   }
 
   @ApiOperation({ summary: "Complete Maintenance" })
@@ -256,7 +260,7 @@ export class InventoryController {
   @Post("maintenances/:id/complete")
   @RequirePermissions("inventory.maintenance")
   completeMaintenance(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.completeMaintenance(id, user.id);
+    return this.itemsService.completeMaintenance(id, user.id);
   }
 
   @ApiOperation({ summary: "Cancel Maintenance" })
@@ -265,7 +269,7 @@ export class InventoryController {
   @Post("maintenances/:id/cancel")
   @RequirePermissions("inventory.maintenance")
   cancelMaintenance(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.cancelMaintenance(id, user.id);
+    return this.itemsService.cancelMaintenance(id, user.id);
   }
 
   @ApiOperation({ summary: "Delete Maintenance" })
@@ -274,7 +278,7 @@ export class InventoryController {
   @Delete("maintenances/:id")
   @RequirePermissions("inventory.maintenance")
   deleteMaintenance(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.deleteMaintenance(id, user.id);
+    return this.itemsService.deleteMaintenance(id, user.id);
   }
 
   // Loans
@@ -284,7 +288,7 @@ export class InventoryController {
   @Get("loans")
   @RequirePermissions("inventory.view")
   getLoans(@Query() query: InventoryQueryDto) {
-    return this.inventoryService.getLoans(query);
+    return this.loansService.getLoans(query);
   }
 
   @ApiOperation({ summary: "Create Loan" })
@@ -293,7 +297,7 @@ export class InventoryController {
   @Post("loans")
   @RequirePermissions("inventory.borrow")
   createLoan(@Body() dto: CreateInventoryLoanDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.createLoan(dto, user.id);
+    return this.loansService.createLoan(dto, user.id);
   }
 
   @ApiOperation({ summary: "Get Loan" })
@@ -302,7 +306,7 @@ export class InventoryController {
   @Get("loans/:id")
   @RequirePermissions("inventory.view")
   getLoan(@Param("id", ParseCuidPipe) id: string) {
-    return this.inventoryService.getLoan(id);
+    return this.loansService.getLoan(id);
   }
 
   @ApiOperation({ summary: "Update Loan" })
@@ -311,7 +315,7 @@ export class InventoryController {
   @Patch("loans/:id")
   @RequirePermissions("inventory.update")
   updateLoan(@Param("id", ParseCuidPipe) id: string, @Body() dto: UpdateInventoryLoanDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.updateLoan(id, dto, user.id);
+    return this.loansService.updateLoan(id, dto, user.id);
   }
 
   @ApiOperation({ summary: "Approve Loan" })
@@ -320,7 +324,7 @@ export class InventoryController {
   @Post("loans/:id/approve")
   @RequirePermissions("inventory.approve-loan")
   approveLoan(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.approveLoan(id, user.id);
+    return this.loansService.approveLoan(id, user.id);
   }
 
   @ApiOperation({ summary: "Reject Loan" })
@@ -329,7 +333,7 @@ export class InventoryController {
   @Post("loans/:id/reject")
   @RequirePermissions("inventory.approve-loan")
   rejectLoan(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.rejectLoan(id, user.id);
+    return this.loansService.rejectLoan(id, user.id);
   }
 
   @ApiOperation({ summary: "Mark Loan Borrowed" })
@@ -338,7 +342,7 @@ export class InventoryController {
   @Post("loans/:id/mark-borrowed")
   @RequirePermissions("inventory.borrow")
   markLoanBorrowed(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.markLoanBorrowed(id, user.id);
+    return this.loansService.markLoanBorrowed(id, user.id);
   }
 
   @ApiOperation({ summary: "Return Loan" })
@@ -347,7 +351,7 @@ export class InventoryController {
   @Post("loans/:id/return")
   @RequirePermissions("inventory.return")
   returnLoan(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.returnLoan(id, user.id);
+    return this.loansService.returnLoan(id, user.id);
   }
 
   @ApiOperation({ summary: "Cancel Loan" })
@@ -356,7 +360,7 @@ export class InventoryController {
   @Post("loans/:id/cancel")
   @RequirePermissions("inventory.borrow")
   cancelLoan(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.cancelLoan(id, user.id);
+    return this.loansService.cancelLoan(id, user.id);
   }
 
   @ApiOperation({ summary: "Delete Loan" })
@@ -365,7 +369,7 @@ export class InventoryController {
   @Delete("loans/:id")
   @RequirePermissions("inventory.delete")
   deleteLoan(@Param("id", ParseCuidPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.inventoryService.deleteLoan(id, user.id);
+    return this.loansService.deleteLoan(id, user.id);
   }
 
   // Summary & Dashboard
@@ -375,7 +379,7 @@ export class InventoryController {
   @Get("summary")
   @RequirePermissions("inventory.view")
   getSummary() {
-    return this.inventoryService.getSummary();
+    return this.stockService.getSummary();
   }
 
   @ApiOperation({ summary: "Get Low Stock Items" })
@@ -384,7 +388,7 @@ export class InventoryController {
   @Get("reports/low-stock")
   @RequirePermissions("inventory.view")
   getLowStockItems() {
-    return this.inventoryService.getLowStockItems();
+    return this.stockService.getLowStockItems();
   }
 
   @ApiOperation({ summary: "Get Maintenance Due" })
@@ -393,7 +397,7 @@ export class InventoryController {
   @Get("reports/maintenance-due")
   @RequirePermissions("inventory.maintenance")
   getMaintenanceDue() {
-    return this.inventoryService.getMaintenanceDue();
+    return this.stockService.getMaintenanceDue();
   }
 
   @ApiOperation({ summary: "Get Loans Overdue" })
@@ -402,7 +406,7 @@ export class InventoryController {
   @Get("reports/loans-overdue")
   @RequirePermissions("inventory.view")
   getLoansOverdue() {
-    return this.inventoryService.getLoansOverdue();
+    return this.stockService.getLoansOverdue();
   }
 
   // PDFs
@@ -413,9 +417,12 @@ export class InventoryController {
   @RequirePermissions("inventory.print")
   async printItem(@Param("id", ParseCuidPipe) id: string, @Res() res: Response) {
     const buffer = await this.pdfService.generateItemPdf(id);
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `inline; filename=item-${id}.pdf`);
-    res.send(buffer);
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="item-${id}.pdf"`,
+      "Content-Length": buffer.length,
+    });
+    res.end(buffer);
   }
 
   @ApiOperation({ summary: "Print Item Label" })
@@ -425,9 +432,12 @@ export class InventoryController {
   @RequirePermissions("inventory.print")
   async printItemLabel(@Param("id", ParseCuidPipe) id: string, @Res() res: Response) {
     const buffer = await this.pdfService.generateItemLabelPdf(id);
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `inline; filename=label-${id}.pdf`);
-    res.send(buffer);
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="label-${id}.pdf"`,
+      "Content-Length": buffer.length,
+    });
+    res.end(buffer);
   }
 
   @ApiOperation({ summary: "Print Loan" })
@@ -437,9 +447,12 @@ export class InventoryController {
   @RequirePermissions("inventory.print")
   async printLoan(@Param("id", ParseCuidPipe) id: string, @Res() res: Response) {
     const buffer = await this.pdfService.generateLoanPdf(id);
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `inline; filename=loan-${id}.pdf`);
-    res.send(buffer);
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="loan-${id}.pdf"`,
+      "Content-Length": buffer.length,
+    });
+    res.end(buffer);
   }
 
   @ApiOperation({ summary: "Print Summary" })
@@ -449,8 +462,11 @@ export class InventoryController {
   @RequirePermissions("inventory.print")
   async printSummary(@Res() res: Response) {
     const buffer = await this.pdfService.generateSummaryPdf();
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `inline; filename=inventory-summary.pdf`);
-    res.send(buffer);
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="inventory-summary.pdf"`,
+      "Content-Length": buffer.length,
+    });
+    res.end(buffer);
   }
 }

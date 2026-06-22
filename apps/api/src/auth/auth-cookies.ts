@@ -20,7 +20,7 @@ function baseCookieOptions(nodeEnv: string, webOrigin?: string): Pick<CookieOpti
   return {
     httpOnly: true,
     secure: cookieSecureFlag(nodeEnv, webOrigin),
-    sameSite: "none",
+    sameSite: "lax",
     path: "/",
   };
 }

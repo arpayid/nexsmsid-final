@@ -20,6 +20,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
   server!: Server;
 
   private userSockets = new Map<string, Set<string>>();
+  private ipConnections = new Map<string, Set<string>>();
+  private static readonly MAX_CONNECTIONS_PER_IP = 5;
 
   constructor(
     @Inject(JwtService) private readonly jwtService: JwtService,
@@ -45,10 +47,25 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
   }
 
   async handleConnection(client: Socket) {
+    const ip = client.handshake.address;
+    if (ip) {
+      if (!this.ipConnections.has(ip)) {
+        this.ipConnections.set(ip, new Set());
+      }
+      const ipSockets = this.ipConnections.get(ip)!;
+      if (ipSockets.size >= EventsGateway.MAX_CONNECTIONS_PER_IP) {
+        this.logger.warn(`Client ${client.id} rejected: IP ${ip} exceeds ${EventsGateway.MAX_CONNECTIONS_PER_IP} concurrent connections`);
+        client.disconnect(true);
+        return;
+      }
+      ipSockets.add(client.id);
+    }
+
     const userId = await this.authenticate(client);
 
     if (!userId) {
       this.logger.warn(`Client ${client.id} rejected: missing or invalid access token`);
+      this.cleanupIp(client);
       client.disconnect(true);
       return;
     }
@@ -68,7 +85,19 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
         this.userSockets.delete(userId);
       }
     }
+    this.cleanupIp(client);
     this.logger.log(`Client disconnected: ${client.id}`);
+  }
+
+  private cleanupIp(client: Socket) {
+    const ip = client.handshake.address;
+    if (!ip) return;
+    const ipSockets = this.ipConnections.get(ip);
+    if (!ipSockets) return;
+    ipSockets.delete(client.id);
+    if (ipSockets.size === 0) {
+      this.ipConnections.delete(ip);
+    }
   }
 
   sendToUser(userId: string, event: string, data: unknown) {
@@ -90,6 +119,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       const user = await resolveAuthenticatedUserFromAccessPayload(this.prisma, payload, { softFail: true });
       return user?.id ?? null;
     } catch {
+      this.logger.warn(`Client ${client.id} token verification failed`);
       return null;
     }
   }

@@ -30,7 +30,7 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_TURNSTILE_SITE_KEY=$NEXT_PUBLIC_TURNSTILE_SITE_KEY
 ENV API_INTERNAL_URL=$API_INTERNAL_URL
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN pnpm --filter @nexsmsid/web build
+RUN pnpm --filter @nexsmsid/web build && test -d .next/standalone/apps/web/server.js
 
 # Stage 2: Production
 FROM node:24-alpine AS runner

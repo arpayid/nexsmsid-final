@@ -1,19 +1,29 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { KeyRound, LogOut } from "lucide-react";
+import { useMemo, useCallback, useState } from "react";
+import { KeyRound, LogOut, ShieldX } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { Badge, Button, PageHeader, SectionCard } from "@nexsmsid/ui";
+import { Badge, Button, ConfirmDialog, DataTable, ErrorState, PageHeader, SectionCard } from "@nexsmsid/ui";
 import { Phase9ResourcePage, options } from "@/components/phase9-resource-page";
 import { createBrowserApiClient } from "@/lib/api-client";
 import { clearAuthSession } from "@/lib/auth-storage";
+import { useApiQuery } from "@/hooks/use-api-query";
 
 export default function SecurityPage() {
   const api = useMemo(() => createBrowserApiClient(), []);
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [revokeTarget, setRevokeTarget] = useState<string | null>(null);
+  const [sessionsVersion, setSessionsVersion] = useState(0);
+
+  const loadSessions = useCallback(async () => {
+    void sessionsVersion;
+    const result = await api.listSessions();
+    return result.items ?? [];
+  }, [api, sessionsVersion]);
+  const { data: sessions, error: sessionsError, loading: sessionsLoading, refetch: refetchSessions } = useApiQuery(loadSessions, [api]);
 
   async function handleLogoutAll() {
     if (!confirm("Anda yakin ingin keluar dari semua perangkat?")) return;
@@ -28,11 +38,23 @@ export default function SecurityPage() {
     }
   }
 
+  async function handleRevokeSession() {
+    if (!revokeTarget) return;
+    try {
+      await api.revokeSession(revokeTarget);
+      setRevokeTarget(null);
+      setSessionsVersion((v) => v + 1);
+    } catch {
+      alert("Gagal menghentikan sesi");
+      setRevokeTarget(null);
+    }
+  }
+
   return (
     <>
       <PageHeader
         breadcrumb={["Akun", "Keamanan"]}
-        description="Kelola keamanan akun Anda, lihat riwayat login, dan keluar dari semua perangkat."
+        description="Kelola keamanan akun Anda, lihat sesi aktif, riwayat login, dan keluar dari semua perangkat."
         eyebrow="Keamanan Akun"
         title="Keamanan Akun"
       />
@@ -59,6 +81,67 @@ export default function SecurityPage() {
         </SectionCard>
       </div>
 
+      {/* Active Sessions */}
+      <div className="mt-8">
+        <SectionCard description="Perangkat yang saat ini login ke akun Anda. Hentikan sesi yang tidak dikenal." title="Sesi Perangkat">
+          {sessionsError ? <ErrorState message={sessionsError} onRetry={() => void refetchSessions()} title="Gagal memuat sesi" /> : null}
+
+          {sessions && sessions.length > 0 ? (
+            <DataTable
+              columns={[
+                {
+                  key: "createdAt",
+                  header: "Login",
+                  cell: (row: any) => (row.createdAt ? new Date(row.createdAt).toLocaleString("id-ID") : "-"),
+                },
+                {
+                  key: "expiresAt",
+                  header: "Kedaluwarsa",
+                  cell: (row: any) => (row.expiresAt ? new Date(row.expiresAt).toLocaleString("id-ID") : "-"),
+                },
+                { key: "ipAddress", header: "IP Address", cell: (row: any) => row.ipAddress ?? "-" },
+                {
+                  key: "userAgent",
+                  header: "Browser/Device",
+                  cell: (row: any) => (
+                    <span className="truncate max-w-[200px] block" title={row.userAgent ?? "-"}>
+                      {row.userAgent ?? "-"}
+                    </span>
+                  ),
+                },
+                {
+                  key: "actions",
+                  header: "Aksi",
+                  cell: (row: any) => (
+                    <Button onClick={() => setRevokeTarget(row.id)} size="sm" variant="soft" className="text-rose-600">
+                      <ShieldX className="h-3 w-3" /> Hentikan
+                    </Button>
+                  ),
+                },
+              ]}
+              data={sessions}
+              emptyState={{ description: "Tidak ada sesi aktif.", title: "Kosong" }}
+              getRowId={(row: any) => row.id}
+              loading={sessionsLoading}
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground">Tidak ada sesi aktif.</p>
+          )}
+        </SectionCard>
+      </div>
+
+      {/* Revoke Confirmation */}
+      <ConfirmDialog
+        cancelLabel="Batal"
+        confirmLabel="Hentikan Sesi"
+        description="Hentikan sesi ini? Perangkat tersebut akan logout paksa."
+        onCancel={() => setRevokeTarget(null)}
+        onConfirm={() => void handleRevokeSession()}
+        open={Boolean(revokeTarget)}
+        title="Hentikan Sesi"
+      />
+
+      {/* Login History */}
       <div className="mt-8">
         <Phase9ResourcePage
           breadcrumb={["Akun", "Keamanan", "Riwayat Login"]}

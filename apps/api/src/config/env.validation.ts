@@ -29,6 +29,10 @@ const envSchema = z.object({
   PPDB_AUTO_PROVISION_STUDENT_ACCOUNT: z.enum(["true", "false"]).default("true"),
   PPDB_PROVISION_EMAIL_REQUIRED: z.enum(["true", "false"]).default("true"),
   PPDB_PROVISION_EMAIL_DOMAIN: z.string().optional(),
+
+  // Sentry (production monitoring)
+  SENTRY_DSN: z.string().url().optional(),
+  SENTRY_ENVIRONMENT: z.string().optional(),
 });
 
 export type EnvironmentVariables = z.infer<typeof envSchema>;

@@ -47,7 +47,8 @@
       "ws": ">=8.21.0",
       "form-data": ">=4.0.6",
       "multer": ">=2.2.0",
-      "js-yaml": ">=4.2.0"
+      "js-yaml": ">=4.2.0",
+      "nodemailer": ">=9.0.1"
     }
   },
   "devDependencies": {
@@ -60,7 +61,5 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.61.0"
   },
-  "dependencies": {
-    "axios": "^1.17.0"
-  }
+  "dependencies": {}
 }

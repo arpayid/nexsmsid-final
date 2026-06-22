@@ -16,7 +16,6 @@ import {
   UpdateEmployeeSalaryComponentDto,
   CreatePayrollPeriodDto,
   UpdatePayrollPeriodDto,
-  IssuePayslipDto,
   MarkPayslipPaidDto,
   UpdatePayrollRunDto,
 } from "./payroll.dto";

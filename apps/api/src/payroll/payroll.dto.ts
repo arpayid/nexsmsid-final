@@ -183,16 +183,6 @@ export class UpdatePayrollPeriodDto {
   paymentDate?: string;
 }
 
-export class IssuePayslipDto {
-  @IsString()
-  @IsOptional()
-  paymentMethod?: PayrollPaymentMethod;
-
-  @IsString()
-  @IsOptional()
-  paymentReference?: string;
-}
-
 export class MarkPayslipPaidDto {
   @IsEnum(PayrollPaymentMethod)
   @IsOptional()

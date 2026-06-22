@@ -30,6 +30,18 @@ export function createUsersApi({ request }: ApiClientCore) {
     async roles() {
       return request<RoleSummary[]>("/roles");
     },
+    async createRole(input: Record<string, unknown>) {
+      const response = await request<RoleSummary>("/roles", { method: "POST", body: JSON.stringify(input) });
+      return response.data;
+    },
+    async updateRole(id: string, input: Record<string, unknown>) {
+      const response = await request<RoleSummary>(`/roles/${id}`, { method: "PATCH", body: JSON.stringify(input) });
+      return response.data;
+    },
+    async deleteRole(id: string) {
+      const response = await request<{ success: boolean }>(`/roles/${id}`, { method: "DELETE" });
+      return response.data;
+    },
     async permissions() {
       return request<PermissionSummary[]>("/permissions");
     },

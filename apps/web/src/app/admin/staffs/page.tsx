@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import type { MasterDataRecord } from "@nexsmsid/api-client";
+import { Button, ConfirmDialog } from "@nexsmsid/ui";
 
 import { PeoplePage, type PeopleField } from "@/components/people-page";
 import { createBrowserApiClient } from "@/lib/api-client";
@@ -44,6 +45,20 @@ const fields: PeopleField[] = [
 
 export default function StaffsPage() {
   const api = useMemo(() => createBrowserApiClient(), []);
+  const [resetBusyId, setResetBusyId] = useState<string | null>(null);
+  const [tempPassword, setTempPassword] = useState<string | null>(null);
+
+  async function handleResetPassword(item: MasterDataRecord) {
+    setResetBusyId(item.id);
+    try {
+      await api.resetUserPassword(item.id, {});
+      setTempPassword("Password telah direset. Beri tahu staff untuk menggunakan password baru.");
+    } catch {
+      setTempPassword("Gagal mereset password");
+    } finally {
+      setResetBusyId(null);
+    }
+  }
 
   const resource = useMemo(
     () => ({
@@ -72,14 +87,31 @@ export default function StaffsPage() {
   };
 
   return (
-    <PeoplePage
-      description="Kelola data staff tata usaha dan tenaga kependidikan non-guru."
-      eyebrow="People & Akademik"
-      excel={excel}
-      fields={fields}
-      resource={resource}
-      statusOptions={["ACTIVE", "INACTIVE", "RESIGNED", "TRANSFERRED"]}
-      title="Staff"
-    />
+    <>
+      <PeoplePage
+        description="Kelola data staff tata usaha dan tenaga kependidikan non-guru."
+        eyebrow="People & Akademik"
+        excel={excel}
+        extraRowActions={(item) => (
+          <Button disabled={resetBusyId === item.id} onClick={() => void handleResetPassword(item)} size="sm" variant="outline">
+            Reset PW
+          </Button>
+        )}
+        fields={fields}
+        resource={resource}
+        statusOptions={["ACTIVE", "INACTIVE", "RESIGNED", "TRANSFERRED"]}
+        title="Staff"
+      />
+
+      <ConfirmDialog
+        cancelLabel="Tutup"
+        confirmLabel="OK"
+        description={<span className="text-sm">{tempPassword}</span>}
+        onCancel={() => setTempPassword(null)}
+        onConfirm={() => setTempPassword(null)}
+        open={Boolean(tempPassword)}
+        title="Password Staff Direset"
+      />
+    </>
   );
 }

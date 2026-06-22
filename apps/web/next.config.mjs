@@ -11,9 +11,6 @@ if (process.env.NODE_ENV === "production" && !process.env.API_INTERNAL_URL) {
 const nextConfig = {
   transpilePackages: ["@nexsmsid/api-client", "@nexsmsid/types", "@nexsmsid/ui"],
   output: "standalone",
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   async rewrites() {
     return [
       {

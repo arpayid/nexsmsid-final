@@ -312,6 +312,47 @@ export class TeacherPortalService {
     });
   }
 
+  async getAnnouncements(userId: string, limit = 30) {
+    const teacher = await this.getTeacherForUser(userId);
+    return this.prisma.announcement.findMany({
+      take: limit,
+      where: {
+        deletedAt: null,
+        status: { in: ["PUBLISHED", "ARCHIVED"] },
+        audience: { in: ["ALL", "TEACHERS"] },
+      },
+      include: { createdBy: { select: { name: true } } },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  async getDiscipline(userId: string, limit = 50) {
+    const teacher = await this.getTeacherForUser(userId);
+    const violations = await this.prisma.disciplineViolation.findMany({
+      take: limit,
+      where: {
+        deletedAt: null,
+        reportedById: teacher.userId ?? undefined,
+      },
+      include: {
+        student: { select: { name: true, nis: true, classroom: { select: { name: true } } } },
+        rule: { select: { name: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const achievements = await this.prisma.studentAchievement.findMany({
+      take: limit,
+      where: { deletedAt: null, awardedById: teacher.userId ?? undefined },
+      include: {
+        student: { select: { name: true, nis: true, classroom: { select: { name: true } } } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return { violations, achievements };
+  }
+
   async getRecentNotifications(userId: string, limit = 5) {
     return this.prisma.notification.findMany({
       where: { userId },

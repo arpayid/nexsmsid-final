@@ -17,10 +17,9 @@ export default tseslint.config(
       // Banyak halaman legacy masih melakukan fetch-on-mount di useEffect.
       // Tetap laporkan pola ini, tetapi jangan jadikan blocker sampai migrasi dilakukan per halaman.
       "react-hooks/set-state-in-effect": "warn",
-      "@typescript-eslint/no-explicit-any": "off",
-      // Nonaktifkan sementara — 1035 warning tidak ada yang error.
-      // TypeScript compiler sudah handle unused var detection via tsc --noEmit.
-      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-explicit-any": "warn",
+      // Warisan — sedang dalam proses diperbaiki. Gunakan `_` prefix untuk parameter yang sengaja tidak dipakai.
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
       "@typescript-eslint/no-require-imports": "off",
       "no-console": "off",
     },

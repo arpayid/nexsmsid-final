@@ -4,6 +4,7 @@
 set -euo pipefail
 
 BASE_URL="${1:-http://localhost}"
+SUPERADMIN_PASSWORD="${SUPERADMIN_PASSWORD:-ChangeMe123!}"
 COOKIE_JAR="$(mktemp)"
 trap 'rm -f "$COOKIE_JAR"' EXIT
 
@@ -47,7 +48,7 @@ echo ""
 echo "--- Superadmin ---"
 login_body=$(curl_cmd -s -c "$COOKIE_JAR" -X POST "$BASE_URL/api/v1/auth/login" \
   -H "Content-Type: application/json" \
-  -d '{"email":"superadmin@nexsmsid.dev","password":"ChangeMe123!"}')
+  -d "{\"email\":\"superadmin@nexsmsid.dev\",\"password\":\"${SUPERADMIN_PASSWORD}\"}")
 echo "$login_body" | grep -q '"success":true' && ok "superadmin login" || bad "superadmin login: $login_body"
 
 for ep in \
@@ -66,7 +67,7 @@ echo ""
 echo "--- Portal logins ---"
 for cred in "guru@nexsmsid.dev" "siswa@nexsmsid.dev" "wali@nexsmsid.dev"; do
   body=$(curl_cmd -s -X POST "$BASE_URL/api/v1/auth/login" -H "Content-Type: application/json" \
-    -d "{\"email\":\"$cred\",\"password\":\"ChangeMe123!\"}")
+    -d "{\"email\":\"$cred\",\"password\":\"${SUPERADMIN_PASSWORD}\"}")
   echo "$body" | grep -q '"success":true' && ok "login $cred" || bad "login $cred"
   sleep 1
 done

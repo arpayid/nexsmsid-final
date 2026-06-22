@@ -1,6 +1,6 @@
 import { Socket } from "node:net";
 
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import {
   ExpenseStatus,
@@ -155,6 +155,7 @@ export class DashboardService {
         port,
       };
     } catch {
+      Logger.warn(`Invalid REDIS_URL config: unable to parse`);
       return {
         configured: Boolean(redisUrl),
         available: false,

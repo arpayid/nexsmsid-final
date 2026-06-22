@@ -18,12 +18,11 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       NODE_ENV: test
       # Use port 5433 to avoid conflicts with any host-level PostgreSQL
-      DATABASE_URL: postgresql://nexsmsid:nexsmsid@localhost:5433/nexsmsid_test
+      DATABASE_URL: ${{ secrets.CI_DATABASE_URL || 'postgresql://nexsmsid:nexsmsid@localhost:5433/nexsmsid_test' }}
       REDIS_HOST: localhost
       REDIS_PORT: 6380
-      CI_KEEP_SERVICES: "1"
-      JWT_ACCESS_SECRET: CI_TEST_SECRET_KEY_FOR_NEXSMSID_ACCESS_TOKEN_MUST_BE_LONG_ENOUGH_64_CHARS_MIN
-      JWT_REFRESH_SECRET: CI_TEST_SECRET_KEY_FOR_NEXSMSID_REFRESH_TOKEN_MUST_BE_LONG_ENOUGH_64_CHARS_MIN
+      JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
+      JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
       WEB_ORIGIN: http://localhost:3000
       API_PORT: 4000
       API_PREFIX: api/v1
@@ -72,6 +71,18 @@ jobs:
       - name: Generate Prisma client
         run: pnpm --filter @nexsmsid/api prisma generate
 
+      - name: Validate Prisma schema & migrations
+        run: |
+          pnpm --filter @nexsmsid/api prisma validate
+          # Ensure no unapplied migrations (must match deploy order)
+          pnpm --filter @nexsmsid/api prisma migrate diff \
+            --from-schema-datamodel prisma/schema.prisma \
+            --to-migrations prisma/migrations/ \
+            --exit-code || {
+            echo "❌ Migration drift detected. Run 'pnpm --filter @nexsmsid/api prisma migrate dev' locally."
+            exit 1
+          }
+
       - name: Static checks and API unit tests
         run: |
           set -e
@@ -79,7 +90,7 @@ jobs:
           pid_format=$!
           pnpm lint &
           pid_lint=$!
-          pnpm --filter @nexsmsid/api test &
+          pnpm --filter @nexsmsid/api test -- --coverage &
           pid_test=$!
           wait "$pid_format"
           wait "$pid_lint"
@@ -92,7 +103,6 @@ jobs:
         run: pnpm build
 
       - name: Integration Tests (real PostgreSQL + Redis)
-        continue-on-error: true
         run: |
           # Push schema and seed data for integration tests
           pnpm --filter @nexsmsid/api prisma db push --accept-data-loss

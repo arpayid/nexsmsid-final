@@ -37,6 +37,7 @@ function isTextCsv(buffer: Buffer): boolean {
     const text = sample.toString("utf8");
     return text.length > 0 && !text.includes("\uFFFD");
   } catch {
+    console.warn("isTextCsv: utf8 decoding failed");
     return false;
   }
 }
