@@ -38,6 +38,11 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+
+  // Behind nginx (reverse proxy): trust the first proxy hop so req.ip,
+  // rate limiting (ThrottlerGuard) and X-Forwarded-* reflect the real client.
+  app.getHttpAdapter().getInstance().set("trust proxy", 1);
+
   app.useWebSocketAdapter(new SocketIoCorsAdapter(app, configService));
   const logger = new Logger("Bootstrap");
 

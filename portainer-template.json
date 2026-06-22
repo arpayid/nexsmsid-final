@@ -117,7 +117,9 @@
     "redis_data",
     "storage_data",
     "backup_data",
+    "nginx_ssl",
     "certbot_etc",
-    "certbot_var"
+    "certbot_var",
+    "certbot_www"
   ]
 }
