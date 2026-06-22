@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   build-validation:
-    runs-on: [self-hosted, linux, nexsmsid-final]
+    runs-on: ubuntu-latest
 
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
