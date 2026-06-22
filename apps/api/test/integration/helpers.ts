@@ -9,6 +9,17 @@ export const db = new PrismaClient({ datasourceUrl: TEST_DATABASE_URL });
 /** Cloudflare Turnstile dummy token (works with test secret key in CI). */
 export const TEST_CAPTCHA_TOKEN = "XXXX.DUMMY.TOKEN.XXXX";
 
+/**
+ * The API enforces a CSRF double-submit cookie on every mutating request that is
+ * not under /auth/* (see main.ts). Send a matching cookie + header so requests
+ * pass the check, exactly like a browser that first called GET /auth/csrf.
+ */
+export const TEST_CSRF_TOKEN = "integration-csrf-token";
+const CSRF_HEADERS = {
+  "x-csrf-token": TEST_CSRF_TOKEN,
+  Cookie: `nexsmsid.csrf=${TEST_CSRF_TOKEN}`,
+};
+
 export type HttpResult = { status: number; body: any };
 
 export async function http(method: string, path: string, opts: { token?: string; body?: unknown } = {}): Promise<HttpResult> {
@@ -17,6 +28,7 @@ export async function http(method: string, path: string, opts: { token?: string;
     method,
     headers: {
       "Content-Type": "application/json",
+      ...CSRF_HEADERS,
       ...(opts.token ? { Authorization: `Bearer ${opts.token}` } : {}),
     },
     body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
@@ -36,7 +48,7 @@ export const post = (path: string, body?: unknown, token?: string) => http("POST
 
 export async function postMultipart(path: string, formData: FormData): Promise<HttpResult> {
   const url = path.startsWith("http") ? path : `${API_URL}/${API_PREFIX}/${path.replace(/^\//, "")}`;
-  const res = await fetch(url, { method: "POST", body: formData });
+  const res = await fetch(url, { method: "POST", body: formData, headers: { ...CSRF_HEADERS } });
   let body: any = null;
   try {
     body = await res.json();

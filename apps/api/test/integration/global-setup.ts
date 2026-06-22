@@ -23,6 +23,7 @@ import {
   TEST_API_PORT,
   TEST_DATABASE_URL,
 } from "./config";
+import { seedIntegrationFixtures } from "./fixtures";
 
 const API_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -42,6 +43,7 @@ export async function setup() {
   execSync("npx prisma migrate deploy", { cwd: API_ROOT, env, stdio: "inherit" });
   execSync("npx prisma db seed", { cwd: API_ROOT, env, stdio: "inherit" });
 
+  await seedIntegrationFixtures();
   await prepareFixtures();
   await startApi();
 }
