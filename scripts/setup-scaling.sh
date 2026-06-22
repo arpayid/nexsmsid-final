@@ -19,25 +19,9 @@ fi
 # --- 2. Nginx upstream for load balancing ---
 echo ""
 echo "→ Upstream config for $INSTANCES API instances..."
-cat > docker/nginx/conf.d/upstream.conf << UPSTREAM
-# Load balancing — multiple API instances
-# Scale: docker compose -f docker-compose.prod.yml up -d --scale api=${INSTANCES}
-upstream api_upstream {
-    least_conn;
-    server api:4000 max_fails=3 fail_timeout=30s;
-}
-
-upstream web_upstream {
-    server web:3000;
-}
-
-# Session affinity via sticky cookie (opsional — aktifkan jika dibutuhkan)
-# upstream api_upstream {
-#     sticky cookie nex_session expires=1h domain=.sms.sekolah.sch.id path=/;
-#     server api:4000;
-# }
-UPSTREAM
-echo "✅ upstream.conf created (load balancing: least_conn)"
+echo "✅ Load balancing is built in: nginx uses 'least_conn' against Docker DNS"
+echo "   (see docker/nginx/templates-src/upstream.conf, baked into the nginx image)."
+echo "   Simply scaling the api service is enough — no config change required."
 
 # --- 3. Redis session config ---
 echo ""
