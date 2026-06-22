@@ -1,0 +1,61 @@
+# Cursor Cloud / nested-DinD override for docker-compose.prod.yml
+#
+# The Cloud Agent VM exposes a cgroup-v2 hierarchy that is entirely a "threaded"
+# subtree and does NOT delegate the memory/io controllers. As a result, Docker
+# cannot apply per-container CPU/memory cgroup limits (runc fails with
+# 'cannot enter cgroupv2 ... it is in threaded mode'). Containers run fine
+# without resource limits, so this override zeroes out every service's
+# deploy.resources (compose drops 0-valued limits) to let the full prod stack
+# boot in the cloud environment.
+#
+# Usage:
+#   docker compose --env-file .env.production \
+#     -f docker-compose.prod.yml -f docker-compose.cloud.yml up -d
+#
+# This file is ONLY for the constrained cloud VM. Real production servers should
+# use docker-compose.prod.yml on its own so the resource limits take effect.
+
+services:
+  postgres:
+    deploy:
+      resources:
+        limits: { cpus: "0", memory: "0" }
+        reservations: { memory: "0" }
+
+  redis:
+    deploy:
+      resources:
+        limits: { cpus: "0", memory: "0" }
+        reservations: { memory: "0" }
+
+  api:
+    deploy:
+      resources:
+        limits: { cpus: "0", memory: "0" }
+        reservations: { memory: "0" }
+
+  web:
+    build:
+      # Build-time only: make the internal API hostname resolve to loopback so the
+      # Next.js static-generation fetches fail fast (ECONNREFUSED) instead of waiting
+      # ~5s each on the cloud VM resolver's SERVFAIL for the bare "api" host (which can
+      # push slow pages past Next's 60s static-generation timeout). Runtime API routing
+      # is unaffected (it uses the compose network at run time).
+      extra_hosts:
+        - "api:127.0.0.1"
+    deploy:
+      resources:
+        limits: { cpus: "0", memory: "0" }
+        reservations: { memory: "0" }
+
+  nginx:
+    deploy:
+      resources:
+        limits: { cpus: "0", memory: "0" }
+        reservations: { memory: "0" }
+
+  backup:
+    deploy:
+      resources:
+        limits: { cpus: "0", memory: "0" }
+        reservations: { memory: "0" }
