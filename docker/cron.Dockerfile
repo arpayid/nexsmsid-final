@@ -1,7 +1,17 @@
-# Backup cron container — runs scheduled backups via pg_dump
-FROM alpine:3.19
+# Backup cron container — pg_dump + S3 + healthchecks.io
+FROM alpine:3.21
 
-RUN apk add --no-cache postgresql17-client aws-cli curl bash
+# Install packages — postgresql-client for pg_dump, aws-cli for S3
+RUN apk add --no-cache \
+    postgresql16-client \
+    curl \
+    bash \
+    && if command -v aws >/dev/null 2>&1; then \
+         echo "aws-cli already available"; \
+       else \
+         apk add --no-cache aws-cli 2>/dev/null || \
+         echo "aws-cli not in repo, will use curl for S3"; \
+       fi
 
 COPY docker/cron/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
