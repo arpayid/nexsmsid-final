@@ -21,7 +21,8 @@ const envSchema = z.object({
   SMTP_FROM: z.string().email().default("noreply@nexsmsid.dev").optional(),
   WA_API_KEY: z.string().optional(),
   WA_API_URL: z.string().url().default("https://api.fonnte.com/send").optional(),
-  LOG_LEVEL: z.enum(["error", "warn", "log", "debug", "verbose"]).default("log"),
+  // nestjs-pino customLevels only support these levels in production/runtime.
+  LOG_LEVEL: z.enum(["error", "warn", "debug"]).default("warn"),
   STORAGE_PATH: z.string().default("./storage"),
   REPORT_STORAGE_PATH: z.string().default("./storage/reports"),
   TURNSTILE_SECRET_KEY: z.string().optional(),
@@ -31,7 +32,7 @@ const envSchema = z.object({
   PPDB_PROVISION_EMAIL_DOMAIN: z.string().optional(),
 
   // Sentry (production monitoring)
-  SENTRY_DSN: z.string().url().optional(),
+  SENTRY_DSN: z.preprocess((value) => (value === "" ? undefined : value), z.string().url().optional()),
   SENTRY_ENVIRONMENT: z.string().optional(),
 });
 
@@ -51,6 +52,9 @@ export function validateEnvironment(config: Record<string, unknown>) {
     }
     if (config.JWT_REFRESH_SECRET === config.JWT_ACCESS_SECRET) {
       throw new Error("JWT_REFRESH_SECRET must differ from JWT_ACCESS_SECRET in production mode");
+    }
+    if (!["error", "warn", "debug", undefined].includes(config.LOG_LEVEL as string | undefined)) {
+      throw new Error("LOG_LEVEL must be one of: error, warn, debug in production mode");
     }
     if (!config.TURNSTILE_SECRET_KEY?.toString().trim()) {
       throw new Error("TURNSTILE_SECRET_KEY must be set in production mode");

@@ -36,8 +36,8 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY packages/ ./packages/
 COPY apps/api/package.json ./apps/api/
 
-# Install hanya production dependencies (tanpa frozen-lockfile untuk menghindari mismatch)
-RUN pnpm install --prod
+# Install production dependencies using the same frozen lockfile policy as CI/build images.
+RUN pnpm install --prod --frozen-lockfile
 
 # Copy built artifacts
 COPY --from=builder /app/apps/api/dist ./apps/api/dist

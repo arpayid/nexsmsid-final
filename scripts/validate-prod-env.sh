@@ -50,6 +50,9 @@ check "$ok_origin" "WEB_ORIGIN is a non-localhost production URL"
 [[ -n "${CORS_ORIGIN:-}" ]] && ok_cors=1 || ok_cors=0
 check "$ok_cors" "CORS_ORIGIN is set"
 
+[[ -n "${WEB_ORIGIN:-}" && -n "${CORS_ORIGIN:-}" && "${WEB_ORIGIN}" == "${CORS_ORIGIN}" ]] && ok_origin_match=1 || ok_origin_match=0
+check "$ok_origin_match" "WEB_ORIGIN and CORS_ORIGIN match"
+
 access_len=${#JWT_ACCESS_SECRET}
 refresh_len=${#JWT_REFRESH_SECRET}
 [[ "$access_len" -ge 64 ]] && ok_access=1 || ok_access=0
@@ -70,11 +73,14 @@ check "$ok_tsite" "NEXT_PUBLIC_TURNSTILE_SITE_KEY is set"
 [[ -n "${POSTGRES_PASSWORD:-}" && "$POSTGRES_PASSWORD" != "replace-with-strong-postgres-password" ]] && ok_pg=1 || ok_pg=0
 check "$ok_pg" "POSTGRES_PASSWORD is not placeholder"
 
-[[ -n "${REDIS_PASSWORD:-}" ]] && ok_redis=1 || ok_redis=0
-check "$ok_redis" "REDIS_PASSWORD is set"
+[[ -n "${REDIS_PASSWORD:-}" && "${REDIS_PASSWORD}" != "replace-with-strong-redis-password" ]] && ok_redis=1 || ok_redis=0
+check "$ok_redis" "REDIS_PASSWORD is not placeholder"
 
-[[ -n "${DATABASE_URL:-}" ]] && ok_db=1 || ok_db=0
-check "$ok_db" "DATABASE_URL is set"
+[[ -n "${DATABASE_URL:-}" && "$DATABASE_URL" != *"replace-with-strong-postgres-password"* ]] && ok_db=1 || ok_db=0
+check "$ok_db" "DATABASE_URL is set and not placeholder"
+
+case "${LOG_LEVEL:-warn}" in error|warn|debug) ok_log=1 ;; *) ok_log=0 ;; esac
+check "$ok_log" "LOG_LEVEL is one of error, warn, debug"
 
 [[ "${NEXT_PUBLIC_API_URL:-}" == "/api/v1" ]] && ok_api_url=1 || ok_api_url=0
 check "$ok_api_url" "NEXT_PUBLIC_API_URL=/api/v1 (nginx proxy)"
