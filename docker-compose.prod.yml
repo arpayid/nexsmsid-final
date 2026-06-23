@@ -66,9 +66,9 @@ services:
       WEB_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
       RATE_LIMIT_TTL: ${RATE_LIMIT_TTL:-60}
       RATE_LIMIT_LIMIT: ${RATE_LIMIT_LIMIT:-100}
-      LOG_LEVEL: ${LOG_LEVEL:-log}
+      LOG_LEVEL: ${LOG_LEVEL:-warn}
       TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY}
-      SENTRY_DSN: ${SENTRY_DSN}
+      SENTRY_DSN: ${SENTRY_DSN:-}
       SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-production}
       STORAGE_PATH: /app/storage
       REPORT_STORAGE_PATH: /app/storage/reports
@@ -133,7 +133,7 @@ services:
       - certbot_var:/var/lib/letsencrypt
       - certbot_www:/var/www/certbot
     environment:
-      DOMAIN: ${DOMAIN}
+      DOMAIN: ${DOMAIN:-}
     depends_on:
       - api
       - web
@@ -164,10 +164,10 @@ services:
       BACKUP_DIR: /backups
       BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
       SCHEDULE: ${BACKUP_SCHEDULE:-"0 */6 * * *"}
-      S3_BUCKET: ${S3_BUCKET}
-      HEALTHCHECKS_URL: ${HEALTHCHECKS_URL}
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      S3_BUCKET: ${S3_BUCKET:-}
+      HEALTHCHECKS_URL: ${HEALTHCHECKS_URL:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
       AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-ap-southeast-1}
     volumes:
       - backup_data:/backups
