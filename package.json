@@ -9,7 +9,7 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
-    "typecheck": "pnpm --filter @nexsmsid/types build && pnpm --filter @nexsmsid/contracts build && pnpm --filter @nexsmsid/api-client build && pnpm --filter @nexsmsid/ui build && pnpm --filter @nexsmsid/api exec tsc --noEmit && pnpm --filter @nexsmsid/web exec tsc --noEmit",
+    "typecheck": "pnpm --filter @nexsmsid/types build && pnpm --filter @nexsmsid/contracts build && pnpm --filter @nexsmsid/api-client build && pnpm --filter @nexsmsid/ui build && pnpm --filter @nexsmsid/api prisma:generate && pnpm --filter @nexsmsid/api exec tsc --noEmit && pnpm --filter @nexsmsid/web exec tsc --noEmit",
     "lint": "eslint . --ext .ts",
     "validate": "pnpm typecheck && pnpm format:check && pnpm --filter @nexsmsid/api test && pnpm lint && pnpm build",
     "validate:integration": "pnpm --filter @nexsmsid/api build && NODE_ENV=test DATABASE_URL=\"postgresql://nexsmsid:nexsmsid@localhost:5432/nexsmsid_test?schema=public\" pnpm --filter @nexsmsid/api test:integration",
